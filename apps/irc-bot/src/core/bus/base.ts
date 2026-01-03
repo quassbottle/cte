@@ -38,6 +38,7 @@ export abstract class BaseEventBus<
   protected abstract toEvent(rawCommand: string): TEvent | undefined;
   protected abstract parseArgs<T extends TEvent>(
     event: T,
+    meta: TMeta,
     ...args: string[]
   ): TEventArgsMap[T];
 
@@ -76,7 +77,7 @@ export abstract class BaseEventBus<
     const context: EventContext<TEvent, TEventArgsMap, TMeta> = {
       event: mappedEvent,
       data: Array.isArray(data)
-        ? this.parseArgs(mappedEvent as T, ...data)
+        ? this.parseArgs(mappedEvent as T, meta, ...data)
         : (data as TEventArgsMap[TEvent]),
       meta,
     };
@@ -88,8 +89,8 @@ export abstract class BaseEventBus<
       }
     }
 
-    this.listeners[mappedEvent]?.forEach((listener) =>
-      listener(context.data as TEventArgsMap[T], context.meta),
-    );
+    for (const listener of this.listeners[mappedEvent] ?? []) {
+      void listener(context.data as TEventArgsMap[T], context.meta);
+    }
   }
 }

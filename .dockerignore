@@ -1,0 +1,14 @@
+# Exclude local installs and build artefacts from build context
+node_modules
+apps/*/node_modules
+apps/*/dist
+packages/*/node_modules
+dist
+.turbo
+.tsbuildinfo
+**/*.tsbuildinfo
+.git
+.vscode
+*.log
+.env
+.env.*

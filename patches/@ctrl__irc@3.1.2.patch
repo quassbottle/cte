@@ -1,0 +1,15 @@
+diff --git a/dist/src/irc.js b/dist/src/irc.js
+index c15d3196d2c7d1ac2ce11209b61fad18e790e03f..07170dd31bca0cca89078ec06cb79700c5a85ea6 100644
+--- a/dist/src/irc.js
++++ b/dist/src/irc.js
+@@ -422,7 +422,9 @@ export class IrcClient extends TypedEmitter {
+                 break;
+             case 'rpl_whoischannels':
+                 // TODO - clean this up?
+-                this._addWhoisData(message.args[1], 'channels', message.args[2].trim().split(/\s+/));
++                if (message.args[2]) {
++                    this._addWhoisData(message.args[1], 'channels', message.args[2].trim().split(/\s+/));
++                }
+                 break;
+             case 'rpl_whoisserver':
+                 this._addWhoisData(message.args[1], 'server', message.args[2]);

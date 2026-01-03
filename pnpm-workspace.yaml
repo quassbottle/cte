@@ -1,3 +1,9 @@
 packages:
   - apps/*
   - packages/*
+
+ignoredBuiltDependencies:
+  - unrs-resolver
+
+patchedDependencies:
+  '@ctrl/irc@3.1.2': patches/@ctrl__irc@3.1.2.patch

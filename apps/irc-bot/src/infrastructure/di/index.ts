@@ -6,6 +6,7 @@ import { Database, db } from 'infrastructure/db';
 import { container, instanceCachingFactory } from 'tsyringe';
 
 import { MatchService } from 'application/services/match/match.service';
+import { MessageService } from 'application/services/message/message.service';
 import { OsuService } from 'application/services/osu/osu.service';
 import { DI_TOKENS } from './tokens';
 
@@ -29,6 +30,7 @@ export const setupContainer = () => {
   });
 
   container.registerSingleton(OsuService);
+  container.registerSingleton(MessageService);
   container.registerSingleton(MatchService);
 
   configured = true;

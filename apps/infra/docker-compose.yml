@@ -12,6 +12,12 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d
+    networks:
+      - cte-network
 
 volumes:
   postgres_data:
+
+networks:
+  cte-network:
+    external: true

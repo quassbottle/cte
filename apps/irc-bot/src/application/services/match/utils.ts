@@ -11,3 +11,7 @@ export function mpChannelToId(channel: string): number {
 
   return id;
 }
+
+export function isMpChannel(channel: string): boolean {
+  return channel.startsWith('#mp_');
+}

@@ -25,6 +25,7 @@ export class OsuIrcEventBus extends BaseEventBus<
 
   protected parseArgs<T extends OsuIrcEvent>(
     event: T,
+    meta: IrcEventMeta,
     ...args: string[]
   ): OsuEventArgsMap[T] {
     switch (event) {
@@ -33,6 +34,12 @@ export class OsuIrcEventBus extends BaseEventBus<
           user: String(args[0]),
           channel: String(args[1]),
           creationTime: timestampToDate(args[2]),
+        } as OsuEventArgsMap[T];
+      case OsuIrcEvent.PRIVMSG:
+        return {
+          user: String(meta.message.nick ?? meta.message.user ?? ''),
+          channel: String(args[0]),
+          message: String(args[1]),
         } as OsuEventArgsMap[T];
       default:
         throw new Error(`Unknown event: ${event}`);

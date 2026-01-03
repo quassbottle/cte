@@ -13,6 +13,11 @@
     "lint": "turbo lint",
     "test": "turbo test"
   },
+  "pnpm": {
+    "patchedDependencies": {
+      "@ctrl/irc@3.1.2": "patches/@ctrl__irc@3.1.2.patch"
+    }
+  },
   "keywords": [],
   "author": "",
   "license": "ISC",

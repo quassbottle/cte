@@ -21,19 +21,14 @@ client.on('error', (message) => {
   console.error('IRC Error:', message);
 });
 
-client.on('message', (from, to, message) => {
-  console.log(`[${to}] <${from}>: ${message}`);
-});
-
 client.on('raw', (message) => {
   if (message.command === 'QUIT') return;
   console.log('[RAW]', message);
 
   if (message.command === 'PRIVMSG') {
     ircPrivMsgBus.emitWithMessage(message);
-  } else {
-    ircRawBus.emitWithMessage(message);
   }
+  ircRawBus.emitWithMessage(message);
 });
 
 client.connect();

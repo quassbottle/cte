@@ -8,6 +8,13 @@
       "when": 1767394577338,
       "tag": "0000_panoramic_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1767474747068,
+      "tag": "0001_free_lester",
+      "breakpoints": true
     }
   ]
 }

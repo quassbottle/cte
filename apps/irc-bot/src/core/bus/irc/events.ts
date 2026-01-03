@@ -3,6 +3,7 @@ import { OsuEventArgs } from '../base';
 
 export enum OsuIrcEvent {
   RPL_CREATIONTIME = '329',
+  PRIVMSG = 'PRIVMSG',
 }
 
 export interface OsuRplCreationTimeArgs extends OsuEventArgs {
@@ -10,8 +11,14 @@ export interface OsuRplCreationTimeArgs extends OsuEventArgs {
   creationTime: Date;
 }
 
+export interface OsuPrivMsgEventArgs extends OsuEventArgs {
+  channel: string;
+  message: string;
+}
+
 export type OsuEventArgsMap = {
   [OsuIrcEvent.RPL_CREATIONTIME]: OsuRplCreationTimeArgs;
+  [OsuIrcEvent.PRIVMSG]: OsuPrivMsgEventArgs;
 };
 
 export const rawCommandToOsuIrcEvent = (
