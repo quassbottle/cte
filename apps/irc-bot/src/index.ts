@@ -3,6 +3,7 @@ import 'reflect-metadata';
 import { onRegistered } from 'application/events';
 import { OsuIrcClient } from 'core/irc';
 import { container, DI_TOKENS, setupContainer } from 'infrastructure/di';
+import { logger } from 'infrastructure/logger';
 import { createIrcRawBus } from './application/events/irc';
 import { createIrcPrivMsgBus } from './application/events/msg';
 
@@ -13,17 +14,17 @@ const ircRawBus = createIrcRawBus(client);
 const ircPrivMsgBus = createIrcPrivMsgBus(client);
 
 client.on('registered', () => {
-  console.log('Connected to IRC server');
+  logger.info('Connected to IRC server');
   onRegistered({ client });
 });
 
 client.on('error', (message) => {
-  console.error('IRC Error:', message);
+  logger.error({ err: message }, 'IRC Error');
 });
 
 client.on('raw', (message) => {
   if (message.command === 'QUIT') return;
-  console.log('[RAW]', message);
+  logger.debug({ message }, 'IRC raw');
 
   if (message.command === 'PRIVMSG') {
     ircPrivMsgBus.emitWithMessage(message);

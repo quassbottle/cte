@@ -2,6 +2,7 @@ import { OsuRplCreationTimeArgs } from 'core/bus/irc';
 import { OsuIrcClient } from 'core/irc';
 import { Database, matches } from 'infrastructure/db';
 import { DI_TOKENS } from 'infrastructure/di/tokens';
+import { logger } from 'infrastructure/logger';
 import { inject, injectable } from 'tsyringe';
 
 import { eq } from 'drizzle-orm';
@@ -44,8 +45,8 @@ export class MatchService {
         .returning();
 
       return created;
-    } catch (e) {
-      console.log(`Reverting... Error on match creation: `, e);
+    } catch (e: unknown) {
+      logger.error({ err: e }, 'Reverting... Error on match creation');
 
       this.osuIrcClient.mpClose(channel);
 

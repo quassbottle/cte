@@ -11,6 +11,7 @@ export enum OsuIrcPrivMsgEvent {
   MATCH_STARTED = 'MATCH_STARTED',
   MATCH_ABORTED = 'MATCH_ABORTED',
   MATCH_HOST_CHANGING = 'MATCH_HOST_CHANGING',
+  MATCH_PLAYER_FINISHED = 'MATCH_PLAYER_FINISHED',
 }
 
 export interface OsuMatchLimitExceededEvent extends OsuEventArgs {
@@ -58,6 +59,12 @@ export interface OsuMatchHostChangingEvent extends OsuEventArgs {
   channel: string;
 }
 
+export interface OsuMatchPlayerFinishedEvent extends OsuEventArgs {
+  channel: string;
+  score: number;
+  result: string;
+}
+
 export type OsuIrcPrivMsgEventMap = {
   [OsuIrcPrivMsgEvent.MATCH_LIMIT_EXCEEDED]: OsuMatchLimitExceededEvent;
   [OsuIrcPrivMsgEvent.MATCH_SLOT_JOINED]: OsuMatchSlotJoinedEvent;
@@ -69,6 +76,7 @@ export type OsuIrcPrivMsgEventMap = {
   [OsuIrcPrivMsgEvent.MATCH_STARTED]: OsuMatchStartedEvent;
   [OsuIrcPrivMsgEvent.MATCH_ABORTED]: OsuMatchAbortedEvent;
   [OsuIrcPrivMsgEvent.MATCH_HOST_CHANGING]: OsuMatchHostChangingEvent;
+  [OsuIrcPrivMsgEvent.MATCH_PLAYER_FINISHED]: OsuMatchPlayerFinishedEvent;
 };
 
 export const MATCH_SLOT_JOINED_REGEX =
@@ -86,6 +94,8 @@ export const MATCH_ALL_READY_MESSAGE = 'All players are ready';
 export const MATCH_STARTED_MESSAGE = 'The match has started!';
 export const MATCH_ABORTED_MESSAGE = 'Aborted the match';
 export const MATCH_HOST_CHANGING_MESSAGE = 'Host is changing map...';
+export const MATCH_PLAYER_FINISHED_REGEX =
+  /^(?<username>.+) finished playing \(Score: (?<score>\d+), (?<result>[A-Z]+)\)\.?$/;
 
 export const rawCommandToOsuIrcPrivMsgEvent = (
   message: string,
@@ -128,6 +138,10 @@ export const rawCommandToOsuIrcPrivMsgEvent = (
 
   if (message === MATCH_HOST_CHANGING_MESSAGE) {
     return OsuIrcPrivMsgEvent.MATCH_HOST_CHANGING;
+  }
+
+  if (MATCH_PLAYER_FINISHED_REGEX.test(message)) {
+    return OsuIrcPrivMsgEvent.MATCH_PLAYER_FINISHED;
   }
 
   return undefined;

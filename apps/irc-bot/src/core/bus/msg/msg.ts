@@ -3,12 +3,13 @@ import { IrcEventMeta } from 'core/bus/types';
 import { OsuIrcClient } from 'core/irc';
 import type { Message } from 'core/types/irc';
 import {
-  OsuIrcPrivMsgEvent,
-  OsuIrcPrivMsgEventMap,
+  MATCH_BEATMAP_CHANGED_REGEX,
+  MATCH_HOST_CHANGED_REGEX,
+  MATCH_PLAYER_FINISHED_REGEX,
   MATCH_SLOT_JOINED_REGEX,
   MATCH_SLOT_MOVED_REGEX,
-  MATCH_HOST_CHANGED_REGEX,
-  MATCH_BEATMAP_CHANGED_REGEX,
+  OsuIrcPrivMsgEvent,
+  OsuIrcPrivMsgEventMap,
   rawCommandToOsuIrcPrivMsgEvent,
 } from './events';
 
@@ -31,7 +32,9 @@ export class OsuIrcPrivMsgEventBus extends BaseEventBus<
     ...args: string[]
   ): OsuIrcPrivMsgEventMap[T] {
     const [channel, message] = args;
-    const defaultUser = String(meta.message.nick ?? meta.message.user ?? args[0]);
+    const defaultUser = String(
+      meta.message.nick ?? meta.message.user ?? args[0],
+    );
 
     switch (event) {
       case OsuIrcPrivMsgEvent.MATCH_LIMIT_EXCEEDED:
@@ -99,6 +102,28 @@ export class OsuIrcPrivMsgEventBus extends BaseEventBus<
           user: defaultUser,
           channel: String(channel),
         } as OsuIrcPrivMsgEventMap[T];
+      case OsuIrcPrivMsgEvent.MATCH_PLAYER_FINISHED: {
+        const match = MATCH_PLAYER_FINISHED_REGEX.exec(message ?? '');
+        if (
+          !match?.groups?.username ||
+          !match?.groups?.score ||
+          !match?.groups?.result
+        ) {
+          throw new Error(`Failed to parse finished playing message: ${message}`);
+        }
+
+        const score = Number(match.groups.score);
+        if (Number.isNaN(score)) {
+          throw new Error(`Invalid score number: ${match.groups.score}`);
+        }
+
+        return {
+          user: String(match.groups.username ?? defaultUser),
+          channel: String(channel),
+          score,
+          result: match.groups.result,
+        } as OsuIrcPrivMsgEventMap[T];
+      }
       default:
         throw new Error(`Unknown event: ${event}`);
     }
