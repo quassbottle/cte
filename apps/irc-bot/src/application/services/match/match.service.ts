@@ -5,6 +5,7 @@ import { DI_TOKENS } from 'infrastructure/di/tokens';
 import { logger } from 'infrastructure/logger';
 import { inject, injectable } from 'tsyringe';
 
+import { MatchError, MatchErrorCode } from 'core/domain/match/match.error';
 import { eq } from 'drizzle-orm';
 import { OsuService } from '../osu/osu.service';
 import { mpChannelToId } from './utils';
@@ -31,7 +32,7 @@ export class MatchService {
         .getMatch({ matchId });
 
       if (!osuMatchData) {
-        throw new Error(); // TODO: refactor!!!
+        throw new MatchError(`Match not found`, MatchErrorCode.MATCH_NOT_FOUND);
       }
 
       const [created] = await this.db

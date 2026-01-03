@@ -86,8 +86,7 @@ export const MATCH_SLOT_MOVED_REGEX =
 export const MATCH_PASSWORD_CHANGED_MESSAGE = 'Changed the match password';
 export const MATCH_LIMIT_MESSAGE =
   'You cannot create any more tournament matches. Please close any previous tournament matches you have open.';
-export const MATCH_HOST_CHANGED_REGEX =
-  /^Changed match host to (?<host>.+)$/;
+export const MATCH_HOST_CHANGED_REGEX = /^Changed match host to (?<host>.+)$/;
 export const MATCH_BEATMAP_CHANGED_REGEX =
   /^Beatmap changed to: (?<beatmap>.+?) \((?<url>https?:\/\/[^\s)]+)\)$/;
 export const MATCH_ALL_READY_MESSAGE = 'All players are ready';
