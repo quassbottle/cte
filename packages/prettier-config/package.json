@@ -1,0 +1,12 @@
+{
+  "name": "@cte/prettier-config",
+  "version": "1.0.0",
+  "private": true,
+  "main": "index.cjs",
+  "dependencies": {
+    "prettier-plugin-organize-imports": "^4.3.0"
+  },
+  "peerDependencies": {
+    "prettier": ">=3.4.0"
+  }
+}

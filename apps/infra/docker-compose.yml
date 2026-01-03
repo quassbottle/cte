@@ -1,0 +1,17 @@
+name: cte
+
+services:
+  postgres:
+    image: postgres:17
+    environment:
+      POSTGRES_USER: cte
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
+      POSTGRES_DB: postgres
+    ports:
+      - "5765:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./initdb:/docker-entrypoint-initdb.d
+
+volumes:
+  postgres_data:
