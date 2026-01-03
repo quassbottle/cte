@@ -7,29 +7,36 @@ import { logger } from 'infrastructure/logger';
 import { createIrcRawBus } from './application/events/irc';
 import { createIrcPrivMsgBus } from './application/events/msg';
 
-setupContainer();
+const bootstrap = async () => {
+  await setupContainer();
 
-const client = container.resolve<OsuIrcClient>(DI_TOKENS.osuIrcClient);
-const ircRawBus = createIrcRawBus(client);
-const ircPrivMsgBus = createIrcPrivMsgBus(client);
+  const client = container.resolve<OsuIrcClient>(DI_TOKENS.osuIrcClient);
+  const ircRawBus = createIrcRawBus(client);
+  const ircPrivMsgBus = createIrcPrivMsgBus(client);
 
-client.on('registered', () => {
-  logger.info('Connected to IRC server');
-  onRegistered({ client });
+  client.on('registered', () => {
+    logger.info('Connected to IRC server');
+    onRegistered({ client });
+  });
+
+  client.on('error', (message) => {
+    logger.error({ err: message }, 'IRC Error');
+  });
+
+  client.on('raw', (message) => {
+    if (message.command === 'QUIT') return;
+    logger.debug({ message }, 'IRC raw');
+
+    if (message.command === 'PRIVMSG') {
+      ircPrivMsgBus.emitWithMessage(message);
+    }
+    ircRawBus.emitWithMessage(message);
+  });
+
+  client.connect();
+};
+
+bootstrap().catch((err) => {
+  logger.error({ err }, 'Failed to bootstrap IRC bot');
+  process.exitCode = 1;
 });
-
-client.on('error', (message) => {
-  logger.error({ err: message }, 'IRC Error');
-});
-
-client.on('raw', (message) => {
-  if (message.command === 'QUIT') return;
-  logger.debug({ message }, 'IRC raw');
-
-  if (message.command === 'PRIVMSG') {
-    ircPrivMsgBus.emitWithMessage(message);
-  }
-  ircRawBus.emitWithMessage(message);
-});
-
-client.connect();

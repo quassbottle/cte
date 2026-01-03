@@ -36,6 +36,9 @@
   },
   "dependencies": {
     "@ctrl/irc": "^3.1.2",
+    "@nats-io/jetstream": "^3.3.0",
+    "@nats-io/nats-core": "^3.3.0",
+    "@nats-io/transport-node": "^3.3.0",
     "@paralleldrive/cuid2": "^3.0.6",
     "dotenv": "^17.2.3",
     "drizzle-orm": "^0.45.1",

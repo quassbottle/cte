@@ -5,6 +5,10 @@ export const envSchema = z.object({
   OSU_IRC_PORT: z.coerce.number().int().positive().default(6667),
   OSU_IRC_NICK: z.string().min(1, 'OSU_IRC_NICK is required'),
   OSU_IRC_PASSWORD: z.string().min(1, 'OSU_IRC_PASSWORD is required'),
+  NATS_HOST: z.string().default('localhost'),
+  NATS_PORT: z.coerce.number().int().positive().default(4222),
+  NATS_USER: z.string().optional(),
+  NATS_PASSWORD: z.string().optional(),
   DATABASE_URL: z.string().min(1, 'DATABASE_URL is required'),
   OSU_CLIENT_ID: z.coerce
     .string()

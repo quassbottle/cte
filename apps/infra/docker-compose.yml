@@ -15,8 +15,20 @@ services:
     networks:
       - cte-network
 
+  nats:
+    image: nats:2.10
+    command: -js -m 8222 -sd /data/jetstream
+    ports:
+      - "${NATS_PORT:-4222}:4222"
+      - "${NATS_MONITOR_PORT:-8222}:8222"
+    volumes:
+      - nats_data:/data/jetstream
+    networks:
+      - cte-network
+
 volumes:
   postgres_data:
+  nats_data:
 
 networks:
   cte-network:
