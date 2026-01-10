@@ -15,6 +15,7 @@ import {
 import { MatchService } from 'application/services/match/match.service';
 import { MessageService } from 'application/services/message/message.service';
 import { OsuService } from 'application/services/osu/osu.service';
+import { JetStreamPublisher } from 'core/jetstream';
 import { DI_TOKENS } from './tokens';
 
 let configured = false;
@@ -52,6 +53,7 @@ export const setupContainer = async () => {
     useValue: jetstreamManager,
   });
 
+  container.registerSingleton(JetStreamPublisher);
   container.registerSingleton(OsuService);
   container.registerSingleton(MessageService);
   container.registerSingleton(MatchService);
