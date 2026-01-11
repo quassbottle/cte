@@ -1,3 +1,4 @@
+import { OsuPrivMsgEventPayload } from '@cte/contracts';
 import { MpChannel } from 'core/irc/types';
 import { OsuEventArgs } from '../base';
 
@@ -11,10 +12,7 @@ export interface OsuRplCreationTimeArgs extends OsuEventArgs {
   creationTime: Date;
 }
 
-export interface OsuPrivMsgEventArgs extends OsuEventArgs {
-  channel: string;
-  message: string;
-}
+export type OsuPrivMsgEventArgs = OsuPrivMsgEventPayload;
 
 export type OsuEventArgsMap = {
   [OsuIrcEvent.RPL_CREATIONTIME]: OsuRplCreationTimeArgs;

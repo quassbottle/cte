@@ -3,6 +3,8 @@ import { isMpChannel } from 'application/services/match/utils';
 import { MessageService } from 'application/services/message/message.service';
 import { OsuIrcEvent, OsuIrcEventBus } from 'core/bus/irc';
 import { OsuIrcClient } from 'core/irc';
+import { JetStreamPublisher } from 'core/jetstream';
+import { JetStreamSubject } from 'core/jetstream/constants';
 import { delay } from 'core/utils/delay';
 import { container } from 'infrastructure/di';
 import { logger } from 'infrastructure/logger';
@@ -19,6 +21,12 @@ const createIrcRawBus = (client: OsuIrcClient): OsuIrcEventBus => {
     );
 
     const messageService = container.resolve(MessageService);
+    const publisher = container.resolve(JetStreamPublisher);
+
+    await publisher.publish({
+      subject: JetStreamSubject.MESSAGE_EVENT,
+      payload: data,
+    });
 
     await messageService.create(data);
   });

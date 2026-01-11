@@ -23,6 +23,7 @@
     "migration:push": "drizzle-kit push --config drizzle.config.ts"
   },
   "dependencies": {
+    "@cte/contracts": "workspace:*",
     "@knaadh/nestjs-drizzle-pg": "^1.2.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.2",
