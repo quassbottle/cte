@@ -19,6 +19,9 @@ importers:
 
   apps/backend:
     dependencies:
+      '@cte/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@knaadh/nestjs-drizzle-pg':
         specifier: ^1.2.0
         version: 1.2.0(@nestjs/common@11.1.11(reflect-metadata@0.2.2)(rxjs@7.8.2))(drizzle-orm@0.45.1(@types/pg@8.16.0)(pg@8.16.3))(pg@8.16.3)
@@ -169,6 +172,9 @@ importers:
 
   apps/irc-bot:
     dependencies:
+      '@cte/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@ctrl/irc':
         specifier: ^3.1.2
         version: 3.1.2(patch_hash=d6cbd4a43ce069db9c78e202d731822aaafd717f476d59e3c1e1866d64782b0e)
@@ -254,6 +260,12 @@ importers:
       typescript-eslint:
         specifier: ^8.20.0
         version: 8.51.0(eslint@9.39.2)(typescript@5.9.3)
+
+  packages/contracts:
+    devDependencies:
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/eslint-config:
     dependencies:

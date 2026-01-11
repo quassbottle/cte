@@ -11,7 +11,7 @@ export class JetStreamPublisher {
   ) {}
 
   public publish<TSubject extends JetStreamSubject>(params: {
-    subject: JetStreamSubject;
+    subject: TSubject;
     payload: JetStreamSubjectPayloadMap[TSubject];
   }) {
     const { subject, payload } = params;

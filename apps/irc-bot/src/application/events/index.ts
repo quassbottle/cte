@@ -1,4 +1,6 @@
+import type { JetStreamManager } from '@nats-io/jetstream';
 import { OsuIrcClient } from 'core/irc';
+import { JetStreamStream } from 'core/jetstream/constants';
 import { container, DI_TOKENS } from 'infrastructure/di';
 
 export async function onRegistered(ctx: { client: OsuIrcClient }) {
@@ -7,10 +9,10 @@ export async function onRegistered(ctx: { client: OsuIrcClient }) {
   client.roll();
   //client.mpMakePrivate({ name: `${new Date().toISOString()}` });
 
-  const jsm = container.resolve(DI_TOKENS.jetstreamManager);
+  const jsm = container.resolve<JetStreamManager>(DI_TOKENS.jetstreamManager);
 
   await jsm.streams.add({
-    name: 'EVENTS',
+    name: JetStreamStream.EVENTS,
     subjects: ['events:*', 'events.>'],
     storage: 'file',
   });

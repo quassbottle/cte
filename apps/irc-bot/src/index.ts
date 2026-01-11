@@ -1,6 +1,7 @@
 import 'reflect-metadata';
 
 import { onRegistered } from 'application/events';
+import { JetStreamCommandsSubscriber } from 'application/jetstream/commands.subscriber';
 import { OsuIrcClient } from 'core/irc';
 import { container, DI_TOKENS, setupContainer } from 'infrastructure/di';
 import { logger } from 'infrastructure/logger';
@@ -13,9 +14,21 @@ const bootstrap = async () => {
   const client = container.resolve<OsuIrcClient>(DI_TOKENS.osuIrcClient);
   const ircRawBus = createIrcRawBus(client);
   const ircPrivMsgBus = createIrcPrivMsgBus(client);
+  const commandsSubscriber = container.resolve(JetStreamCommandsSubscriber);
+  let commandsStarted = false;
+
+  const startCommandsSubscriber = async () => {
+    if (commandsStarted) return;
+    commandsStarted = true;
+    await commandsSubscriber.start();
+  };
 
   client.on('registered', () => {
     logger.info('Connected to IRC server');
+    void startCommandsSubscriber().catch((err) => {
+      logger.error({ err }, 'Failed to start JetStream command subscriber');
+      process.exitCode = 1;
+    });
     onRegistered({ client });
   });
 

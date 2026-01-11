@@ -12,6 +12,7 @@ import {
   getJetStreamManager,
   getNatsConnection,
 } from 'application/jetstream';
+import { JetStreamCommandsSubscriber } from 'application/jetstream/commands.subscriber';
 import { MatchService } from 'application/services/match/match.service';
 import { MessageService } from 'application/services/message/message.service';
 import { OsuService } from 'application/services/osu/osu.service';
@@ -57,10 +58,12 @@ export const setupContainer = async () => {
   container.registerSingleton(OsuService);
   container.registerSingleton(MessageService);
   container.registerSingleton(MatchService);
+  container.registerSingleton(JetStreamCommandsSubscriber);
 
   configured = true;
   return container;
 };
 
 export type AppContainer = typeof container;
-export { container, DI_TOKENS };
+export { container };
+export { DI_TOKENS };
