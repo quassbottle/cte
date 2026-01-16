@@ -105,7 +105,7 @@ export const MATCH_PASSWORD_CHANGED_MESSAGE = 'Changed the match password';
 export const MATCH_LIMIT_MESSAGE =
   'You cannot create any more tournament matches. Please close any previous tournament matches you have open.';
 export const MATCH_CLOSED_REGEX =
-  /^Closed the match(?:(?: https?:\/\/osu\.ppy\.sh\/mp\/(?<matchId>\d+))|(?: #?mp_(?<matchIdAlt>\d+)))?\.?$/i;
+  /^(?:Closed the (?:tournament )?match(?:(?: https?:\/\/osu\.ppy\.sh\/mp\/(?<matchId>\d+))|(?: #?mp_(?<matchIdAlt>\d+)))?\.?|Match closed)$/i;
 export const MATCH_HOST_CHANGED_REGEX = /^Changed match host to (?<host>.+)$/;
 export const MATCH_BEATMAP_CHANGED_REGEX =
   /^Beatmap changed to: (?<beatmap>.+?) \((?<url>https?:\/\/[^\s)]+)\)$/;

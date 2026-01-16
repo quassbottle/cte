@@ -7,7 +7,7 @@ import { EnvService } from 'lib/common/env/env.service';
 import { AuthModule } from 'modules/auth/auth.module';
 import { GatewayModule } from 'modules/gateway/gateway.module';
 import { UserModule } from 'modules/user/user.module';
-import { AckPolicy } from 'nats';
+import { AckPolicy, DeliverPolicy } from 'nats';
 import { ZodValidationPipe } from 'nestjs-zod';
 import { EnvModule } from './lib/common/env/env.module';
 import * as schema from './lib/infrastructure/db/schema';
@@ -51,6 +51,7 @@ import * as schema from './lib/infrastructure/db/schema';
                   JetStreamSubject.MESSAGE_EVENT,
                   JetStreamSubject.OSU_PRIVMSG_EVENT,
                 ],
+                duplicate_window: 10_000_000_000,
               },
               {
                 name: JetStreamStream.COMMANDS,
@@ -59,6 +60,7 @@ import * as schema from './lib/infrastructure/db/schema';
                   JetStreamSubject.OSU_CREATE_PRIVATE_MATCH,
                   JetStreamSubject.OSU_CLOSE_MATCH,
                 ],
+                duplicate_window: 10_000_000_000,
               },
             ],
             defaultStream: JetStreamStream.EVENTS,
@@ -84,6 +86,7 @@ import * as schema from './lib/infrastructure/db/schema';
                   {
                     name: 'backend_events_parsed',
                     durable: true,
+                    deliver_policy: DeliverPolicy.New,
                     ack_policy: AckPolicy.None,
                     filter_subjects: [JetStreamSubject.OSU_PRIVMSG_EVENT],
                   },

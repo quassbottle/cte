@@ -53,6 +53,7 @@ const bootstrap = async () => {
       JetStreamSubject.MESSAGE_EVENT,
       JetStreamSubject.OSU_PRIVMSG_EVENT,
     ],
+    duplicate_window: 10_000_000_000, // 10s in nanoseconds to dedupe publishes
     storage: 'file',
   });
 

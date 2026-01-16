@@ -22,5 +22,6 @@ export class OsuEventsController {
   @EventPattern(JetStreamSubject.OSU_PRIVMSG_EVENT)
   handleLobbyEvent(@Payload() data: OsuIrcPrivMsgBusEventPayload) {
     this.logger.log(data);
+    this.gateway.handleParsedPrivMsgEvent(data);
   }
 }
