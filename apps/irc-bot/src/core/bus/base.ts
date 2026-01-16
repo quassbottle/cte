@@ -1,5 +1,7 @@
 import { Maybe } from 'core/utils/types';
 
+type MaybePromise<T> = T | Promise<T>;
+
 export interface OsuEventArgs {
   user: string;
 }
@@ -18,7 +20,9 @@ export type EventMiddleware<
   TEvent extends string | number,
   TEventArgsMap extends Record<TEvent, unknown>,
   TMeta,
-> = (context: EventContext<TEvent, TEventArgsMap, TMeta>) => boolean | void;
+> = (
+  context: EventContext<TEvent, TEventArgsMap, TMeta>,
+) => MaybePromise<boolean | void>;
 
 export abstract class BaseEventBus<
   TEvent extends string | number,
@@ -58,14 +62,14 @@ export abstract class BaseEventBus<
     event: Maybe<T>,
     data: TEventArgsMap[T],
     meta: TMeta,
-  ): void;
-  public emit(event: Maybe<string>, data: string[], meta: TMeta): void;
+  ): Promise<void>;
+  public emit(event: Maybe<string>, data: string[], meta: TMeta): Promise<void>;
 
-  public emit<T extends TEvent>(
+  public async emit<T extends TEvent>(
     event: Maybe<TEvent | string>,
     data: TEventArgsMap[T] | string[],
     meta: TMeta,
-  ): void {
+  ): Promise<void> {
     if (event === undefined || event === null) return;
 
     const mappedEvent = typeof event === 'string' ? this.toEvent(event) : event;
@@ -83,14 +87,14 @@ export abstract class BaseEventBus<
     };
 
     for (const middleware of this.middlewares) {
-      const result = middleware(context);
+      const result = await middleware(context);
       if (result === false) {
         return;
       }
     }
 
     for (const listener of this.listeners[mappedEvent] ?? []) {
-      void listener(context.data as TEventArgsMap[T], context.meta);
+      await listener(context.data as TEventArgsMap[T], context.meta);
     }
   }
 }

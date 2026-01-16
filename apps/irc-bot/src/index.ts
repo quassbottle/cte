@@ -1,7 +1,7 @@
 import 'reflect-metadata';
 
-import { JetStreamStream } from '@cte/contracts';
-import { JetStreamManager } from '@nats-io/jetstream';
+import { JetStreamStream, JetStreamSubject } from '@cte/contracts';
+import { JetStreamManager, type StreamConfig } from '@nats-io/jetstream';
 import { onRegistered } from 'application/events';
 import { JetStreamCommandsSubscriber } from 'application/jetstream/commands.subscriber';
 import { OsuIrcClient } from 'core/irc';
@@ -26,9 +26,33 @@ const bootstrap = async () => {
 
   const jsm = container.resolve<JetStreamManager>(DI_TOKENS.jetstreamManager);
 
-  await jsm.streams.add({
+  const ensureStream = async (config: Partial<StreamConfig> & { name: string }) => {
+    const existing = await jsm.streams.info(config.name).catch(() => null);
+    if (!existing) {
+      await jsm.streams.add(config);
+      logger.info({ stream: config.name }, 'JetStream stream created');
+      return;
+    }
+
+    const subjectsChanged =
+      JSON.stringify(existing.config.subjects ?? []) !==
+      JSON.stringify(config.subjects ?? []);
+    const storageChanged =
+      (existing.config.storage || '').toLowerCase() !==
+      (config.storage || '').toLowerCase();
+
+    if (subjectsChanged || storageChanged) {
+      await jsm.streams.update(config.name, { ...existing.config, ...config });
+      logger.info({ stream: config.name }, 'JetStream stream updated');
+    }
+  };
+
+  await ensureStream({
     name: JetStreamStream.EVENTS,
-    subjects: ['events:*', 'events.>'],
+    subjects: [
+      JetStreamSubject.MESSAGE_EVENT,
+      JetStreamSubject.OSU_PRIVMSG_EVENT,
+    ],
     storage: 'file',
   });
 
