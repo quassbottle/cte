@@ -47,7 +47,10 @@ import * as schema from './lib/infrastructure/db/schema';
               {
                 name: JetStreamStream.EVENTS,
                 description: 'Stream for external event notifications',
-                subjects: [JetStreamSubject.MESSAGE_EVENT],
+                subjects: [
+                  JetStreamSubject.MESSAGE_EVENT,
+                  JetStreamSubject.OSU_PRIVMSG_EVENT,
+                ],
               },
               {
                 name: JetStreamStream.COMMANDS,
@@ -61,6 +64,7 @@ import * as schema from './lib/infrastructure/db/schema';
             defaultStream: JetStreamStream.EVENTS,
             patternToStream: new Map<string, string>([
               [JetStreamSubject.MESSAGE_EVENT, JetStreamStream.EVENTS],
+              [JetStreamSubject.OSU_PRIVMSG_EVENT, JetStreamStream.EVENTS],
               [
                 JetStreamSubject.OSU_CREATE_PRIVATE_MATCH,
                 JetStreamStream.COMMANDS,
@@ -70,12 +74,20 @@ import * as schema from './lib/infrastructure/db/schema';
             streamConsumers: new Map<string, any>([
               [
                 JetStreamStream.EVENTS,
-                {
-                  name: 'backend_events',
-                  durable: true,
-                  ack_policy: AckPolicy.None,
-                  filter_subjects: [JetStreamSubject.MESSAGE_EVENT],
-                },
+                [
+                  {
+                    name: 'backend_events',
+                    durable: true,
+                    ack_policy: AckPolicy.None,
+                    filter_subjects: [JetStreamSubject.MESSAGE_EVENT],
+                  },
+                  {
+                    name: 'backend_events_parsed',
+                    durable: true,
+                    ack_policy: AckPolicy.None,
+                    filter_subjects: [JetStreamSubject.OSU_PRIVMSG_EVENT],
+                  },
+                ],
               ],
             ]),
           },
