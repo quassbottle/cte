@@ -15,10 +15,13 @@ export const Config = {
     password: env.NATS_PASSWORD,
   },
   databaseUrl: env.DATABASE_URL,
-  osuClientId: env.OSU_CLIENT_ID,
-  osuClientSecret: env.OSU_CLIENT_SECRET,
-  osuRedirectUrl: env.OSU_REDIRECT_URL,
-  osuAccessToken: env.OSU_ACCESS_TOKEN,
+  osu: {
+    clientId: env.OSU_CLIENT_ID,
+    clientSecret: env.OSU_CLIENT_SECRET,
+    login: env.OSU_LOGIN,
+    password: env.OSU_PASSWORD,
+    redirectUrl: env.OSU_REDIRECT_URL,
+  },
 };
 
 export type Config = typeof Config;

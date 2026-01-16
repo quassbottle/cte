@@ -1,26 +1,33 @@
 import { Config } from 'core/config';
-import { OsuAuth, OsuClient } from 'core/osu';
+import { OnModuleInit } from 'core/types/lifecycle';
 import { DI_TOKENS } from 'infrastructure/di/tokens';
+import { logger } from 'infrastructure/logger';
+import { auth, v2 } from 'osu-api-extended';
 import { inject, injectable } from 'tsyringe';
 
+const CACHED_TOKEN_PATH = './token.json';
+
 @injectable()
-export class OsuService {
-  private readonly auth: OsuAuth;
+export class OsuService implements OnModuleInit {
+  constructor(@inject(DI_TOKENS.config) private readonly config: Config) {}
 
-  constructor(@inject(DI_TOKENS.config) config: Config) {
-    const osuClientId = config.osuClientId;
-    const osuClientSecret = config.osuClientSecret;
-    const osuRedirectUrl = config.osuRedirectUrl;
+  async onModuleInit() {
+    logger.info(`[OsuService]: Authorizing...`);
 
-    this.auth = new OsuAuth(osuClientId, osuClientSecret, osuRedirectUrl);
-  }
+    logger.info(
+      await auth.login({
+        type: 'v2',
+        client_id: this.config.osu.clientId,
+        client_secret: this.config.osu.clientSecret,
+        scopes: ['public'],
+        cached_token_path: CACHED_TOKEN_PATH,
+      }),
+    );
 
-  public async getGuestClient() {
-    const token = await this.auth.clientCredentialsGrant();
-    return new OsuClient(token.access_token);
+    logger.info(`[OsuService]: Authorized!`);
   }
 
   public getClient() {
-    return new OsuClient(Config.osuAccessToken);
+    return v2;
   }
 }

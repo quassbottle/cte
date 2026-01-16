@@ -29,9 +29,9 @@ export class MatchService {
     try {
       const osuMatchData = await this.osuService
         .getClient()
-        .getMatch({ matchId });
+        .matches.details({ match_id: matchId });
 
-      if (!osuMatchData) {
+      if (!osuMatchData || osuMatchData.error) {
         throw new MatchError(`Match not found`, MatchErrorCode.MATCH_NOT_FOUND);
       }
 

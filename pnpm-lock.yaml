@@ -196,9 +196,9 @@ importers:
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@types/pg@8.16.0)(pg@8.16.3)
-      osu-web.js:
-        specifier: ^2.6.0
-        version: 2.6.0
+      osu-api-extended:
+        specifier: ^3.1.8
+        version: 3.1.8
       pg:
         specifier: ^8.16.3
         version: 8.16.3
@@ -3343,6 +3343,9 @@ packages:
   ora@5.4.1:
     resolution: {integrity: sha512-5b6Y85tPxZZ7QytO+BQzysW31HJku27cRIlkbAXaNx+BdcVi+LlRFmVXzeF6a7JCwJpyw5c4b+YSVImQIrBpuQ==}
     engines: {node: '>=10'}
+
+  osu-api-extended@3.1.8:
+    resolution: {integrity: sha512-fEpVg/WS6sffnZpnDchRRQWk7Le2++OSUjW+OkryjsTx6lFKWm3V8XvtjX03p8KCQpG0VMNzyV41sGaUwbz4GA==}
 
   osu-web.js@2.6.0:
     resolution: {integrity: sha512-XGhraa3AaSTNadZIjJPAygY6CzENvtuognH3E3tNCK2a+PloKD/jhuShszgh185P+BZIckZKLPardj6y83+a9g==}
@@ -7408,6 +7411,8 @@ snapshots:
       log-symbols: 4.1.0
       strip-ansi: 6.0.1
       wcwidth: 1.0.1
+
+  osu-api-extended@3.1.8: {}
 
   osu-web.js@2.6.0: {}
 
