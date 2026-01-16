@@ -16,10 +16,9 @@ export class OsuService implements OnModuleInit {
 
     logger.info(
       await auth.login({
-        type: 'v2',
-        client_id: this.config.osu.clientId,
-        client_secret: this.config.osu.clientSecret,
-        scopes: ['public'],
+        type: 'lazer',
+        login: this.config.osu.login,
+        password: this.config.osu.password,
         cached_token_path: CACHED_TOKEN_PATH,
       }),
     );

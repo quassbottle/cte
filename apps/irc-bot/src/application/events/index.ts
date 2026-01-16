@@ -1,6 +1,6 @@
 import { OsuIrcClient } from 'core/irc';
 
-export async function onRegistered(ctx: { client: OsuIrcClient }) {
+export function onRegistered(ctx: { client: OsuIrcClient }) {
   const { client } = ctx;
 
   client.roll();
