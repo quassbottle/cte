@@ -1,21 +1,8 @@
-export type OsuErrorResponse = {
-  error: string;
-  error_description: string;
-  hint: string;
-  message: string;
-};
-
 export type OsuAuthResponse = {
   token_type: string;
   expires_in: number;
   access_token: string;
-  refresh_token: string;
-};
-
-export type OsuApiResponse<T> = {
-  success: boolean;
-  result?: T | null;
-  error?: OsuErrorResponse | null;
+  refresh_token?: string;
 };
 
 export interface OsuMatch {
@@ -27,7 +14,7 @@ export interface OsuMatch {
 
 export interface OsuMatchEvent {
   id: number;
-  detail: unknown; // зависит от event type
+  detail: unknown;
   timestamp: string; // ISO date
   user_id: number | null;
 }

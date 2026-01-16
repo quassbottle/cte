@@ -16,7 +16,8 @@ export const envSchema = z.object({
     .transform(Number),
   OSU_CLIENT_SECRET: z.string().min(1, 'OSU_CLIENT_SECRET is required'),
   OSU_REDIRECT_URL: z.string().min(1, 'OSU_REDIRECT_URL is required'),
-  OSU_ACCESS_TOKEN: z.string().min(1, 'OSU_ACCESS_TOKEN is required'),
+  OSU_LOGIN: z.string().min(1, 'OSU_LOGIN is required'),
+  OSU_PASSWORD: z.string().min(1, 'OSU_LOGIN is required'),
 });
 
 export type Env = z.infer<typeof envSchema>;
