@@ -42,6 +42,8 @@ import * as schema from './lib/infrastructure/db/schema';
           },
           appName: 'backend',
           queue: 'processing-group',
+          deliverPolicy: DeliverPolicy.New,
+          ackPolicy: AckPolicy.Explicit,
           multiStream: {
             streams: [
               {
@@ -49,9 +51,10 @@ import * as schema from './lib/infrastructure/db/schema';
                 description: 'Stream for external event notifications',
                 subjects: [
                   JetStreamSubject.MESSAGE_EVENT,
-                  JetStreamSubject.OSU_PRIVMSG_EVENT,
+                  JetStreamSubject.OSU_CHAT_EVENT,
                 ],
                 duplicate_window: 10_000_000_000,
+                max_age: 60_000_000_000,
               },
               {
                 name: JetStreamStream.COMMANDS,
@@ -64,34 +67,36 @@ import * as schema from './lib/infrastructure/db/schema';
               },
             ],
             defaultStream: JetStreamStream.EVENTS,
+            streamConsumers: new Map<
+              string,
+              {
+                ack_policy: AckPolicy;
+                deliver_policy: DeliverPolicy;
+              }
+            >([
+              [
+                JetStreamStream.EVENTS,
+                {
+                  ack_policy: AckPolicy.Explicit,
+                  deliver_policy: DeliverPolicy.New,
+                },
+              ],
+              [
+                JetStreamStream.COMMANDS,
+                {
+                  ack_policy: AckPolicy.Explicit,
+                  deliver_policy: DeliverPolicy.New,
+                },
+              ],
+            ]),
             patternToStream: new Map<string, string>([
               [JetStreamSubject.MESSAGE_EVENT, JetStreamStream.EVENTS],
-              [JetStreamSubject.OSU_PRIVMSG_EVENT, JetStreamStream.EVENTS],
+              [JetStreamSubject.OSU_CHAT_EVENT, JetStreamStream.EVENTS],
               [
                 JetStreamSubject.OSU_CREATE_PRIVATE_MATCH,
                 JetStreamStream.COMMANDS,
               ],
               [JetStreamSubject.OSU_CLOSE_MATCH, JetStreamStream.COMMANDS],
-            ]),
-            streamConsumers: new Map<string, any>([
-              [
-                JetStreamStream.EVENTS,
-                [
-                  {
-                    name: 'backend_events',
-                    durable: true,
-                    ack_policy: AckPolicy.None,
-                    filter_subjects: [JetStreamSubject.MESSAGE_EVENT],
-                  },
-                  {
-                    name: 'backend_events_parsed',
-                    durable: true,
-                    deliver_policy: DeliverPolicy.New,
-                    ack_policy: AckPolicy.None,
-                    filter_subjects: [JetStreamSubject.OSU_PRIVMSG_EVENT],
-                  },
-                ],
-              ],
             ]),
           },
         };

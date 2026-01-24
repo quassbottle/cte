@@ -30,6 +30,7 @@ export class OsuLobbyGateway
   implements OnGatewayConnection, OnGatewayDisconnect
 {
   private readonly logger = new Logger(OsuLobbyGateway.name);
+  private static readonly MATCH_EVENT = 'osu:match';
   private static readonly PRIVMSG_EVENT = 'osu:privmsg';
 
   @WebSocketServer()
@@ -37,7 +38,8 @@ export class OsuLobbyGateway
 
   handlePrivMsgEvent(data: OsuPrivMsgEventPayload) {
     this.logger.log(data);
-    // Extend here to emit to connected websocket clients if needed
+
+    this.server.to(data.channel).emit(OsuLobbyGateway.PRIVMSG_EVENT, data);
   }
 
   handleConnection(client: OsuLobbySocket, ...args: string[]) {
@@ -66,7 +68,7 @@ export class OsuLobbyGateway
   handleParsedPrivMsgEvent(data: OsuIrcPrivMsgBusEventPayload) {
     this.logger.log(data);
 
-    this.server.to(data.channel).emit(OsuLobbyGateway.PRIVMSG_EVENT, data);
+    this.server.to(data.channel).emit(OsuLobbyGateway.MATCH_EVENT, data);
   }
 
   private extractChannel(

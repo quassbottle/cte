@@ -17,7 +17,7 @@ const createIrcPrivMsgBus = (client: OsuIrcClient): OsuIrcPrivMsgEventBus => {
         '';
 
       await publisher.publish({
-        subject: JetStreamSubject.OSU_PRIVMSG_EVENT,
+        subject: JetStreamSubject.OSU_CHAT_EVENT,
         payload: {
           event: context.event,
           payload: context.data,

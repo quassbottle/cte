@@ -26,7 +26,9 @@ const bootstrap = async () => {
 
   const jsm = container.resolve<JetStreamManager>(DI_TOKENS.jetstreamManager);
 
-  const ensureStream = async (config: Partial<StreamConfig> & { name: string }) => {
+  const ensureStream = async (
+    config: Partial<StreamConfig> & { name: string },
+  ) => {
     const existing = await jsm.streams.info(config.name).catch(() => null);
     if (!existing) {
       await jsm.streams.add(config);
@@ -40,8 +42,10 @@ const bootstrap = async () => {
     const storageChanged =
       (existing.config.storage || '').toLowerCase() !==
       (config.storage || '').toLowerCase();
+    const maxAgeChanged =
+      (existing.config.max_age || 0) !== (config.max_age || 0);
 
-    if (subjectsChanged || storageChanged) {
+    if (subjectsChanged || storageChanged || maxAgeChanged) {
       await jsm.streams.update(config.name, { ...existing.config, ...config });
       logger.info({ stream: config.name }, 'JetStream stream updated');
     }
@@ -49,11 +53,9 @@ const bootstrap = async () => {
 
   await ensureStream({
     name: JetStreamStream.EVENTS,
-    subjects: [
-      JetStreamSubject.MESSAGE_EVENT,
-      JetStreamSubject.OSU_PRIVMSG_EVENT,
-    ],
+    subjects: [JetStreamSubject.MESSAGE_EVENT, JetStreamSubject.OSU_CHAT_EVENT],
     duplicate_window: 10_000_000_000, // 10s in nanoseconds to dedupe publishes
+    max_age: 60_000_000_000, // 60s TTL for chat events
     storage: 'file',
   });
 
