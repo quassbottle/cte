@@ -58,23 +58,44 @@ export class JetStreamCommandsSubscriber {
   }
 
   private async ensureCommandStream(): Promise<void> {
-    try {
-      await this.jetStreamManager.streams.add({
-        name: JetStreamStream.COMMANDS,
-        subjects: ['cmd.>'],
-        storage: 'file',
+    const desired = {
+      name: JetStreamStream.COMMANDS,
+      subjects: [
+        JetStreamSubject.OSU_CREATE_PRIVATE_MATCH,
+        JetStreamSubject.OSU_CLOSE_MATCH,
+      ],
+      storage: 'file' as const,
+    };
+
+    const existing = await this.jetStreamManager.streams
+      .info(desired.name)
+      .catch(() => null);
+
+    if (!existing) {
+      await this.jetStreamManager.streams.add(desired);
+      logger.info(
+        { stream: JetStreamStream.COMMANDS },
+        'JetStream command stream created',
+      );
+      return;
+    }
+
+    const subjectsChanged =
+      JSON.stringify(existing.config.subjects ?? []) !==
+      JSON.stringify(desired.subjects);
+    const storageChanged =
+      (existing.config.storage || '').toLowerCase() !==
+      (desired.storage || '').toLowerCase();
+
+    if (subjectsChanged || storageChanged) {
+      await this.jetStreamManager.streams.update(desired.name, {
+        ...existing.config,
+        ...desired,
       });
       logger.info(
         { stream: JetStreamStream.COMMANDS },
-        'JetStream command stream ensured',
+        'JetStream command stream updated to desired config',
       );
-    } catch (err: unknown) {
-      const alreadyExists =
-        err instanceof Error && err.message.toLowerCase().includes('already');
-
-      if (!alreadyExists) {
-        throw err;
-      }
     }
   }
 

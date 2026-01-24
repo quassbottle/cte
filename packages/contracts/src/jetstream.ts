@@ -5,6 +5,7 @@ export enum JetStreamStream {
 
 export enum JetStreamSubject {
   MESSAGE_EVENT = 'events.osu_privmsg',
+  OSU_CHAT_EVENT = 'events.osu.chat',
   OSU_CREATE_PRIVATE_MATCH = 'cmd.osu.create-private-match',
   OSU_CLOSE_MATCH = 'cmd.osu.close-match',
 }
@@ -34,8 +35,15 @@ export interface CloseMatchCommandPayload {
   osuMatchId: number;
 }
 
+export interface OsuIrcPrivMsgBusEventPayload {
+  event: string;
+  payload: unknown;
+  channel: string;
+}
+
 export type JetStreamSubjectPayloadMap = {
   [JetStreamSubject.MESSAGE_EVENT]: OsuPrivMsgEventPayload;
+  [JetStreamSubject.OSU_CHAT_EVENT]: OsuIrcPrivMsgBusEventPayload;
   [JetStreamSubject.OSU_CREATE_PRIVATE_MATCH]: CreatePrivateMatchCommandPayload;
   [JetStreamSubject.OSU_CLOSE_MATCH]: CloseMatchCommandPayload;
 };

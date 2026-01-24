@@ -1,4 +1,5 @@
 import { JetStreamClient, JetStreamManager } from '@nats-io/jetstream';
+import { createHash } from 'crypto';
 import { DI_TOKENS } from 'infrastructure/di/tokens';
 import { inject, injectable } from 'tsyringe';
 import { JetStreamSubject, JetStreamSubjectPayloadMap } from './constants';
@@ -15,7 +16,12 @@ export class JetStreamPublisher {
     payload: JetStreamSubjectPayloadMap[TSubject];
   }) {
     const { subject, payload } = params;
+    const payloadJson = JSON.stringify(payload);
+    const msgID = createHash('sha256')
+      .update(subject)
+      .update(payloadJson)
+      .digest('hex');
 
-    return this.jcc.publish(subject, JSON.stringify(payload));
+    return this.jcc.publish(subject, payloadJson, { msgID });
   }
 }

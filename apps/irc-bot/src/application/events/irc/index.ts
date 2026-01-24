@@ -15,10 +15,10 @@ const createIrcRawBus = (client: OsuIrcClient): OsuIrcEventBus => {
   // bus.use((context) => {});
 
   bus.on(OsuIrcEvent.PRIVMSG, async (data) => {
-    logger.info(
-      { channel: data.channel, user: data.user, message: data.message },
-      'IRC PRIVMSG',
-    );
+    // logger.info(
+    //   { channel: data.channel, user: data.user, message: data.message },
+    //   'IRC PRIVMSG',
+    // );
 
     const messageService = container.resolve(MessageService);
     const publisher = container.resolve(JetStreamPublisher);
@@ -47,7 +47,7 @@ const createIrcRawBus = (client: OsuIrcClient): OsuIrcEventBus => {
     meta.client.mpPassword(newMatch.channel, { password: 'test' });
     meta.client.mpInvite(newMatch.channel, { username: 'EndlessLove' });
 
-    await delay(120_000);
+    await delay(60_000);
 
     const closedMatch = await matchService.close({
       osuMatchId: newMatch.matchId,

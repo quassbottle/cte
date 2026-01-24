@@ -1,16 +1,48 @@
 import { OsuIrcPrivMsgEvent, OsuIrcPrivMsgEventBus } from 'core/bus/msg';
 import { OsuIrcClient } from 'core/irc';
+import { JetStreamPublisher } from 'core/jetstream';
+import { JetStreamSubject } from 'core/jetstream/constants';
+import { container } from 'infrastructure/di';
 import { logger } from 'infrastructure/logger';
 
 const createIrcPrivMsgBus = (client: OsuIrcClient): OsuIrcPrivMsgEventBus => {
   const bus = new OsuIrcPrivMsgEventBus(client);
+  const publisher = container.resolve(JetStreamPublisher);
 
-  bus.use((context) => {
-    logger.debug({ context }, 'PrivMsg bus middleware');
+  bus.use(async (context) => {
+    try {
+      const channel =
+        (context.data as { channel?: string }).channel ??
+        context.meta.message.args?.[0] ??
+        '';
+
+      await publisher.publish({
+        subject: JetStreamSubject.OSU_CHAT_EVENT,
+        payload: {
+          event: context.event,
+          payload: context.data,
+          channel,
+        },
+      });
+    } catch (err) {
+      logger.error({ err, context }, 'Failed to publish IRC privmsg event');
+    }
   });
 
   bus.on(OsuIrcPrivMsgEvent.MATCH_LIMIT_EXCEEDED, (data, meta) => {
     logger.warn({ data, meta }, 'Match limit reached');
+  });
+
+  bus.on(OsuIrcPrivMsgEvent.MATCH_CREATED, (data) => {
+    logger.info(
+      {
+        channel: data.channel,
+        matchId: data.matchId,
+        name: data.name,
+        url: data.url,
+      },
+      'Match created',
+    );
   });
 
   bus.on(OsuIrcPrivMsgEvent.MATCH_SLOT_JOINED, (data) => {
@@ -73,6 +105,13 @@ const createIrcPrivMsgBus = (client: OsuIrcClient): OsuIrcPrivMsgEventBus => {
         result: data.result,
       },
       'Player finished playing',
+    );
+  });
+
+  bus.on(OsuIrcPrivMsgEvent.MATCH_CLOSED, (data) => {
+    logger.info(
+      { channel: data.channel, matchId: data.matchId },
+      'Match closed',
     );
   });
 

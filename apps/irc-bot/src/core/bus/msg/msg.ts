@@ -6,6 +6,8 @@ import {
   MATCH_BEATMAP_CHANGED_REGEX,
   MATCH_HOST_CHANGED_REGEX,
   MATCH_PLAYER_FINISHED_REGEX,
+  MATCH_CREATED_REGEX,
+  MATCH_CLOSED_REGEX,
   MATCH_SLOT_JOINED_REGEX,
   MATCH_SLOT_MOVED_REGEX,
   OsuIrcPrivMsgEvent,
@@ -42,6 +44,32 @@ export class OsuIrcPrivMsgEventBus extends BaseEventBus<
           user: defaultUser,
           channel: String(channel),
         } as OsuIrcPrivMsgEventMap[T];
+      case OsuIrcPrivMsgEvent.MATCH_CREATED: {
+        const match = MATCH_CREATED_REGEX.exec(message ?? '');
+
+        if (!match) {
+          throw new Error(`Failed to parse match creation message: ${message}`);
+        }
+
+        const matchIdRaw = match.groups?.matchId ?? match.groups?.matchIdAlt;
+        const matchId = Number(matchIdRaw);
+
+        if (Number.isNaN(matchId)) {
+          throw new Error(`Invalid match id for created event: ${matchIdRaw}`);
+        }
+
+        const name = match.groups?.name?.trim() || undefined;
+        const url =
+          match.groups?.url ?? `https://osu.ppy.sh/mp/${matchId.toString(10)}`;
+
+        return {
+          user: defaultUser,
+          channel: `#mp_${matchId}`,
+          matchId,
+          url,
+          name,
+        } as OsuIrcPrivMsgEventMap[T];
+      }
       case OsuIrcPrivMsgEvent.MATCH_PASSWORD_CHANGED:
         return {
           user: defaultUser,
@@ -122,6 +150,22 @@ export class OsuIrcPrivMsgEventBus extends BaseEventBus<
           channel: String(channel),
           score,
           result: match.groups.result,
+        } as OsuIrcPrivMsgEventMap[T];
+      }
+      case OsuIrcPrivMsgEvent.MATCH_CLOSED: {
+        const parsedChannel = String(channel);
+        const matchId = Number(parsedChannel.replace('#mp_', ''));
+
+        if (!parsedChannel.startsWith('#mp_') || Number.isNaN(matchId)) {
+          throw new Error(
+            `Invalid channel for match closed event: ${parsedChannel}`,
+          );
+        }
+
+        return {
+          user: defaultUser,
+          channel: parsedChannel,
+          matchId,
         } as OsuIrcPrivMsgEventMap[T];
       }
       default:

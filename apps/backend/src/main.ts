@@ -1,9 +1,15 @@
+import { JetStream, JETSTREAM_TRANSPORT } from '@initbit/nestjs-jetstream';
 import { NestFactory } from '@nestjs/core';
 import { setupSwagger } from 'lib/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+
+  // Connect JetStream microservice to handle message/event patterns
+  const transport = app.get<JetStream>(JETSTREAM_TRANSPORT);
+  app.connectMicroservice({ strategy: transport });
+  await app.startAllMicroservices();
 
   setupSwagger(app);
 
