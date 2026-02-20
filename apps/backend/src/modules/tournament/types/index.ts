@@ -1,3 +1,4 @@
+import { UserId } from 'lib/domain/user/user.id';
 import { DbTournamentCreateParams } from 'lib/infrastructure/db';
 
 export type TournamentCreateParams = Omit<
@@ -8,6 +9,13 @@ export type TournamentCreateParams = Omit<
 export type TournamentUpdateParams = Partial<
   Pick<
     DbTournamentCreateParams,
-    'name' | 'description' | 'rules' | 'startsAt' | 'endsAt'
+    'name' | 'description' | 'rules' | 'isTeam' | 'startsAt' | 'endsAt'
   >
 >;
+
+export type TournamentRegisterParams = {
+  team?: {
+    name: string;
+    participants: UserId[];
+  };
+};

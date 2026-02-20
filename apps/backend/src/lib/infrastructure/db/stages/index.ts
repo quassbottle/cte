@@ -17,6 +17,7 @@ export const stages = pgTable('stages', {
 
   startsAt: timestamp('starts_at').notNull(),
   endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
 
   createdAt,
   updatedAt,

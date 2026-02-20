@@ -1,21 +1,23 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { JwtModule as NestJwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { EnvService } from 'lib/common/env/env.service';
 import { OsuModule } from 'lib/infrastructure/osu/osu.module';
 import { UserModule } from 'modules/user/user.module';
+import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { JwtUserGuard } from './guards/jwt.guard';
 import { JwtService } from './jwt.service';
+import { PoliciesModule } from './policies/policies.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
-  exports: [JwtUserGuard],
+  exports: [JwtUserGuard, PoliciesModule],
   providers: [AuthService, JwtService, JwtStrategy, JwtUserGuard],
   imports: [
     OsuModule,
-    UserModule,
+    forwardRef(() => UserModule),
+    PoliciesModule,
     PassportModule.register({ defaultStrategy: 'jwt-user-guard' }),
     NestJwtModule.registerAsync({
       inject: [EnvService],

@@ -1,6 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { and, eq, isNull } from 'drizzle-orm';
+import { and, eq, inArray, isNull } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
+import { teamId } from 'lib/domain/team/team.id';
 import {
   TournamentException,
   TournamentExceptionCode,
@@ -9,8 +10,22 @@ import {
   TournamentId,
   tournamentId,
 } from 'lib/domain/tournament/tournament.id';
-import { DbTournament, Schema, tournaments } from 'lib/infrastructure/db';
-import { TournamentCreateParams, TournamentUpdateParams } from './types';
+import { UserId } from 'lib/domain/user/user.id';
+import {
+  DbTournament,
+  DbUser,
+  Schema,
+  soloParticipants,
+  teamParticipants,
+  teams,
+  tournaments,
+  users,
+} from 'lib/infrastructure/db';
+import {
+  TournamentCreateParams,
+  TournamentRegisterParams,
+  TournamentUpdateParams,
+} from './types';
 
 @Injectable()
 export class TournamentService {
@@ -54,6 +69,37 @@ export class TournamentService {
     });
 
     return found;
+  }
+
+  public async getParticipants(
+    params: { id: TournamentId } & PaginationParams,
+  ): Promise<DbUser[]> {
+    const { id, limit, offset } = params;
+
+    const tournament = await this.getById({ id });
+
+    if (tournament.isTeam) {
+      const found = await this.drizzle
+        .select({ user: users })
+        .from(teamParticipants)
+        .innerJoin(teams, eq(teams.id, teamParticipants.teamId))
+        .innerJoin(users, eq(users.id, teamParticipants.userId))
+        .where(eq(teams.tournamentId, id))
+        .limit(limit)
+        .offset(offset);
+
+      return found.map(({ user }) => user);
+    }
+
+    const found = await this.drizzle
+      .select({ user: users })
+      .from(soloParticipants)
+      .innerJoin(users, eq(users.id, soloParticipants.userId))
+      .where(eq(soloParticipants.tournamentId, id))
+      .limit(limit)
+      .offset(offset);
+
+    return found.map(({ user }) => user);
   }
 
   public async update(params: {
@@ -110,5 +156,208 @@ export class TournamentService {
     }
 
     return deleted;
+  }
+
+  public async register(params: {
+    id: TournamentId;
+    userId: UserId;
+    data: TournamentRegisterParams;
+  }): Promise<void> {
+    const { id, userId, data } = params;
+
+    const tournament = await this.getById({ id });
+
+    if (tournament.isTeam) {
+      await this.registerTeam({ tournamentId: id, captainId: userId, data });
+      return;
+    }
+
+    await this.registerSolo({ tournamentId: id, userId, data });
+  }
+
+  public async unregister(params: {
+    id: TournamentId;
+    userId: UserId;
+  }): Promise<void> {
+    const { id, userId } = params;
+
+    const tournament = await this.getById({ id });
+
+    if (tournament.isTeam) {
+      await this.unregisterTeam({ tournamentId: id, userId });
+      return;
+    }
+
+    await this.unregisterSolo({ tournamentId: id, userId });
+  }
+
+  private async registerTeam(params: {
+    tournamentId: TournamentId;
+    captainId: UserId;
+    data: TournamentRegisterParams;
+  }): Promise<void> {
+    const { tournamentId, captainId, data } = params;
+
+    if (!data.team) {
+      throw new TournamentException(
+        'Team payload is required for team tournaments',
+        TournamentExceptionCode.TOURNAMENT_INVALID_REGISTRATION_MODE,
+      );
+    }
+
+    const existingTeamWithName = await this.drizzle.query.teams.findFirst({
+      where: and(
+        eq(teams.tournamentId, tournamentId),
+        eq(teams.name, data.team.name),
+      ),
+    });
+
+    if (existingTeamWithName) {
+      throw new TournamentException(
+        'Team name is already registered in this tournament',
+        TournamentExceptionCode.TOURNAMENT_TEAM_NAME_TAKEN,
+      );
+    }
+
+    const participantIds = Array.from(
+      new Set<UserId>([...data.team.participants, captainId]),
+    );
+
+    const conflictingParticipant = await this.drizzle
+      .select({ userId: teamParticipants.userId })
+      .from(teamParticipants)
+      .innerJoin(teams, eq(teams.id, teamParticipants.teamId))
+      .where(
+        and(
+          eq(teams.tournamentId, tournamentId),
+          inArray(teamParticipants.userId, participantIds),
+        ),
+      )
+      .limit(1);
+
+    if (conflictingParticipant.length > 0) {
+      throw new TournamentException(
+        'One of participants is already in another team of this tournament',
+        TournamentExceptionCode.TOURNAMENT_PARTICIPANT_ALREADY_IN_TEAM,
+      );
+    }
+
+    await this.drizzle.transaction(async (tx) => {
+      const id = teamId();
+
+      await tx.insert(teams).values({
+        id,
+        name: data.team!.name,
+        captainId,
+        tournamentId,
+      });
+
+      await tx.insert(teamParticipants).values(
+        participantIds.map((participantId) => ({
+          teamId: id,
+          userId: participantId,
+        })),
+      );
+    });
+  }
+
+  private async registerSolo(params: {
+    tournamentId: TournamentId;
+    userId: UserId;
+    data: TournamentRegisterParams;
+  }): Promise<void> {
+    const { tournamentId, userId, data } = params;
+
+    if (data.team) {
+      throw new TournamentException(
+        'Team payload is not allowed for solo tournaments',
+        TournamentExceptionCode.TOURNAMENT_INVALID_REGISTRATION_MODE,
+      );
+    }
+
+    const existing = await this.drizzle.query.soloParticipants.findFirst({
+      where: and(
+        eq(soloParticipants.tournamentId, tournamentId),
+        eq(soloParticipants.userId, userId),
+      ),
+    });
+
+    if (existing) {
+      throw new TournamentException(
+        'User is already registered in this tournament',
+        TournamentExceptionCode.TOURNAMENT_ALREADY_REGISTERED,
+      );
+    }
+
+    await this.drizzle.insert(soloParticipants).values({
+      tournamentId,
+      userId,
+    });
+  }
+
+  private async unregisterTeam(params: {
+    tournamentId: TournamentId;
+    userId: UserId;
+  }): Promise<void> {
+    const { tournamentId, userId } = params;
+
+    const teamAsCaptain = await this.drizzle.query.teams.findFirst({
+      where: and(
+        eq(teams.tournamentId, tournamentId),
+        eq(teams.captainId, userId),
+      ),
+    });
+
+    if (!teamAsCaptain) {
+      const participation = await this.drizzle
+        .select({ userId: teamParticipants.userId })
+        .from(teamParticipants)
+        .innerJoin(teams, eq(teams.id, teamParticipants.teamId))
+        .where(
+          and(
+            eq(teams.tournamentId, tournamentId),
+            eq(teamParticipants.userId, userId),
+          ),
+        )
+        .limit(1);
+
+      if (participation.length > 0) {
+        throw new TournamentException(
+          'Only team captain can unregister team',
+          TournamentExceptionCode.TOURNAMENT_ACCESS_DENIED,
+        );
+      }
+
+      throw new TournamentException(
+        'Registered team not found for this user',
+        TournamentExceptionCode.TOURNAMENT_REGISTRATION_NOT_FOUND,
+      );
+    }
+
+    await this.drizzle.delete(teams).where(eq(teams.id, teamAsCaptain.id));
+  }
+
+  private async unregisterSolo(params: {
+    tournamentId: TournamentId;
+    userId: UserId;
+  }): Promise<void> {
+    const { tournamentId, userId } = params;
+
+    const [deleted] = await this.drizzle
+      .delete(soloParticipants)
+      .where(
+        and(
+          eq(soloParticipants.tournamentId, tournamentId),
+          eq(soloParticipants.userId, userId),
+        ),
+      )
+      .returning();
+
+    if (!deleted) {
+      throw new TournamentException(
+        'User is not registered in this tournament',
+        TournamentExceptionCode.TOURNAMENT_REGISTRATION_NOT_FOUND,
+      );
+    }
   }
 }

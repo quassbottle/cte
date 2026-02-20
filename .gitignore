@@ -141,3 +141,5 @@ vite.config.ts.timestamp-*
 .vite/
 
 .turbo
+
+_tmp_*

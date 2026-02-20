@@ -6,6 +6,7 @@ import { APP_PIPE } from '@nestjs/core';
 import { EnvService } from 'lib/common/env/env.service';
 import { AuthModule } from 'modules/auth/auth.module';
 import { GatewayModule } from 'modules/gateway/gateway.module';
+import { StageModule } from 'modules/stage/stage.module';
 import { TournamentModule } from 'modules/tournament/tournament.module';
 import { UserModule } from 'modules/user/user.module';
 import { AckPolicy, DeliverPolicy } from 'nats';
@@ -20,6 +21,7 @@ import * as schema from './lib/infrastructure/db/schema';
     UserModule,
     GatewayModule,
     TournamentModule,
+    StageModule,
     DrizzlePGModule.registerAsync({
       tag: 'DB',
       inject: [EnvService],

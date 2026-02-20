@@ -1,4 +1,4 @@
-import { isoStringToDate } from 'lib/common/utils/zod/date';
+import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
 import { userIdSchema } from 'lib/domain/user/user.id';
 import { createZodDto } from 'nestjs-zod/dto';
@@ -9,12 +9,13 @@ export const tournamentDtoSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   rules: z.string().nullable(),
+  isTeam: z.boolean(),
   creatorId: userIdSchema,
-  startsAt: isoStringToDate,
-  endsAt: isoStringToDate,
-  deletedAt: isoStringToDate.nullable(),
-  createdAt: isoStringToDate,
-  updatedAt: isoStringToDate,
+  startsAt: dateToIsoString,
+  endsAt: dateToIsoString,
+  deletedAt: dateToIsoString.nullable(),
+  createdAt: dateToIsoString,
+  updatedAt: dateToIsoString,
 });
 
 export class TournamentDto extends createZodDto(tournamentDtoSchema) {}
@@ -24,6 +25,7 @@ export const createTournamentDtoSchema = z
     name: z.string().trim().min(1),
     description: z.string().trim().nullish(),
     rules: z.string().trim().nullish(),
+    isTeam: z.boolean().optional().default(false),
     startsAt: isoStringToDate,
     endsAt: isoStringToDate,
   })
@@ -46,6 +48,7 @@ export const updateTournamentDtoSchema = z
     name: z.string().trim().min(1).optional(),
     description: z.string().trim().nullish(),
     rules: z.string().trim().nullish(),
+    isTeam: z.boolean().optional(),
     startsAt: isoStringToDate.optional(),
     endsAt: isoStringToDate.optional(),
   })
@@ -65,4 +68,27 @@ export const updateTournamentDtoSchema = z
 
 export class UpdateTournamentDto extends createZodDto(
   updateTournamentDtoSchema,
+) {}
+
+const registerTeamDtoSchema = z.object({
+  name: z.string().trim().min(1),
+  participants: z.array(userIdSchema).min(1),
+});
+
+export const registerTournamentDtoSchema = z.object({
+  team: registerTeamDtoSchema.optional(),
+});
+
+export class RegisterTournamentDto extends createZodDto(
+  registerTournamentDtoSchema,
+) {}
+
+export const tournamentParticipantDtoSchema = z.object({
+  id: userIdSchema,
+  osuId: z.number(),
+  osuUsername: z.string(),
+});
+
+export class TournamentParticipantDto extends createZodDto(
+  tournamentParticipantDtoSchema,
 ) {}

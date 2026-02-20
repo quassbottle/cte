@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { boolean, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
@@ -12,6 +12,7 @@ export const tournaments = pgTable('tournaments', {
 
   description: text('description'),
   rules: text('rules'),
+  isTeam: boolean('is_team').notNull().default(false),
 
   creatorId: text('creator_id')
     .notNull()

@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -17,11 +16,16 @@ import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { DbUser } from 'lib/infrastructure/db';
 import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
+import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
+import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import {
   CreateTournamentDto,
+  RegisterTournamentDto,
   TournamentDto,
+  TournamentParticipantDto,
   UpdateTournamentDto,
   tournamentDtoSchema,
+  tournamentParticipantDtoSchema,
 } from './dto';
 import { TournamentService } from './tournament.service';
 
@@ -34,19 +38,23 @@ export class TournamentController {
   @ApiResponse({
     status: 200,
     description: 'Returns tournaments list.',
-    type: [TournamentDto],
+    type: [TournamentDto.Output],
   })
-  public async findMany(@Query() query: PaginationDto): Promise<TournamentDto[]> {
+  public async findMany(
+    @Query() query: PaginationDto,
+  ): Promise<TournamentDto[]> {
     const tournaments = await this.tournamentService.findMany(query);
 
-    return tournaments.map((tournament) => tournamentDtoSchema.parse(tournament));
+    return tournaments.map((tournament) =>
+      tournamentDtoSchema.parse(tournament),
+    );
   }
 
   @Get(':id')
   @ApiResponse({
     status: 200,
     description: 'Returns tournament by id.',
-    type: TournamentDto,
+    type: TournamentDto.Output,
   })
   public async getById(
     @Param('id', TournamentIdPipe) id: TournamentId,
@@ -56,19 +64,40 @@ export class TournamentController {
     return tournamentDtoSchema.parse(tournament);
   }
 
+  @Get(':id/participants')
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the participants of the tournament.',
+    type: [TournamentParticipantDto.Output],
+  })
+  public async getParticipants(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Query() query: PaginationDto,
+  ): Promise<TournamentParticipantDto[]> {
+    const participants = await this.tournamentService.getParticipants({
+      id,
+      ...query,
+    });
+
+    return participants.map((participant) =>
+      tournamentParticipantDtoSchema.parse(participant),
+    );
+  }
+
   @Post()
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('create', context.subjectData),
+  )
   @ApiResponse({
     status: 201,
     description: 'Creates a tournament.',
-    type: TournamentDto,
+    type: TournamentDto.Output,
   })
   public async create(
     @RequestUser() user: DbUser,
     @Body() body: CreateTournamentDto,
   ): Promise<TournamentDto> {
-    this.assertAdmin(user);
-
     const created = await this.tournamentService.create({
       ...body,
       creatorId: user.id,
@@ -78,45 +107,66 @@ export class TournamentController {
   }
 
   @Patch(':id')
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
   @ApiResponse({
     status: 200,
     description: 'Updates a tournament.',
-    type: TournamentDto,
+    type: TournamentDto.Output,
   })
   public async patch(
-    @RequestUser() user: DbUser,
     @Param('id', TournamentIdPipe) id: TournamentId,
     @Body() body: UpdateTournamentDto,
   ): Promise<TournamentDto> {
-    this.assertAdmin(user);
-
     const updated = await this.tournamentService.update({ id, data: body });
 
     return tournamentDtoSchema.parse(updated);
   }
 
   @Delete(':id')
-  @UseGuards(JwtUserGuard)
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('delete', context.subjectData),
+  )
   @ApiResponse({
     status: 200,
     description: 'Soft deletes a tournament.',
-    type: TournamentDto,
+    type: TournamentDto.Output,
   })
   public async softDelete(
-    @RequestUser() user: DbUser,
     @Param('id', TournamentIdPipe) id: TournamentId,
   ): Promise<TournamentDto> {
-    this.assertAdmin(user);
-
     const deleted = await this.tournamentService.softDelete({ id });
 
     return tournamentDtoSchema.parse(deleted);
   }
 
-  private assertAdmin(user: DbUser) {
-    if (user.role !== 'admin') {
-      throw new ForbiddenException('Only admin can manage tournaments');
-    }
+  @Post(':id/register')
+  @UseGuards(JwtUserGuard)
+  @ApiResponse({
+    status: 201,
+    description: 'Registers current user to tournament.',
+  })
+  public async register(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @RequestUser() user: DbUser,
+    @Body() body: RegisterTournamentDto = {} as RegisterTournamentDto,
+  ): Promise<void> {
+    await this.tournamentService.register({ id, userId: user.id, data: body });
+  }
+
+  @Delete(':id/register')
+  @UseGuards(JwtUserGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Unregisters current user or captain team from tournament.',
+  })
+  public async unregister(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @RequestUser() user: DbUser,
+  ): Promise<void> {
+    await this.tournamentService.unregister({ id, userId: user.id });
   }
 }

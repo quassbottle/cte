@@ -1,9 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { DbUser } from 'lib/infrastructure/db';
 import { OsuService } from 'lib/infrastructure/osu/osu.service';
+import { OsuStatsService } from 'modules/user/osu-stats.service';
 import { UserService } from 'modules/user/user.service';
-import { UserExtended } from 'osu-web.js';
+import { GameMode, UserExtended } from 'osu-web.js';
 import { JwtService } from './jwt.service';
+
+type OsuApiMode = Extract<GameMode, 'osu' | 'taiko' | 'fruits' | 'mania'>;
+type OsuStatsMode = 'std' | 'taiko' | 'fruits' | 'mania';
+
+const MODE_MAP: Record<OsuApiMode, OsuStatsMode> = {
+  osu: 'std',
+  taiko: 'taiko',
+  fruits: 'fruits',
+  mania: 'mania',
+};
+
+const AUTH_STATS_MODES: OsuApiMode[] = ['osu', 'taiko', 'fruits', 'mania'];
 
 @Injectable()
 export class AuthService {
@@ -11,14 +24,13 @@ export class AuthService {
     private readonly osuService: OsuService,
     private readonly jwtService: JwtService,
     private readonly userService: UserService,
+    private readonly osuStatsService: OsuStatsService,
   ) {}
 
   public async login(params: { code: string }) {
     const { code } = params;
 
     const token = await this.osuService.authenticateUser({ code });
-
-    console.log({ token });
 
     const osuClient = this.osuService.getUserClient({
       accessToken: token.access_token,
@@ -27,6 +39,10 @@ export class AuthService {
     const osuUser = await osuClient.users.getSelf();
 
     const candidate = await this.ensureDomainUserExists(osuUser);
+    await this.saveStatsByModes({
+      userId: candidate.id,
+      token: token.access_token,
+    });
 
     return this.jwtService.signJwtToken({ id: candidate.id });
   }
@@ -50,5 +66,35 @@ export class AuthService {
     });
 
     return newUser;
+  }
+
+  private async saveStatsByModes(params: {
+    userId: DbUser['id'];
+    token: string;
+  }): Promise<void> {
+    const { userId, token } = params;
+
+    const osuClient = this.osuService.getUserClient({
+      accessToken: token,
+    });
+
+    const usersByMode = await Promise.all(
+      AUTH_STATS_MODES.map(async (mode) => ({
+        mode,
+        user: await osuClient.users.getSelf({
+          urlParams: { mode },
+        }),
+      })),
+    );
+
+    await this.osuStatsService.upsertMany(
+      usersByMode.map(({ mode, user }) => ({
+        userId,
+        osuId: user.id,
+        mode: MODE_MAP[mode],
+        performancePoints: user.statistics?.pp ?? null,
+        rank: user.statistics?.global_rank ?? null,
+      })),
+    );
   }
 }
