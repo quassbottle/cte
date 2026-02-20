@@ -12,9 +12,9 @@ export class TournamentException extends DomainException {
 }
 
 export enum TournamentExceptionCode {
-  ALREADY_PARTICIPATING = 'ALREADY_PARTICIPATING',
+  TOURNAMENT_NOT_FOUND = 'TOURNAMENT_NOT_FOUND',
 }
 
 const TournamentExceptionHTTPStatus = {
-  [TournamentExceptionCode.ALREADY_PARTICIPATING]: HttpStatus.CONFLICT,
+  [TournamentExceptionCode.TOURNAMENT_NOT_FOUND]: HttpStatus.NOT_FOUND,
 };

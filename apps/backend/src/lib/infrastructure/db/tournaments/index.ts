@@ -20,6 +20,7 @@ export const tournaments = pgTable('tournaments', {
 
   startsAt: timestamp('starts_at').notNull(),
   endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
+  deletedAt: timestamp('deleted_at', { withTimezone: true }),
 
   createdAt,
   updatedAt,
