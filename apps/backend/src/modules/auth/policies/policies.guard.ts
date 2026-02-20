@@ -1,4 +1,8 @@
 import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
+import {
+  MappoolException,
+  MappoolExceptionCode,
+} from 'lib/domain/mappool/mappool.exception';
 import { Reflector } from '@nestjs/core';
 import {
   StageException,
@@ -10,6 +14,7 @@ import {
 } from 'lib/domain/tournament/tournament.exception';
 import { AppAbilityFactory } from './ability.factory';
 import { CHECK_POLICIES_KEY } from './check-policies.decorator';
+import { MappoolPolicyContextResolver } from './resolvers/mappool-policy-context.resolver';
 import { StagePolicyContextResolver } from './resolvers/stage-policy-context.resolver';
 import { TournamentPolicyContextResolver } from './resolvers/tournament-policy-context.resolver';
 import { PolicyContext, PolicyHandler, PolicyRequest } from './types';
@@ -19,6 +24,7 @@ export class PoliciesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly abilityFactory: AppAbilityFactory,
+    private readonly mappoolResolver: MappoolPolicyContextResolver,
     private readonly stageResolver: StagePolicyContextResolver,
     private readonly tournamentResolver: TournamentPolicyContextResolver,
   ) {}
@@ -57,7 +63,11 @@ export class PoliciesGuard implements CanActivate {
   private async resolvePolicyContext(
     request: PolicyRequest,
   ): Promise<PolicyContext> {
-    const resolvers = [this.stageResolver, this.tournamentResolver];
+    const resolvers = [
+      this.mappoolResolver,
+      this.stageResolver,
+      this.tournamentResolver,
+    ];
     const resolver = resolvers.find((candidate) => candidate.supports(request));
 
     if (!resolver) {
@@ -68,6 +78,13 @@ export class PoliciesGuard implements CanActivate {
   }
 
   private throwAccessDenied(context: PolicyContext): never {
+    if (context.subject === 'Mappool') {
+      throw new MappoolException(
+        'Only tournament creator or admin can manage mappools',
+        MappoolExceptionCode.MAPPOOL_ACCESS_DENIED,
+      );
+    }
+
     if (context.subject === 'Stage') {
       throw new StageException(
         'Only tournament creator or admin can manage stages',
