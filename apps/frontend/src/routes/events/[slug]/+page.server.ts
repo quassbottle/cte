@@ -1,4 +1,4 @@
-import type { StageDto, TournamentDto, TournamentParticipantDto, UserDto } from '$lib/api/types';
+import type { TournamentParticipantDto, UserDto } from '$lib/api/types';
 import { error } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 import { api } from '$lib/api/api';
@@ -18,10 +18,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		limit: 100
 	});
 
-	const tournament = tournamentResponse.result as TournamentDto;
+	const tournament = tournamentResponse.result;
 	const participants = participantsResponse.result as TournamentParticipantDto[];
 	const host = hostResponse.result as UserDto;
-	const stages = ((stagesResponse.result as StageDto[] | undefined) ?? []).filter(
+	const stages = ((stagesResponse.result) ?? []).filter(
 		(stage) => stage.tournamentId === tournament.id
 	);
 	const canEditTournament = tournament.creatorId === locals.session?.id;

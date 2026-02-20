@@ -16,6 +16,7 @@
 	import Group from '$lib/components/group/group.svelte';
 	import PlayerCard from '$lib/components/playerCard/playerCard.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
+	import Markdown from '$lib/components/markdown/markdown.svelte';
 
 	export let data: {
 		tournament: TournamentDto;
@@ -106,12 +107,24 @@
 
 		<Group let:Title let:Content>
 			<Title>Description</Title>
-			<Content class="text-justify">{data.tournament.description ?? 'No description'}</Content>
+			<Content class="text-justify">
+				{#if data.tournament.description?.trim()}
+					<Markdown value={data.tournament.description} />
+				{:else}
+					No description
+				{/if}
+			</Content>
 		</Group>
 
 		<Group let:Title let:Content>
 			<Title>Rules</Title>
-			<Content class="whitespace-pre-wrap text-justify">{data.tournament.rules ?? 'No rules provided.'}</Content>
+			<Content class="text-justify">
+				{#if data.tournament.rules?.trim()}
+					<Markdown value={data.tournament.rules} />
+				{:else}
+					No rules provided.
+				{/if}
+			</Content>
 		</Group>
 	</ContentItem>
 

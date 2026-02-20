@@ -39,7 +39,9 @@
 		"@types/jsonwebtoken": "^9.0.8",
 		"clsx": "^2.1.1",
 		"date-fns": "^4.1.0",
+		"isomorphic-dompurify": "^2.22.0",
 		"jsonwebtoken": "^9.0.2",
+		"marked": "^15.0.12",
 		"tailwind-merge": "^2.5.2",
 		"tailwind-variants": "^0.2.1"
 	}
