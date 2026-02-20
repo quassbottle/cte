@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { DbUser } from 'lib/infrastructure/db';
-import { OsuService } from 'lib/osu/osu.service';
+import { OsuService } from 'lib/infrastructure/osu/osu.service';
 import { UserService } from 'modules/user/user.service';
 import { UserExtended } from 'osu-web.js';
 import { JwtService } from './jwt.service';

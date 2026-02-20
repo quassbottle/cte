@@ -1,6 +1,6 @@
 import { JetStream, JETSTREAM_TRANSPORT } from '@initbit/nestjs-jetstream';
 import { NestFactory } from '@nestjs/core';
-import { setupSwagger } from 'lib/swagger';
+import { setupSwagger } from 'lib/infrastructure/swagger';
 import { AppModule } from './app.module';
 
 async function bootstrap() {

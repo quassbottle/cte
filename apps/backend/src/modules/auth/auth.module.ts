@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { JwtModule as NestJwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
 import { EnvService } from 'lib/common/env/env.service';
-import { OsuModule } from 'lib/osu/osu.module';
+import { OsuModule } from 'lib/infrastructure/osu/osu.module';
 import { UserModule } from 'modules/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';

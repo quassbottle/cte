@@ -1,14 +1,17 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
-import { MatchId } from 'lib/domain/match/match.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import { users } from '../users';
 
-export const matches = pgTable('matches', {
-  id: text('id').$type<MatchId>().primaryKey(),
+export const tournaments = pgTable('tournaments', {
+  id: text('id').$type<TournamentId>().primaryKey(),
 
   name: text('name').notNull(),
+
+  description: text('description'),
+  rules: text('rules'),
 
   creatorId: text('creator_id')
     .notNull()
@@ -22,5 +25,5 @@ export const matches = pgTable('matches', {
   updatedAt,
 });
 
-export type DbMatch = InferSelectModel<typeof matches>;
-export type DbMatchCreateParams = InferInsertModel<typeof matches>;
+export type DbTournament = InferSelectModel<typeof tournaments>;
+export type DbTournamentCreateParams = InferInsertModel<typeof tournaments>;
