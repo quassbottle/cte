@@ -1,18 +1,18 @@
 export type UserSession = {
 	id: string;
-	osuId: number;
 	token: string;
 };
 
 export interface ApiResponse<TResult, TError = undefined> {
 	success: boolean;
-	error: TError;
-	result: TResult;
+	error?: TError;
+	result?: TResult;
 }
 
 export interface DomainError {
 	status: number;
 	message: string;
+	errorCode?: string;
 }
 
 export * from './dto/match.dto';

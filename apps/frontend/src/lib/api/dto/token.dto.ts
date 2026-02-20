@@ -1,9 +1,7 @@
 export interface TokenDto {
-  accessToken: string
-  expiresAt: Date
+  token: string
 }
 
 export interface TokenPayload {
-  id: string,
-  osuId: number
+  id: string
 }

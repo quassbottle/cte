@@ -1,7 +1,11 @@
-import { isoStringToDate } from 'lib/common/utils/zod/date';
 import { userRoleSchema } from 'lib/domain/user/user.role';
 import { createZodDto } from 'nestjs-zod/dto';
 import z from 'zod';
+
+const userDateSchema = z.preprocess(
+  (value) => (value instanceof Date ? value.toISOString() : value),
+  z.iso.datetime(),
+);
 
 export const userDtoSchema = z
   .object({
@@ -9,8 +13,8 @@ export const userDtoSchema = z
     osuId: z.number().describe('The osu! user ID'),
     osuUsername: z.string().describe('The osu! username'),
     role: userRoleSchema.describe('The user role'),
-    createdAt: isoStringToDate.describe('The user creation date'),
-    updatedAt: isoStringToDate.describe('The user last update date'),
+    createdAt: userDateSchema.describe('The user creation date'),
+    updatedAt: userDateSchema.describe('The user last update date'),
   })
   .transform((u) => ({
     id: u.id,

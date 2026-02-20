@@ -27,7 +27,7 @@
 					</Avatar>
 
 					<div class="flex flex-col">
-						<p class="-translate-y-8 self-end text-[24px] font-semibold">{user.username}</p>
+						<p class="-translate-y-8 self-end text-[24px] font-semibold">{user.osuUsername}</p>
 					</div>
 				</div>
 			</div>

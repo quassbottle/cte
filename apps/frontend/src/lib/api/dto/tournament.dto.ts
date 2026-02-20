@@ -5,34 +5,47 @@ export type OsuMode = 'osu' | 'taiko' | 'fruits' | 'mania';
 export interface TournamentDto {
 	id: string;
 	name: string;
+	description: string | null;
+	rules: string | null;
+	mode: OsuMode;
+	isTeam: boolean;
+	creatorId: string;
 	startsAt: Date;
 	endsAt: Date;
-	mode: OsuMode;
-	type: TournamentType;
-	hostId: string;
-	participants: number;
-	participating?: boolean;
+	deletedAt: Date | null;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
-export interface TournamentParticipant {
+export interface TournamentParticipantDto {
 	id: string;
-	avatar_url: string;
-	username: string;
+	osuId: number;
+	osuUsername: string;
 }
 
 export interface TournamentCreateDto {
 	name: string;
-	startsAt?: Date | string;
-	endsAt?: Date | string | null;
-	mode: OsuMode;
-	type: TournamentType;
+	description?: string | null;
+	rules?: string | null;
+	mode?: OsuMode;
+	isTeam?: boolean;
+	startsAt: Date | string;
+	endsAt: Date | string;
 }
 
 export interface TournamentUpdateDto {
 	name?: string;
-	startsAt?: Date;
-	endsAt?: Date;
+	description?: string | null;
+	rules?: string | null;
 	mode?: OsuMode;
-	type?: TournamentType;
-	hostId?: string;
+	isTeam?: boolean;
+	startsAt?: Date | string;
+	endsAt?: Date | string;
+}
+
+export interface RegisterTournamentDto {
+	team?: {
+		name: string;
+		participants: string[];
+	};
 }

@@ -2,14 +2,12 @@
 	import { Calendar } from 'lucide-svelte';
 	import Banner from '../banner/banner.svelte';
 	import BreadcrumbList from '../ui/breadcrumbList/breadcrumbList.svelte';
-	import type { OsuMode } from '$lib/api/types';
-	import { capitalizeFirstLetter, pluralize } from '$lib/utils/text';
-	import GamemodeIcon from '../gamemode/gameModeIcon.svelte';
+	import { pluralize } from '$lib/utils/text';
 
 	export let name: string;
 	export let startsAt: Date;
-	export let mode: OsuMode;
-	export let participants: number;
+	export let isTeam: boolean;
+	export let participants = 0;
 </script>
 
 <div class="flex w-[368px] flex-col overflow-hidden rounded-2xl bg-[#f5f5f5]">
@@ -30,8 +28,7 @@
 			>
 			<Item
 				><div class="flex flex-row items-center gap-1 text-[12px]">
-					<GamemodeIcon class="h-3 w-3 opacity-50" gamemode={mode} />
-					{capitalizeFirstLetter(mode)}
+					{isTeam ? 'Team tournament' : 'Solo tournament'}
 				</div></Item
 			>
 		</BreadcrumbList>

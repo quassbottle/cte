@@ -36,6 +36,13 @@
       "when": 1771605087753,
       "tag": "0004_sharp_black_cat",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771618800000,
+      "tag": "0005_nice_tournament_mode",
+      "breakpoints": true
     }
   ]
 }

@@ -6,10 +6,12 @@
 	import { Calendar, House, UserRound } from 'lucide-svelte';
 	import '../app.css';
 	import type { PageData } from './$types';
+	import WorkInProgress from '$lib/components/workInProgress/workInProgress.svelte';
 
 	export let data: PageData;
 </script>
 
+<WorkInProgress />
 <Header user={data.user} />
 <div class="mx-16 flex flex-row gap-4">
 	<SideBar>

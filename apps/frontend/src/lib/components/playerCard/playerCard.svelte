@@ -6,7 +6,7 @@
 	export let osuId: number;
 </script>
 
-<div class="flex flex-col items-center gap-2 rounded-lg p-6 shadow-lg">
+<div class="flex flex-col items-center gap-2 rounded-lg p-6 bg-[#f5f5f5]">
 	<Avatar class="align-center h-[96px] w-[96px] rounded-[24px]">
 		<AvatarImage src={getAvatarUrlByOsuId(osuId)} />
 		<AvatarFallback>CN</AvatarFallback>

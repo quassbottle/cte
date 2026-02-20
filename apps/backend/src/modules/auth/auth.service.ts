@@ -30,6 +30,8 @@ export class AuthService {
   public async login(params: { code: string }) {
     const { code } = params;
 
+    console.log({ code });
+
     const token = await this.osuService.authenticateUser({ code });
 
     const osuClient = this.osuService.getUserClient({

@@ -11,7 +11,10 @@ export const authenticateUser = async (event: RequestEvent) => {
 
 	if (!userToken) return null;
 
-	const user = verify(userToken, JWT_SECRET) as UserSession;
-
-	return { id: user.id, osuId: user.osuId, token: userToken };
+	try {
+		const user = verify(userToken, JWT_SECRET) as UserSession;
+		return { id: user.id, token: userToken };
+	} catch {
+		return null;
+	}
 };

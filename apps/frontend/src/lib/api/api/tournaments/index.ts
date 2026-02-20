@@ -1,5 +1,11 @@
 import { fetcherFactory, type TApiFetcher, type THeaders } from '$lib/api/fetcher';
-import type { TournamentCreateDto, TournamentDto, UserDto } from '$lib/api/types';
+import type {
+	RegisterTournamentDto,
+	TournamentCreateDto,
+	TournamentDto,
+	TournamentParticipantDto,
+	TournamentUpdateDto
+} from '$lib/api/types';
 
 const findMany = async (
 	params: { limit?: number; offset?: number },
@@ -20,19 +26,34 @@ const getById = async (id: string, headers: THeaders, fetcher: TApiFetcher<Tourn
 	return fetcher({ method: 'GET', route, headers });
 };
 
-const register = async (id: string, headers: THeaders, fetcher: TApiFetcher<TournamentDto>) => {
+const register = async (
+	id: string,
+	body: RegisterTournamentDto | undefined,
+	headers: THeaders,
+	fetcher: TApiFetcher<void>
+) => {
 	const route = `/api/tournaments/${id}/register`;
-	return fetcher({ method: 'POST', route, headers });
+	return fetcher({ method: 'POST', route, headers, body });
 };
 
-const unregister = async (id: string, headers: THeaders, fetcher: TApiFetcher<TournamentDto>) => {
-	const route = `/api/tournaments/${id}/unregister`;
-	return fetcher({ method: 'POST', route, headers });
+const unregister = async (id: string, headers: THeaders, fetcher: TApiFetcher<void>) => {
+	const route = `/api/tournaments/${id}/register`;
+	return fetcher({ method: 'DELETE', route, headers });
 };
 
-const participants = async (id: string, headers: THeaders, fetcher: TApiFetcher<UserDto[]>) => {
+const participants = async (
+	id: string,
+	params: { limit?: number; offset?: number } = {},
+	headers: THeaders,
+	fetcher: TApiFetcher<TournamentParticipantDto[]>
+) => {
 	const route = `/api/tournaments/${id}/participants`;
-	return fetcher({ method: 'GET', route, headers });
+	const query = new URLSearchParams();
+
+	if (params.limit) query.set('limit', String(params.limit));
+	if (params.offset) query.set('offset', String(params.offset));
+
+	return fetcher({ method: 'GET', route, headers, query });
 };
 
 const create = async (
@@ -44,17 +65,31 @@ const create = async (
 	return fetcher({ method: 'POST', route, headers, body: params });
 };
 
+const update = async (
+	id: string,
+	params: TournamentUpdateDto,
+	headers: THeaders,
+	fetcher: TApiFetcher<TournamentDto>
+) => {
+	const route = `/api/tournaments/${id}`;
+	return fetcher({ method: 'PATCH', route, headers, body: params });
+};
+
 export const tournaments = (headers: THeaders) => {
 	const fetcher = fetcherFactory();
 
 	return Object.freeze({
 		getById: (id: string) => getById(id, headers, fetcher as TApiFetcher<TournamentDto>),
-		register: (id: string) => register(id, headers, fetcher as TApiFetcher<TournamentDto>),
-		unregister: (id: string) => unregister(id, headers, fetcher as TApiFetcher<TournamentDto>),
-		participants: (id: string) => participants(id, headers, fetcher as TApiFetcher<UserDto[]>),
+		register: (id: string, body?: RegisterTournamentDto) =>
+			register(id, body, headers, fetcher as TApiFetcher<void>),
+		unregister: (id: string) => unregister(id, headers, fetcher as TApiFetcher<void>),
+		participants: (id: string, params?: { limit?: number; offset?: number }) =>
+			participants(id, params, headers, fetcher as TApiFetcher<TournamentParticipantDto[]>),
 		findMany: (params: { limit?: number; offset?: number }) =>
 			findMany(params, headers, fetcher as TApiFetcher<TournamentDto[]>),
 		create: (params: TournamentCreateDto) =>
-			create(params, headers, fetcher as TApiFetcher<TournamentDto>)
+			create(params, headers, fetcher as TApiFetcher<TournamentDto>),
+		update: (id: string, params: TournamentUpdateDto) =>
+			update(id, params, headers, fetcher as TApiFetcher<TournamentDto>)
 	});
 };

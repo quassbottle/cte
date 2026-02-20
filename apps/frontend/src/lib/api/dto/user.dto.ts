@@ -1,20 +1,18 @@
-import type { TokenDto } from "./token.dto"
-
 export interface UserRegisterDto {
-  username: string
-  osuId: number
-  osuRefreshToken: string
-  osuAccessToken: string
-  osuAccessTokenExpiresAt: Date
+	osuUsername: string;
+	osuId: number;
 }
 
 export interface UserDto {
-  id: string
-  username: string
-  osuId: number
-  createdAt: Date
+	id: string;
+	osuUsername: string;
+	osuId: number;
+	role: 'default' | 'admin';
+	avatarUrl: string;
+	createdAt: Date;
+	updatedAt: Date;
 }
 
-export interface UserAuthenticatedDto extends UserDto {
-  token: TokenDto
+export interface AuthenticatedUserDto {
+	token: string;
 }

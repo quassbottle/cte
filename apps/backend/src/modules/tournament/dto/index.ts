@@ -1,5 +1,6 @@
 import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
+import { tournamentModeSchema } from 'lib/domain/tournament/tournament.mode';
 import { userIdSchema } from 'lib/domain/user/user.id';
 import { createZodDto } from 'nestjs-zod/dto';
 import z from 'zod';
@@ -9,6 +10,7 @@ export const tournamentDtoSchema = z.object({
   name: z.string(),
   description: z.string().nullable(),
   rules: z.string().nullable(),
+  mode: tournamentModeSchema,
   isTeam: z.boolean(),
   creatorId: userIdSchema,
   startsAt: dateToIsoString,
@@ -25,6 +27,7 @@ export const createTournamentDtoSchema = z
     name: z.string().trim().min(1),
     description: z.string().trim().nullish(),
     rules: z.string().trim().nullish(),
+    mode: tournamentModeSchema.optional().default('osu'),
     isTeam: z.boolean().optional().default(false),
     startsAt: isoStringToDate,
     endsAt: isoStringToDate,
@@ -48,6 +51,7 @@ export const updateTournamentDtoSchema = z
     name: z.string().trim().min(1).optional(),
     description: z.string().trim().nullish(),
     rules: z.string().trim().nullish(),
+    mode: tournamentModeSchema.optional(),
     isTeam: z.boolean().optional(),
     startsAt: isoStringToDate.optional(),
     endsAt: isoStringToDate.optional(),

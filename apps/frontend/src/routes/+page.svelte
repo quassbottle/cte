@@ -1,15 +1,7 @@
 <script lang="ts">
 	import Banner from '$lib/components/banner/banner.svelte';
 	import Group from '$lib/components/group/group.svelte';
-	import TabContentItem from '$lib/components/tabGroup/tabContentItem.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
-	import TabHead from '$lib/components/tabGroup/tabHead.svelte';
-	import TabHeadItem from '$lib/components/tabGroup/tabHeadItem.svelte';
-
-	let activeTabValue = 1;
-	const handleClick = (tabValue: number) => () => {
-		activeTabValue = tabValue;
-	};
 </script>
 
 <div class="flex flex-col gap-16">

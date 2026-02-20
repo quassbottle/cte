@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { PUBLIC_REDIRECT_URI } from '$env/static/public';
-	import type { UserDto, UserSession } from '$lib/api/types';
+	import type { UserDto } from '$lib/api/types';
 	import { AvatarImage } from '$lib/components/ui/avatar';
 	import AvatarFallback from '$lib/components/ui/avatar/avatar-fallback.svelte';
 	import Avatar from '$lib/components/ui/avatar/avatar.svelte';
@@ -28,7 +28,6 @@
 	<Button
 		on:click={() => {
 			window.location.replace(
-				// TODO: REMOVE LOCALHOST REDIRECT, SWITCH TO ENV
 				`https://osu.ppy.sh/oauth/authorize?client_id=34164&redirect_uri=${PUBLIC_REDIRECT_URI}&response_type=code&scope=public+identify`
 			);
 		}}>Login</Button

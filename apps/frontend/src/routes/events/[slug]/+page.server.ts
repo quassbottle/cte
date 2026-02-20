@@ -1,6 +1,6 @@
-import type { TournamentDto, UserDto } from '$lib/api/types';
+import type { StageDto, TournamentDto, TournamentParticipantDto, UserDto } from '$lib/api/types';
 import { error } from '@sveltejs/kit';
-import type { PageServerLoad } from './$types';
+import type { Actions, PageServerLoad } from './$types';
 import { api } from '$lib/api/api';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
@@ -8,25 +8,34 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 		.tournaments()
 		.getById(params.slug);
 
-	if (tournamentResponse.error) {
+	if (tournamentResponse.error || !tournamentResponse.result) {
 		throw error(404, 'Tournament not found');
 	}
 
 	const participantsResponse = await api().tournaments().participants(params.slug);
-	const hostResponse = await api().users().getById(tournamentResponse.result.hostId);
+	const hostResponse = await api().users().getById(tournamentResponse.result.creatorId);
+	const stagesResponse = await api({ token: locals.session?.token }).stages().findMany({
+		limit: 100
+	});
 
 	const tournament = tournamentResponse.result as TournamentDto;
-	const participants = participantsResponse.result as UserDto[];
+	const participants = participantsResponse.result as TournamentParticipantDto[];
 	const host = hostResponse.result as UserDto;
+	const stages = ((stagesResponse.result as StageDto[] | undefined) ?? []).filter(
+		(stage) => stage.tournamentId === tournament.id
+	);
+	const canEditTournament = tournament.creatorId === locals.session?.id;
 
 	return {
 		tournament,
 		participants,
-		host
+		host,
+		stages,
+		canEditTournament
 	};
 };
 
-export const actions = {
+export const actions: Actions = {
 	register: async ({ locals, params }) => {
 		await api({ token: locals.session?.token }).tournaments().register(params.slug);
 	},
