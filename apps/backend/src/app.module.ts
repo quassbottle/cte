@@ -6,6 +6,9 @@ import { APP_PIPE } from '@nestjs/core';
 import { EnvService } from 'lib/common/env/env.service';
 import { AuthModule } from 'modules/auth/auth.module';
 import { GatewayModule } from 'modules/gateway/gateway.module';
+import { MappoolModule } from 'modules/mappool/mappool.module';
+import { StageModule } from 'modules/stage/stage.module';
+import { TournamentModule } from 'modules/tournament/tournament.module';
 import { UserModule } from 'modules/user/user.module';
 import { AckPolicy, DeliverPolicy } from 'nats';
 import { ZodValidationPipe } from 'nestjs-zod';
@@ -18,6 +21,9 @@ import * as schema from './lib/infrastructure/db/schema';
     AuthModule,
     UserModule,
     GatewayModule,
+    TournamentModule,
+    StageModule,
+    MappoolModule,
     DrizzlePGModule.registerAsync({
       tag: 'DB',
       inject: [EnvService],

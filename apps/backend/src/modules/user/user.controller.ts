@@ -20,8 +20,8 @@ export class UserController {
     description: 'Returns the current user.',
     type: UserDto,
   })
-  public getMe(@RequestUser() user: DbUser) {
-    return user;
+  public getMe(@RequestUser() user: DbUser): UserDto {
+    return userDtoSchema.parse(user);
   }
 
   @Get(':id')

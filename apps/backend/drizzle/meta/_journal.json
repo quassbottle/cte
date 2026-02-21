@@ -8,6 +8,41 @@
       "when": 1767086835144,
       "tag": "0000_cheerful_lionheart",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1771598897385,
+      "tag": "0001_worried_karnak",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1771604316968,
+      "tag": "0002_lumpy_wolverine",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1771604591616,
+      "tag": "0003_small_surge",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1771605087753,
+      "tag": "0004_sharp_black_cat",
+      "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1771618800000,
+      "tag": "0005_nice_tournament_mode",
+      "breakpoints": true
     }
   ]
 }

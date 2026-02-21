@@ -1,0 +1,1 @@
+CREATE DATABASE "cte_stats" OWNER cte;

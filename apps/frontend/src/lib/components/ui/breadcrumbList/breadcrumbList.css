@@ -1,0 +1,15 @@
+.breadcrumb {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-wrap: nowrap; /* Prevents wrapping */
+  align-items: center; /* Ensures proper vertical alignment */
+  gap: 4px;
+}
+
+.breadcrumb li:not(:first-child)::before {
+  content: '•';
+  opacity: 50%;
+  margin-right: 4px;
+}

@@ -9,10 +9,10 @@ import { MatchId, matchId } from 'lib/domain/match/match.id';
 import { UserId } from 'lib/domain/user/user.id';
 import {
   DbMatch,
-  DbParticipant,
+  DbMatchParticipant,
   DbUser,
   matches,
-  participants,
+  matchParticipants,
   Schema,
   users,
 } from 'lib/infrastructure/db';
@@ -77,13 +77,13 @@ export class MatchService {
   async getParticipant(params: {
     matchId: MatchId;
     userId: UserId;
-  }): Promise<DbParticipant> {
+  }): Promise<DbMatchParticipant> {
     const { matchId, userId } = params;
 
-    const participant = await this.drizzle.query.participants.findFirst({
+    const participant = await this.drizzle.query.matchParticipants.findFirst({
       where: and(
-        eq(participants.matchId, matchId),
-        eq(participants.userId, userId),
+        eq(matchParticipants.matchId, matchId),
+        eq(matchParticipants.userId, userId),
       ),
     });
 
@@ -108,9 +108,9 @@ export class MatchService {
       .select({
         user: users,
       })
-      .from(participants)
-      .innerJoin(users, eq(users.id, participants.userId))
-      .where(eq(participants.matchId, matchId))
+      .from(matchParticipants)
+      .innerJoin(users, eq(users.id, matchParticipants.userId))
+      .where(eq(matchParticipants.matchId, matchId))
       .limit(limit)
       .offset(offset);
 
@@ -120,13 +120,13 @@ export class MatchService {
   async register(params: {
     matchId: MatchId;
     userId: UserId;
-  }): Promise<DbParticipant> {
+  }): Promise<DbMatchParticipant> {
     const { matchId, userId } = params;
 
     await this.assertIsNotParticipating({ matchId, userId });
 
     const [created] = await this.drizzle
-      .insert(participants)
+      .insert(matchParticipants)
       .values({ userId, matchId })
       .returning();
 
@@ -136,15 +136,18 @@ export class MatchService {
   async unregister(params: {
     matchId: MatchId;
     userId: UserId;
-  }): Promise<DbParticipant> {
+  }): Promise<DbMatchParticipant> {
     const { matchId, userId } = params;
 
     await this.assertIsParticipating({ matchId, userId });
 
     const [deleted] = await this.drizzle
-      .delete(participants)
+      .delete(matchParticipants)
       .where(
-        and(eq(participants.matchId, matchId), eq(participants.userId, userId)),
+        and(
+          eq(matchParticipants.matchId, matchId),
+          eq(matchParticipants.userId, userId),
+        ),
       )
       .returning();
 
@@ -157,7 +160,12 @@ export class MatchService {
   }) {
     const { matchId, userId } = params;
 
-    const participant = await this.getParticipant({ matchId, userId });
+    const participant = await this.drizzle.query.matchParticipants.findFirst({
+      where: and(
+        eq(matchParticipants.matchId, matchId),
+        eq(matchParticipants.userId, userId),
+      ),
+    });
 
     if (!participant) {
       throw new MatchException(
@@ -173,7 +181,12 @@ export class MatchService {
   }) {
     const { matchId, userId } = params;
 
-    const participant = await this.getParticipant({ matchId, userId });
+    const participant = await this.drizzle.query.matchParticipants.findFirst({
+      where: and(
+        eq(matchParticipants.matchId, matchId),
+        eq(matchParticipants.userId, userId),
+      ),
+    });
 
     if (participant) {
       throw new MatchException(
