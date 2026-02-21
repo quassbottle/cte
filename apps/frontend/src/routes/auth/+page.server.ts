@@ -1,16 +1,13 @@
 import { redirect } from '@sveltejs/kit';
-import { dev } from '$app/environment';
 import type { PageServerLoad } from './$types';
 import { api } from '$lib/api/api';
 
 export const load: PageServerLoad = async ({ url, cookies }) => {
 	const code = url.searchParams.get('code');
 	const oauthError = url.searchParams.get('error');
-	const isHttps = url.protocol === 'https:';
 
 	console.info('[auth-callback] incoming', {
 		path: url.pathname,
-		isHttps,
 		hasCode: Boolean(code),
 		hasOauthError: Boolean(oauthError)
 	});
@@ -44,13 +41,13 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	}
 
 	console.info('[auth-callback] setting-session-cookie', {
-		secure: !dev && isHttps,
+		secure: false,
 		sameSite: 'lax',
 		maxAge: 60 * 60 * 24
 	});
 
 	cookies.set('session', result.token, {
-		secure: !dev && isHttps,
+		secure: false,
 		sameSite: 'lax',
 		path: '/',
 		maxAge: 60 * 60 * 24 * 1
