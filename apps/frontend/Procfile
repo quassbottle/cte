@@ -1,1 +1,1 @@
-web: cd apps/frontend && pnpm build && pnpm start:prod
+web: cd apps/frontend && pnpm start:prod
