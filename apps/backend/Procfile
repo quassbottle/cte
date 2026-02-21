@@ -1,1 +1,2 @@
-web: cd apps/backend && pnpm build && pnpm start:prod
+release: pnpm run build:backend
+web: cd apps/backend && pnpm start:prod
