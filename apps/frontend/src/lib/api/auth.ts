@@ -1,4 +1,4 @@
-import { JWT_SECRET } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { RequestEvent } from '@sveltejs/kit';
 import pkg from 'jsonwebtoken';
 import type { UserSession } from './types';
@@ -12,7 +12,10 @@ export const authenticateUser = async (event: RequestEvent) => {
 	if (!userToken) return null;
 
 	try {
-		const user = verify(userToken, JWT_SECRET) as UserSession;
+		const secret = env.JWT_SECRET;
+		if (!secret) return null;
+
+		const user = verify(userToken, secret) as UserSession;
 		return { id: user.id, token: userToken };
 	} catch {
 		return null;
