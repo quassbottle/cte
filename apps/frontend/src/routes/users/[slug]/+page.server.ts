@@ -14,5 +14,3 @@ export const load: PageServerLoad = async ({ params }) => {
 		user: candidate.result as UserDto
 	};
 };
-
-export const prerender = true;

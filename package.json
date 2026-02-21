@@ -13,8 +13,10 @@
     "lint": "turbo lint",
     "test": "turbo test",
     "build:backend": "turbo run build --filter=backend",
-    "heroku-postbuild": "if [ $SERVER_ENV ]; then pnpm run prod-backend; else echo no environment detected, please set CLIENT_ENV or SERVER_ENV; fi",
-    "prod-backend": "pnpm run build:backend"
+    "build:frontend": "turbo run build --filter=backend",
+    "heroku-postbuild": "if [ $CLIENT_ENV ]; then pnpm run prod-frontend; elif [ $SERVER_ENV ]; then pnpm run prod-backend; else echo no environment detected, please set CLIENT_ENV or SERVER_ENV; fi",
+    "prod-backend": "pnpm run build:backend",
+    "prod-frontend": "pnpm run build:frontend"
   },
   "pnpm": {
     "patchedDependencies": {
