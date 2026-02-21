@@ -3,9 +3,11 @@ import { dev } from '$app/environment';
 import type { PageServerLoad } from './$types';
 import { api } from '$lib/api/api';
 
-export const load: PageServerLoad = async ({ url, cookies }) => {
+export const load: PageServerLoad = async ({ url, cookies, request }) => {
 	const code = url.searchParams.get('code');
 	const oauthError = url.searchParams.get('error');
+	const forwardedProto = request.headers.get('x-forwarded-proto')?.split(',')[0]?.trim();
+	const isHttps = url.protocol === 'https:' || forwardedProto === 'https';
 
 	if (!code || oauthError) {
 		cookies.delete('session', { path: '/' });
@@ -21,7 +23,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 	}
 
 	cookies.set('session', result.token, {
-		secure: !dev,
+		secure: !dev && isHttps,
 		sameSite: 'lax',
 		path: '/',
 		maxAge: 60 * 60 * 24 * 1
