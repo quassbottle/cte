@@ -1,8 +1,13 @@
-import { PUBLIC_API_URL } from '$env/static/public';
+import { env } from '$env/dynamic/public';
 import type { ApiResponse, DomainError } from './types';
 
 export const fetcherFactory = () => {
-	const url = new URL(PUBLIC_API_URL);
+	const apiUrl = env.PUBLIC_API_URL;
+	if (!apiUrl) {
+		throw new Error('PUBLIC_API_URL is not set');
+	}
+
+	const url = new URL(apiUrl);
 
 	return async <TBody, TSuccess, TError = unknown>(params: {
 		method: THttpMethod;

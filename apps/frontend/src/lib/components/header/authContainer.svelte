@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { PUBLIC_REDIRECT_URI } from '$env/static/public';
+	import { env } from '$env/dynamic/public';
 	import type { UserDto } from '$lib/api/types';
 	import { AvatarImage } from '$lib/components/ui/avatar';
 	import AvatarFallback from '$lib/components/ui/avatar/avatar-fallback.svelte';
@@ -10,6 +10,8 @@
 	import { Bell } from 'lucide-svelte';
 
 	export let user: UserDto | null;
+
+	const getRedirectUri = () => env.PUBLIC_REDIRECT_URI ?? `${window.location.origin}/auth`;
 </script>
 
 {#if user}
@@ -27,8 +29,9 @@
 {:else}
 	<Button
 		on:click={() => {
+			const redirectUri = encodeURIComponent(getRedirectUri());
 			window.location.replace(
-				`https://osu.ppy.sh/oauth/authorize?client_id=34164&redirect_uri=${PUBLIC_REDIRECT_URI}&response_type=code&scope=public+identify`
+				`https://osu.ppy.sh/oauth/authorize?client_id=34164&redirect_uri=${redirectUri}&response_type=code&scope=public+identify`
 			);
 		}}>Login</Button
 	>
