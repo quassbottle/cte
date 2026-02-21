@@ -6,7 +6,7 @@
 	export let user: UserDto | null;
 </script>
 
-<div class="mb-4 flex w-full items-center justify-between bg-white px-24 py-4">
+<div class="flex w-full items-center justify-between bg-white px-24 py-4">
 	<a href="/" class="icon flex cursor-pointer select-none flex-row items-center gap-2"
 		><Logo />
 		<p class="text-[20px] font-semibold">CTE</p></a

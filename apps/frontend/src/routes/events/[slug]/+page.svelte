@@ -17,6 +17,9 @@
 	import PlayerCard from '$lib/components/playerCard/playerCard.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import Markdown from '$lib/components/markdown/markdown.svelte';
+	import SideBar from '$lib/components/sidebar/sideBar.svelte';
+	import { buttonVariants } from '$lib/components/ui/button';
+	import Beatmap from '$lib/components/beatmap/beatmap.svelte';
 
 	export let data: {
 		tournament: TournamentDto;
@@ -39,7 +42,8 @@
 		<Head let:Item class="gap-4 text-[24px] font-semibold">
 			<Item>Info</Item>
 			<Item>Participants</Item>
-			<Item>Stages</Item>
+			<Item>Schedule</Item>
+			<Item>Mappools</Item>
 		</Head>
 
 		{#if data.canEditTournament}
@@ -149,6 +153,70 @@
 		{:else}
 			<p>No stages added yet.</p>
 		{/each}
+	</ContentItem>
+
+	<ContentItem class="flex flex-col gap-3">
+		<TabGroup let:Head let:ContentItem class="flex flex-col gap-4 md:flex-row">
+			<div class="w-full md:sticky md:top-8 md:w-[120px] md:shrink-0 md:self-start">
+				<Head let:Item class="flex flex-col gap-2">
+					<Item
+						class="mr-0"
+						buttonClass={buttonVariants({
+							variant: 'default',
+							size: 'sm',
+							className: 'w-full justify-center'
+						})}
+					>
+						Stage 1
+					</Item>
+					<Item
+						class="mr-0"
+						buttonClass={buttonVariants({
+							variant: 'default',
+							size: 'sm',
+							className: 'w-full justify-center'
+						})}
+					>
+						Stage 2
+					</Item>
+					<Item
+						class="mr-0"
+						buttonClass={buttonVariants({
+							variant: 'default',
+							size: 'sm',
+							className: 'w-full justify-center'
+						})}
+					>
+						Stage 3
+					</Item>
+				</Head>
+			</div>
+
+			<div class="min-w-0 flex-1 md:border-l md:border-border md:pl-6">
+				<ContentItem>
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
+				</ContentItem>
+
+				<ContentItem>
+					Stage 2
+				</ContentItem>
+
+				<ContentItem>
+					Stage 3
+				</ContentItem>
+			</div>
+		</TabGroup>
 	</ContentItem>
 </TabGroup>
 

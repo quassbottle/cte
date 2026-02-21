@@ -3,7 +3,7 @@
 	import MainContainer from '$lib/components/mainContainer/mainContainer.svelte';
 	import SideBar from '$lib/components/sidebar/sideBar.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { Calendar, House, UserRound } from 'lucide-svelte';
+	import { Calendar, House } from 'lucide-svelte';
 	import '../app.css';
 	import type { PageData } from './$types';
 	import WorkInProgress from '$lib/components/workInProgress/workInProgress.svelte';
@@ -13,7 +13,7 @@
 
 <WorkInProgress />
 <Header user={data.user} />
-<div class="mx-16 flex flex-row gap-4">
+<div class="mx-16 flex flex-row">
 	<SideBar>
 		<div class="flex flex-col gap-4">
 			<Button variant="ghost" href="/">

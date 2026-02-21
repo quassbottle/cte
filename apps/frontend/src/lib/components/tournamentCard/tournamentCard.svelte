@@ -10,9 +10,9 @@
 	export let participants = 0;
 </script>
 
-<div class="flex w-[368px] flex-col overflow-hidden rounded-2xl bg-[#f5f5f5]">
+<div class="flex w-full flex-col overflow-hidden rounded-2xl bg-[#f5f5f5]">
 	<Banner
-		class="relative h-[200px] w-[368px] text-white"
+		class="relative h-[200px] text-white"
 		src={'https://assets.ppy.sh/beatmaps/2315685/covers/cover@2x.jpg'}
 	></Banner>
 
