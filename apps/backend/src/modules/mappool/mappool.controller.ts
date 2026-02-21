@@ -4,6 +4,7 @@ import {
   Delete,
   Get,
   Param,
+  ParseIntPipe,
   Patch,
   Post,
   Query,
@@ -19,8 +20,11 @@ import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import {
   AddMappoolBeatmapDto,
   CreateMappoolDto,
+  MappoolBeatmapDto,
   MappoolDto,
+  UpdateMappoolBeatmapDto,
   UpdateMappoolDto,
+  mappoolBeatmapDtoSchema,
   mappoolDtoSchema,
 } from './dto';
 import { MappoolService } from './mappool.service';
@@ -36,9 +40,7 @@ export class MappoolController {
     description: 'Returns mappools list.',
     type: [MappoolDto.Output],
   })
-  public async findMany(
-    @Query() query: PaginationDto,
-  ): Promise<MappoolDto[]> {
+  public async findMany(@Query() query: PaginationDto): Promise<MappoolDto[]> {
     const mappools = await this.mappoolService.findMany(query);
 
     return mappools.map((mappool) => mappoolDtoSchema.parse(mappool));
@@ -56,6 +58,20 @@ export class MappoolController {
     const mappool = await this.mappoolService.getById({ id });
 
     return mappoolDtoSchema.parse(mappool);
+  }
+
+  @Get(':id/beatmaps')
+  @ApiResponse({
+    status: 200,
+    description: 'Returns beatmaps in mappool.',
+    type: [MappoolBeatmapDto.Output],
+  })
+  public async findBeatmaps(
+    @Param('id', MappoolIdPipe) id: MappoolId,
+  ): Promise<MappoolBeatmapDto[]> {
+    const beatmaps = await this.mappoolService.findBeatmaps({ id });
+
+    return beatmaps.map((beatmap) => mappoolBeatmapDtoSchema.parse(beatmap));
   }
 
   @Post()
@@ -82,12 +98,66 @@ export class MappoolController {
   @ApiResponse({
     status: 201,
     description: 'Adds beatmap to mappool.',
+    type: MappoolBeatmapDto.Output,
   })
   public async addBeatmap(
     @Param('id', MappoolIdPipe) id: MappoolId,
     @Body() body: AddMappoolBeatmapDto,
-  ): Promise<void> {
-    await this.mappoolService.addBeatmap({ id, beatmapId: body.beatmapId });
+  ): Promise<MappoolBeatmapDto> {
+    const created = await this.mappoolService.addBeatmap({
+      id,
+      mod: body.mod,
+      osuBeatmapsetId: body.beatmapsetId,
+      osuBeatmapId: body.beatmapId,
+    });
+
+    return mappoolBeatmapDtoSchema.parse(created);
+  }
+
+  @Patch(':id/beatmaps/:osuBeatmapId')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ApiResponse({
+    status: 200,
+    description: 'Updates mappool beatmap index.',
+    type: MappoolBeatmapDto.Output,
+  })
+  public async updateBeatmap(
+    @Param('id', MappoolIdPipe) id: MappoolId,
+    @Param('osuBeatmapId', ParseIntPipe) osuBeatmapId: number,
+    @Body() body: UpdateMappoolBeatmapDto,
+  ): Promise<MappoolBeatmapDto> {
+    const updated = await this.mappoolService.updateBeatmapIndex({
+      id,
+      osuBeatmapId,
+      index: body.index,
+    });
+
+    return mappoolBeatmapDtoSchema.parse(updated);
+  }
+
+  @Delete(':id/beatmaps/:osuBeatmapId')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ApiResponse({
+    status: 200,
+    description: 'Deletes beatmap from mappool.',
+    type: MappoolBeatmapDto.Output,
+  })
+  public async deleteBeatmap(
+    @Param('id', MappoolIdPipe) id: MappoolId,
+    @Param('osuBeatmapId', ParseIntPipe) osuBeatmapId: number,
+  ): Promise<MappoolBeatmapDto> {
+    const deleted = await this.mappoolService.deleteBeatmap({
+      id,
+      osuBeatmapId,
+    });
+
+    return mappoolBeatmapDtoSchema.parse(deleted);
   }
 
   @Patch(':id')

@@ -43,6 +43,34 @@
       "when": 1771618800000,
       "tag": "0005_nice_tournament_mode",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1771702000000,
+      "tag": "0006_sweet_puma",
+      "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1771695152172,
+      "tag": "0007_fancy_ulik",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1771707000000,
+      "tag": "0008_cute_lightspeed",
+      "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1771702653900,
+      "tag": "0009_redundant_ben_parker",
+      "breakpoints": true
     }
   ]
 }

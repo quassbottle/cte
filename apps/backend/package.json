@@ -41,7 +41,7 @@
     "drizzle-orm": "^0.45.1",
     "nats": "^2.29.3",
     "nestjs-zod": "^5.0.1",
-    "osu-web.js": "^2.6.0",
+    "osu-api-extended": "^3.1.8",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",
     "pg": "^8.16.3",

@@ -3,19 +3,35 @@
 	import Mod from '../mod/mod.svelte';
 	import BreadcrumbList from '../ui/breadcrumbList/breadcrumbList.svelte';
 
-	export let artist: string;
-	export let title: string;
-	export let difficultyName: string;
-	export let difficulty: number;
-	export let version: number;
-	export let beatmapsetId: number;
-	export let beatmapId: number;
+	type BeatmapProps = {
+		class?: string;
+		artist: string;
+		title: string;
+		difficultyName: string;
+		beatmapsetId: number;
+		beatmapId: number;
+		mod?: string;
+		difficulty?: number | null;
+		deleted?: boolean;
+	};
+
+	const {
+		artist,
+		title,
+		difficultyName,
+		beatmapsetId,
+		beatmapId,
+		mod = 'NM',
+		difficulty = null,
+		deleted = false,
+		class: className
+	}: BeatmapProps = $props();
 </script>
 
 <div class="flex w-full flex-col overflow-hidden rounded-2xl bg-[#f5f5f5]">
 	<Banner
 		class="relative h-[120px] w-full"
-		src={version ? `https://assets.ppy.sh/beatmaps/${beatmapsetId}/covers/cover@2x.jpg` : null}
+		src={`https://assets.ppy.sh/beatmaps/${beatmapsetId}/covers/cover@2x.jpg`}
 	></Banner>
 
 	<div class="flex flex-col gap-2 p-4">
@@ -29,7 +45,7 @@
 					{difficultyName}
 				</div>
 			</Item>
-			{#if difficulty > 0}
+			{#if !deleted && difficulty !== null && difficulty > 0}
 				<Item>
 					<div class="flex flex-row items-center gap-1 text-[12px]">
 						{difficulty} &#9733;
@@ -38,6 +54,6 @@
 			{/if}
 		</BreadcrumbList>
 
-		<Mod mod="NM" />
+		<Mod mod={mod} />
 	</div>
 </div>

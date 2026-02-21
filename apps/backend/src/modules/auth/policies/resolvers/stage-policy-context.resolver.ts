@@ -14,7 +14,7 @@ import { Schema, stages, tournaments } from 'lib/infrastructure/db';
 import z from 'zod';
 import { PolicyContext, PolicyContextResolver, PolicyRequest } from '../types';
 
-const createStageBodySchema = z.object({
+const stageRouteParamsSchema = z.object({
   tournamentId: tournamentIdSchema,
 });
 
@@ -33,7 +33,7 @@ export class StagePolicyContextResolver implements PolicyContextResolver {
   public async resolve(request: PolicyRequest): Promise<PolicyContext> {
     const tournamentId =
       request.method === 'POST'
-        ? createStageBodySchema.parse(request.body).tournamentId
+        ? stageRouteParamsSchema.parse(request.params).tournamentId
         : await this.resolveTournamentIdByStageId(request.params.id);
 
     const tournament = await this.drizzle.query.tournaments.findFirst({

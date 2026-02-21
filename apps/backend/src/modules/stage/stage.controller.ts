@@ -11,8 +11,10 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { StageIdPipe } from 'lib/common/pipes/stage-id.pipe';
+import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
 import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { StageId } from 'lib/domain/stage/stage.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
@@ -25,18 +27,21 @@ import {
 import { StageService } from './stage.service';
 
 @ApiBearerAuth('bearer')
-@Controller('stages')
+@Controller('tournaments/:tournamentId/stages')
 export class StageController {
   constructor(private readonly stageService: StageService) {}
 
   @Get()
   @ApiResponse({
     status: 200,
-    description: 'Returns stages list.',
+    description: 'Returns stages list for tournament.',
     type: [StageDto.Output],
   })
-  public async findMany(@Query() query: PaginationDto): Promise<StageDto[]> {
-    const stages = await this.stageService.findMany(query);
+  public async findMany(
+    @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
+    @Query() query: PaginationDto,
+  ): Promise<StageDto[]> {
+    const stages = await this.stageService.findMany({ tournamentId, ...query });
 
     return stages.map((stage) => stageDtoSchema.parse(stage));
   }
@@ -48,9 +53,10 @@ export class StageController {
     type: StageDto.Output,
   })
   public async getById(
+    @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
     @Param('id', StageIdPipe) id: StageId,
   ): Promise<StageDto> {
-    const stage = await this.stageService.getById({ id });
+    const stage = await this.stageService.getById({ id, tournamentId });
 
     return stageDtoSchema.parse(stage);
   }
@@ -65,8 +71,11 @@ export class StageController {
     description: 'Creates a stage.',
     type: StageDto.Output,
   })
-  public async create(@Body() body: CreateStageDto): Promise<StageDto> {
-    const created = await this.stageService.create(body);
+  public async create(
+    @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
+    @Body() body: CreateStageDto,
+  ): Promise<StageDto> {
+    const created = await this.stageService.create({ ...body, tournamentId });
 
     return stageDtoSchema.parse(created);
   }
@@ -82,10 +91,15 @@ export class StageController {
     type: StageDto.Output,
   })
   public async patch(
+    @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
     @Param('id', StageIdPipe) id: StageId,
     @Body() body: UpdateStageDto,
   ): Promise<StageDto> {
-    const updated = await this.stageService.update({ id, data: body });
+    const updated = await this.stageService.update({
+      id,
+      tournamentId,
+      data: body,
+    });
 
     return stageDtoSchema.parse(updated);
   }
@@ -101,9 +115,10 @@ export class StageController {
     type: StageDto.Output,
   })
   public async softDelete(
+    @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
     @Param('id', StageIdPipe) id: StageId,
   ): Promise<StageDto> {
-    const deleted = await this.stageService.softDelete({ id });
+    const deleted = await this.stageService.softDelete({ id, tournamentId });
 
     return stageDtoSchema.parse(deleted);
   }

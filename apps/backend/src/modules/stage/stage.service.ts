@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, isNull } from 'drizzle-orm';
-import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import {
   StageException,
   StageExceptionCode,
 } from 'lib/domain/stage/stage.exception';
 import { StageId, stageId } from 'lib/domain/stage/stage.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { DbStage, Schema, stages } from 'lib/infrastructure/db';
 import { StageCreateParams, StageUpdateParams } from './types';
 
@@ -24,11 +24,18 @@ export class StageService {
     return created;
   }
 
-  public async getById(params: { id: StageId }): Promise<DbStage> {
-    const { id } = params;
+  public async getById(params: {
+    id: StageId;
+    tournamentId?: TournamentId;
+  }): Promise<DbStage> {
+    const { id, tournamentId } = params;
 
     const stage = await this.drizzle.query.stages.findFirst({
-      where: and(eq(stages.id, id), isNull(stages.deletedAt)),
+      where: and(
+        eq(stages.id, id),
+        tournamentId ? eq(stages.tournamentId, tournamentId) : undefined,
+        isNull(stages.deletedAt),
+      ),
     });
 
     if (!stage) {
@@ -41,11 +48,18 @@ export class StageService {
     return stage;
   }
 
-  public async findMany(params: PaginationParams): Promise<DbStage[]> {
-    const { limit, offset } = params;
+  public async findMany(params: {
+    tournamentId: TournamentId;
+    limit: number;
+    offset: number;
+  }): Promise<DbStage[]> {
+    const { tournamentId, limit, offset } = params;
 
     const found = await this.drizzle.query.stages.findMany({
-      where: isNull(stages.deletedAt),
+      where: and(
+        eq(stages.tournamentId, tournamentId),
+        isNull(stages.deletedAt),
+      ),
       limit,
       offset,
     });
@@ -55,14 +69,16 @@ export class StageService {
 
   public async update(params: {
     id: StageId;
+    tournamentId?: TournamentId;
     data: StageUpdateParams;
   }): Promise<DbStage> {
     const {
       id,
+      tournamentId,
       data: { startsAt, endsAt, ...rest },
     } = params;
 
-    const current = await this.getById({ id });
+    const current = await this.getById({ id, tournamentId });
     const nextStartsAt = startsAt ?? current.startsAt;
     const nextEndsAt = endsAt ?? current.endsAt;
 
@@ -76,7 +92,13 @@ export class StageService {
     const [updated] = await this.drizzle
       .update(stages)
       .set({ ...rest, startsAt, endsAt })
-      .where(and(eq(stages.id, id), isNull(stages.deletedAt)))
+      .where(
+        and(
+          eq(stages.id, id),
+          tournamentId ? eq(stages.tournamentId, tournamentId) : undefined,
+          isNull(stages.deletedAt),
+        ),
+      )
       .returning();
 
     if (!updated) {
@@ -89,13 +111,22 @@ export class StageService {
     return updated;
   }
 
-  public async softDelete(params: { id: StageId }): Promise<DbStage> {
-    const { id } = params;
+  public async softDelete(params: {
+    id: StageId;
+    tournamentId?: TournamentId;
+  }): Promise<DbStage> {
+    const { id, tournamentId } = params;
 
     const [deleted] = await this.drizzle
       .update(stages)
       .set({ deletedAt: new Date() })
-      .where(and(eq(stages.id, id), isNull(stages.deletedAt)))
+      .where(
+        and(
+          eq(stages.id, id),
+          tournamentId ? eq(stages.tournamentId, tournamentId) : undefined,
+          isNull(stages.deletedAt),
+        ),
+      )
       .returning();
 
     if (!deleted) {

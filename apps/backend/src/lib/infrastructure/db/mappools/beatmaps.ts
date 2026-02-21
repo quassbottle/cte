@@ -1,5 +1,11 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
+import {
+  integer,
+  pgTable,
+  primaryKey,
+  text,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
 import { BeatmapId } from 'lib/domain/beatmap/beatmap.id';
 import { MappoolId } from 'lib/domain/mappool/mappool.id';
@@ -24,11 +30,20 @@ export const mappoolsBeatmaps = pgTable(
         onDelete: 'cascade',
         onUpdate: 'cascade',
       }),
+    mod: text('mod').notNull(),
+    index: integer('index').notNull(),
 
     createdAt,
     updatedAt,
   },
-  (table) => [primaryKey({ columns: [table.mappoolId, table.beatmapId] })],
+  (table) => [
+    primaryKey({ columns: [table.mappoolId, table.beatmapId] }),
+    uniqueIndex('mappools_beatmaps_mappool_id_mod_index_unique').on(
+      table.mappoolId,
+      table.mod,
+      table.index,
+    ),
+  ],
 );
 
 export type DbMappoolsBeatmaps = InferSelectModel<typeof mappoolsBeatmaps>;

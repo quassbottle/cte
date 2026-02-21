@@ -23,8 +23,7 @@ export class TournamentPolicyContextResolver implements PolicyContextResolver {
     const isTournamentRoute = /(^|\/)tournaments(\/|$)/.test(route);
 
     return (
-      isTournamentRoute &&
-      ['POST', 'PATCH', 'DELETE'].includes(request.method)
+      isTournamentRoute && ['POST', 'PATCH', 'DELETE'].includes(request.method)
     );
   }
 

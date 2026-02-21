@@ -16,6 +16,8 @@ export interface DomainError {
 }
 
 export * from './dto/match.dto';
+export * from './dto/mappool.dto';
+export * from './dto/osu.dto';
 export * from './dto/stage.dto';
 export * from './dto/token.dto';
 export * from './dto/tournament.dto';

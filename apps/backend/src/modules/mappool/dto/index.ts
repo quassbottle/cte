@@ -1,7 +1,7 @@
 import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
-import { beatmapIdSchema } from 'lib/domain/beatmap/beatmap.id';
 import { mappoolIdSchema } from 'lib/domain/mappool/mappool.id';
 import { stageIdSchema } from 'lib/domain/stage/stage.id';
+import { mappoolBeatmapViewSchema } from 'modules/beatmap/types';
 import { createZodDto } from 'nestjs-zod/dto';
 import z from 'zod';
 
@@ -41,9 +41,30 @@ export const updateMappoolDtoSchema = z
 export class UpdateMappoolDto extends createZodDto(updateMappoolDtoSchema) {}
 
 export const addMappoolBeatmapDtoSchema = z.object({
-  beatmapId: beatmapIdSchema,
+  mod: z
+    .string()
+    .trim()
+    .min(1)
+    .transform((value) => value.toUpperCase()),
+  beatmapsetId: z.number().int().positive(),
+  beatmapId: z.number().int().positive(),
 });
 
 export class AddMappoolBeatmapDto extends createZodDto(
   addMappoolBeatmapDtoSchema,
 ) {}
+
+export const updateMappoolBeatmapDtoSchema = z.object({
+  index: z.number().int().positive(),
+});
+
+export class UpdateMappoolBeatmapDto extends createZodDto(
+  updateMappoolBeatmapDtoSchema,
+) {}
+
+export const mappoolBeatmapDtoSchema = mappoolBeatmapViewSchema.extend({
+  createdAt: dateToIsoString,
+  updatedAt: dateToIsoString,
+});
+
+export class MappoolBeatmapDto extends createZodDto(mappoolBeatmapDtoSchema) {}

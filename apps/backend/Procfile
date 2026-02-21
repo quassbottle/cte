@@ -1,0 +1,1 @@
+web: cd apps/backend && pnpm build && pnpm start:prod

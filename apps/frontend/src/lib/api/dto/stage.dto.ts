@@ -11,7 +11,6 @@ export interface StageDto {
 
 export interface StageCreateDto {
 	name: string;
-	tournamentId: string;
 	startsAt: Date | string;
 	endsAt: Date | string;
 }

@@ -22,7 +22,7 @@ export const load: PageServerLoad = async ({ url, cookies }) => {
 
 	cookies.set('session', result.token, {
 		secure: !dev,
-		sameSite: 'strict',
+		sameSite: 'lax',
 		path: '/',
 		maxAge: 60 * 60 * 24 * 1
 	});

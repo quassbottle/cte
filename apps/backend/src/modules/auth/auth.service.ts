@@ -1,22 +1,25 @@
 import { Injectable } from '@nestjs/common';
 import { DbUser } from 'lib/infrastructure/db';
-import { OsuService } from 'lib/infrastructure/osu/osu.service';
+import { OsuApiMode, OsuService } from 'lib/infrastructure/osu/osu.service';
 import { OsuStatsService } from 'modules/user/osu-stats.service';
 import { UserService } from 'modules/user/user.service';
-import { GameMode, UserExtended } from 'osu-web.js';
 import { JwtService } from './jwt.service';
 
-type OsuApiMode = Extract<GameMode, 'osu' | 'taiko' | 'fruits' | 'mania'>;
 type OsuStatsMode = 'std' | 'taiko' | 'fruits' | 'mania';
 
 const MODE_MAP: Record<OsuApiMode, OsuStatsMode> = {
-  osu: 'std',
-  taiko: 'taiko',
-  fruits: 'fruits',
-  mania: 'mania',
+  [OsuApiMode.Osu]: 'std',
+  [OsuApiMode.Taiko]: 'taiko',
+  [OsuApiMode.Fruits]: 'fruits',
+  [OsuApiMode.Mania]: 'mania',
 };
 
-const AUTH_STATS_MODES: OsuApiMode[] = ['osu', 'taiko', 'fruits', 'mania'];
+const AUTH_STATS_MODES: OsuApiMode[] = [
+  OsuApiMode.Osu,
+  OsuApiMode.Taiko,
+  OsuApiMode.Fruits,
+  OsuApiMode.Mania,
+];
 
 @Injectable()
 export class AuthService {
@@ -29,8 +32,6 @@ export class AuthService {
 
   public async login(params: { code: string }) {
     const { code } = params;
-
-    console.log({ code });
 
     const token = await this.osuService.authenticateUser({ code });
 
@@ -55,7 +56,7 @@ export class AuthService {
     };
   }
 
-  private async ensureDomainUserExists(user: UserExtended): Promise<DbUser> {
+  private async ensureDomainUserExists(user: OsuUserProfile): Promise<DbUser> {
     const userExists = await this.userService.existsByOsuId({ osuId: user.id });
 
     if (userExists) {
@@ -100,3 +101,12 @@ export class AuthService {
     );
   }
 }
+
+type OsuUserProfile = {
+  id: number;
+  username: string;
+  statistics?: {
+    pp?: number | null;
+    global_rank?: number | null;
+  } | null;
+};

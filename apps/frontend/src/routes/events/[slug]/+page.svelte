@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type {
+		MappoolBeatmapDto,
+		MappoolDto,
 		StageDto,
 		TournamentDto,
 		TournamentParticipantDto,
@@ -27,6 +29,8 @@
 		participants: TournamentParticipantDto[];
 		host: UserDto;
 		stages: StageDto[];
+		mappools: MappoolDto[];
+		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		canEditTournament: boolean;
 	};
 
@@ -34,6 +38,17 @@
 	$: registerAction = 'register';
 	$: sortedStages = [...data.stages].sort(
 		(left, right) => new Date(left.startsAt).valueOf() - new Date(right.startsAt).valueOf()
+	);
+	$: sortedMappools = [...data.mappools].sort(
+		(left, right) => new Date(left.startsAt).valueOf() - new Date(right.startsAt).valueOf()
+	);
+	$: beatmapsByMappoolId = new Map(
+		data.mappoolBeatmaps.map((entry) => [
+			entry.mappoolId,
+			[...entry.beatmaps].sort((left, right) =>
+				left.mod === right.mod ? left.index - right.index : left.mod.localeCompare(right.mod)
+			)
+		])
 	);
 </script>
 
@@ -156,67 +171,63 @@
 	</ContentItem>
 
 	<ContentItem class="flex flex-col gap-3">
-		<TabGroup let:Head let:ContentItem class="flex flex-col gap-4 md:flex-row">
-			<div class="w-full md:sticky md:top-8 md:w-[120px] md:shrink-0 md:self-start">
-				<Head let:Item class="flex flex-col gap-2">
-					<Item
-						class="mr-0"
-						buttonClass={buttonVariants({
-							variant: 'default',
-							size: 'sm',
-							className: 'w-full justify-center'
-						})}
-					>
-						Stage 1
-					</Item>
-					<Item
-						class="mr-0"
-						buttonClass={buttonVariants({
-							variant: 'default',
-							size: 'sm',
-							className: 'w-full justify-center'
-						})}
-					>
-						Stage 2
-					</Item>
-					<Item
-						class="mr-0"
-						buttonClass={buttonVariants({
-							variant: 'default',
-							size: 'sm',
-							className: 'w-full justify-center'
-						})}
-					>
-						Stage 3
-					</Item>
-				</Head>
-			</div>
+		{#if sortedStages.length === 0}
+			<p>No stages added yet.</p>
+		{:else}
+			<TabGroup let:Head let:ContentItem class="flex flex-col gap-4 md:flex-row">
+				<div class="w-full md:sticky md:top-8 md:w-[160px] md:shrink-0 md:self-start">
+					<Head let:Item class="flex flex-col gap-2">
+						{#each sortedStages as stage}
+							<Item
+								class="mr-0"
+								buttonClass={buttonVariants({
+									variant: 'default',
+									size: 'sm',
+									className: 'w-full justify-center'
+								})}
+							>
+								{stage.name}
+							</Item>
+						{/each}
+					</Head>
+				</div>
 
-			<div class="min-w-0 flex-1 md:border-l md:border-border md:pl-6">
-				<ContentItem>
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-					<Beatmap difficultyName="_tiebreaker; ~Bottomless Abyss~" artist="kageminori, hellfly" title="_neptune; ~No Way Back~" version={1} difficulty={1} beatmapsetId={2509174} beatmapId={5527208} />
-				</ContentItem>
+				<div class="min-w-0 flex-1 md:border-l md:border-border md:pl-6">
+					{#each sortedStages as stage}
+						<ContentItem class="flex flex-col gap-4">
+							{#if sortedMappools.filter((mappool) => mappool.stageId === stage.id).length === 0}
+								<p class="text-sm text-muted-foreground">No mappools for this stage yet.</p>
+							{:else}
+								{#each sortedMappools.filter((mappool) => mappool.stageId === stage.id) as mappool}
+									<div class="flex flex-col gap-2">
+										<p class="text-sm font-medium">
+											{new Date(mappool.startsAt).toLocaleString()} - {new Date(mappool.endsAt).toLocaleString()}
+										</p>
 
-				<ContentItem>
-					Stage 2
-				</ContentItem>
-
-				<ContentItem>
-					Stage 3
-				</ContentItem>
-			</div>
-		</TabGroup>
+										{#if (beatmapsByMappoolId.get(mappool.id) ?? []).length === 0}
+											<p class="text-sm text-muted-foreground">No maps in this mappool.</p>
+										{:else}
+											{#each beatmapsByMappoolId.get(mappool.id) ?? [] as beatmap}
+												<Beatmap
+													difficultyName={beatmap.difficultyName}
+													artist={beatmap.artist}
+													title={beatmap.title}
+													beatmapsetId={beatmap.osuBeatmapsetId}
+													beatmapId={beatmap.osuBeatmapId}
+													mod={beatmap.mod}
+													difficulty={beatmap.difficulty}
+													deleted={beatmap.deleted}
+												/>
+											{/each}
+										{/if}
+									</div>
+								{/each}
+							{/if}
+						</ContentItem>
+					{/each}
+				</div>
+			</TabGroup>
+		{/if}
 	</ContentItem>
 </TabGroup>
 

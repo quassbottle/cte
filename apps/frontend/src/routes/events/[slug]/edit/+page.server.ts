@@ -16,12 +16,10 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	}
 
 	const tournament = tournamentResponse.result as TournamentDto;
-	const stagesResponse = await api({ token: locals.session?.token }).stages().findMany({
+	const stagesResponse = await api({ token: locals.session?.token }).stages().findMany(params.slug, {
 		limit: 100
 	});
-	const stages = ((stagesResponse.result as StageDto[] | undefined) ?? []).filter(
-		(stage) => stage.tournamentId === tournament.id
-	);
+	const stages = (stagesResponse.result as StageDto[] | undefined) ?? [];
 
 	return {
 		tournament,

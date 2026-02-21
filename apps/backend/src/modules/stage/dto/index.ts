@@ -20,7 +20,6 @@ export class StageDto extends createZodDto(stageDtoSchema) {}
 export const createStageDtoSchema = z
   .object({
     name: z.string().trim().min(1),
-    tournamentId: tournamentIdSchema,
     startsAt: isoStringToDate,
     endsAt: isoStringToDate,
   })

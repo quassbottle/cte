@@ -108,12 +108,13 @@
 
 			const body: StageCreateDto = {
 				name: stageName.trim(),
-				tournamentId: data.tournament.id,
 				startsAt: startsAtDate.toISOString(),
 				endsAt: endsAtDate.toISOString()
 			};
 
-			const response = await api({ token: data.session?.token }).stages().create(body);
+			const response = await api({ token: data.session?.token })
+				.stages()
+				.create(data.tournament.id, body);
 
 			if (!response.success || !response.result) {
 				stageErrorMessage = response.error?.message ?? 'Failed to create stage';
