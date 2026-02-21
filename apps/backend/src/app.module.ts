@@ -21,7 +21,7 @@ import * as schema from './lib/infrastructure/db/schema';
     EnvModule,
     AuthModule,
     UserModule,
-    GatewayModule,
+    //GatewayModule,
     OsuFeatureModule,
     TournamentModule,
     StageModule,
@@ -41,75 +41,75 @@ import * as schema from './lib/infrastructure/db/schema';
         };
       },
     }),
-    NatsJetStreamModule.registerAsync({
-      inject: [EnvService],
-      useFactory(config: EnvService) {
-        return {
-          connection: {
-            servers: [config.get('NATS_SERVER_URL')],
-          },
-          appName: 'backend',
-          queue: 'processing-group',
-          deliverPolicy: DeliverPolicy.New,
-          ackPolicy: AckPolicy.Explicit,
-          multiStream: {
-            streams: [
-              {
-                name: JetStreamStream.EVENTS,
-                description: 'Stream for external event notifications',
-                subjects: [
-                  JetStreamSubject.MESSAGE_EVENT,
-                  JetStreamSubject.OSU_CHAT_EVENT,
-                ],
-                duplicate_window: 10_000_000_000,
-                max_age: 60_000_000_000,
-              },
-              {
-                name: JetStreamStream.COMMANDS,
-                description: 'Stream for backend-issued commands',
-                subjects: [
-                  JetStreamSubject.OSU_CREATE_PRIVATE_MATCH,
-                  JetStreamSubject.OSU_CLOSE_MATCH,
-                ],
-                duplicate_window: 10_000_000_000,
-              },
-            ],
-            defaultStream: JetStreamStream.EVENTS,
-            streamConsumers: new Map<
-              string,
-              {
-                ack_policy: AckPolicy;
-                deliver_policy: DeliverPolicy;
-              }
-            >([
-              [
-                JetStreamStream.EVENTS,
-                {
-                  ack_policy: AckPolicy.Explicit,
-                  deliver_policy: DeliverPolicy.New,
-                },
-              ],
-              [
-                JetStreamStream.COMMANDS,
-                {
-                  ack_policy: AckPolicy.Explicit,
-                  deliver_policy: DeliverPolicy.New,
-                },
-              ],
-            ]),
-            patternToStream: new Map<string, string>([
-              [JetStreamSubject.MESSAGE_EVENT, JetStreamStream.EVENTS],
-              [JetStreamSubject.OSU_CHAT_EVENT, JetStreamStream.EVENTS],
-              [
-                JetStreamSubject.OSU_CREATE_PRIVATE_MATCH,
-                JetStreamStream.COMMANDS,
-              ],
-              [JetStreamSubject.OSU_CLOSE_MATCH, JetStreamStream.COMMANDS],
-            ]),
-          },
-        };
-      },
-    }),
+    // NatsJetStreamModule.registerAsync({
+    //   inject: [EnvService],
+    //   useFactory(config: EnvService) {
+    //     return {
+    //       connection: {
+    //         servers: [config.get('NATS_SERVER_URL')],
+    //       },
+    //       appName: 'backend',
+    //       queue: 'processing-group',
+    //       deliverPolicy: DeliverPolicy.New,
+    //       ackPolicy: AckPolicy.Explicit,
+    //       multiStream: {
+    //         streams: [
+    //           {
+    //             name: JetStreamStream.EVENTS,
+    //             description: 'Stream for external event notifications',
+    //             subjects: [
+    //               JetStreamSubject.MESSAGE_EVENT,
+    //               JetStreamSubject.OSU_CHAT_EVENT,
+    //             ],
+    //             duplicate_window: 10_000_000_000,
+    //             max_age: 60_000_000_000,
+    //           },
+    //           {
+    //             name: JetStreamStream.COMMANDS,
+    //             description: 'Stream for backend-issued commands',
+    //             subjects: [
+    //               JetStreamSubject.OSU_CREATE_PRIVATE_MATCH,
+    //               JetStreamSubject.OSU_CLOSE_MATCH,
+    //             ],
+    //             duplicate_window: 10_000_000_000,
+    //           },
+    //         ],
+    //         defaultStream: JetStreamStream.EVENTS,
+    //         streamConsumers: new Map<
+    //           string,
+    //           {
+    //             ack_policy: AckPolicy;
+    //             deliver_policy: DeliverPolicy;
+    //           }
+    //         >([
+    //           [
+    //             JetStreamStream.EVENTS,
+    //             {
+    //               ack_policy: AckPolicy.Explicit,
+    //               deliver_policy: DeliverPolicy.New,
+    //             },
+    //           ],
+    //           [
+    //             JetStreamStream.COMMANDS,
+    //             {
+    //               ack_policy: AckPolicy.Explicit,
+    //               deliver_policy: DeliverPolicy.New,
+    //             },
+    //           ],
+    //         ]),
+    //         patternToStream: new Map<string, string>([
+    //           [JetStreamSubject.MESSAGE_EVENT, JetStreamStream.EVENTS],
+    //           [JetStreamSubject.OSU_CHAT_EVENT, JetStreamStream.EVENTS],
+    //           [
+    //             JetStreamSubject.OSU_CREATE_PRIVATE_MATCH,
+    //             JetStreamStream.COMMANDS,
+    //           ],
+    //           [JetStreamSubject.OSU_CLOSE_MATCH, JetStreamStream.COMMANDS],
+    //         ]),
+    //       },
+    //     };
+    //   },
+    // }),
   ],
   controllers: [],
   providers: [

@@ -7,8 +7,8 @@ export const envSchema = z.object({
   OSU_REDIRECT_URL: z.string(),
   JWT_SECRET: z.string(),
   JWT_EXPIRES_IN: z.coerce.string().transform(Number),
-  NATS_HOST: z.string(),
-  NATS_PORT: z.coerce.string().transform(Number),
-  NATS_SERVER_URL: z.string(),
+  // NATS_HOST: z.string(),
+  // NATS_PORT: z.coerce.string().transform(Number),
+  // NATS_SERVER_URL: z.string(),
 });
 export type Env = z.infer<typeof envSchema>;
