@@ -1,5 +1,5 @@
 <script lang="ts">
-import type {
+	import type {
 		MappoolBeatmapDto,
 		MappoolDto,
 		StageDto,
@@ -9,19 +9,12 @@ import type {
 		UserDto,
 		UserSession
 	} from '$lib/api/types';
-	import { gamemodes } from '$lib/utils/types';
-	import { pluralize } from '$lib/utils/text';
-	import GameModeIcon from '$lib/components/gamemode/gameModeIcon.svelte';
-	import Banner from '$lib/components/banner/banner.svelte';
-	import BreadcrumbList from '$lib/components/ui/breadcrumbList/breadcrumbList.svelte';
-	import { Calendar, UserRound } from 'lucide-svelte';
 	import { Button } from '$lib/components/ui/button';
-	import Group from '$lib/components/group/group.svelte';
-	import PlayerCard from '$lib/components/playerCard/playerCard.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
-	import Markdown from '$lib/components/markdown/markdown.svelte';
-	import { buttonVariants } from '$lib/components/ui/button';
-	import Beatmap from '$lib/components/beatmap/beatmap.svelte';
+	import InfoTab from './components/InfoTab.svelte';
+	import ParticipantsTab from './components/ParticipantsTab.svelte';
+	import ScheduleTab from './components/ScheduleTab.svelte';
+	import MappoolsTab from './components/MappoolsTab.svelte';
 
 	export let data: {
 		tournament: TournamentDto;
@@ -41,33 +34,6 @@ import type {
 				teamParticipantIds?: string;
 		  }
 		| undefined;
-
-	$: isLoggedIn = Boolean(data.session?.id);
-	$: isRegistered = Boolean(
-		data.session?.id && data.participants.some((participant) => participant.id === data.session?.id)
-	);
-	$: registerButtonText = isRegistered
-		? data.tournament.isTeam
-			? 'Unregister team'
-			: 'Unregister'
-		: data.tournament.isTeam
-			? 'Register team'
-			: 'Register';
-	$: registerAction = isRegistered ? 'unregister' : 'register';
-	$: sortedStages = [...data.stages].sort(
-		(left, right) => new Date(left.startsAt).valueOf() - new Date(right.startsAt).valueOf()
-	);
-	$: sortedMappools = [...data.mappools].sort(
-		(left, right) => new Date(left.startsAt).valueOf() - new Date(right.startsAt).valueOf()
-	);
-	$: beatmapsByMappoolId = new Map(
-		data.mappoolBeatmaps.map((entry) => [
-			entry.mappoolId,
-			[...entry.beatmaps].sort((left, right) =>
-				left.mod === right.mod ? left.index - right.index : left.mod.localeCompare(right.mod)
-			)
-		])
-	);
 </script>
 
 <TabGroup let:Head let:ContentItem>
@@ -86,225 +52,29 @@ import type {
 		{/if}
 	</div>
 
-	<ContentItem class="flex flex-col gap-8">
-		<div class="relative">
-			<Banner
-				class="relative h-[260px] text-white"
-				let:Content
-				src={'https://assets.ppy.sh/beatmaps/2315685/covers/cover@2x.jpg'}
-			>
-				<Content class="absolute bottom-0 left-0 flex w-[60%] flex-col p-6">
-					<p class="text-[32px] font-semibold">{data.tournament.name}</p>
-					<BreadcrumbList let:Item>
-						<Item
-							><div class="flex select-none flex-row items-center gap-1 text-[12px]">
-								<Calendar class="h-3 w-3" />
-								{new Date(data.tournament.startsAt).toDateString()}
-							</div></Item
-						>
-						<Item
-							><div class="flex select-none flex-row items-center gap-1 text-[12px]">
-								<UserRound class="h-3 w-3" />
-								{data.participants.length}
-								{pluralize('participant', data.participants.length)}
-							</div></Item
-						>
-						<Item>
-							<div class="flex select-none flex-row items-center gap-1 text-[12px]">
-								<GameModeIcon class="h-3 w-3 invert" gamemode={data.tournament.mode} />
-								{gamemodes.find((item) => item.value === data.tournament.mode)?.label ??
-									data.tournament.mode}
-							</div>
-						</Item>
-						<Item>
-							<p class="select-none gap-1 text-[12px]">
-								{data.tournament.isTeam ? 'Team tournament' : 'Solo tournament'}
-							</p>
-						</Item>
-						<Item>
-							<p class="select-none gap-1 text-[12px]">
-								Hosted by <a href="/users/{data.host.id}">{data.host.osuUsername}</a>
-							</p>
-						</Item>
-					</BreadcrumbList>
-
-					{#if isLoggedIn}
-						<form method="post" action="?/{registerAction}" class="mt-2 flex flex-col gap-2">
-							{#if !isRegistered && data.tournament.isTeam}
-								<input type="hidden" name="isTeamTournament" value="true" />
-								<div class="flex w-full max-w-md flex-col gap-1">
-									<label for="team-name" class="text-[12px] font-medium">Team name</label>
-									<input
-										id="team-name"
-										name="teamName"
-										required
-										value={form?.teamName ?? ''}
-										class="border-input bg-background/90 ring-offset-background focus-visible:ring-ring h-9 rounded-md border px-3 py-2 text-sm text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-										placeholder="My Awesome Team"
-									/>
-								</div>
-								<div class="flex w-full max-w-md flex-col gap-1">
-									<label for="team-participants" class="text-[12px] font-medium">
-										Teammate user ids
-									</label>
-									<textarea
-										id="team-participants"
-										name="teamParticipantIds"
-										required
-										rows={2}
-										class="border-input bg-background/90 ring-offset-background focus-visible:ring-ring rounded-md border px-3 py-2 text-sm text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-										placeholder="user_id_1, user_id_2"
-									>{form?.teamParticipantIds ?? ''}</textarea>
-									<p class="text-[11px] text-white/80">
-										Use internal user ids, separated by comma, space, or new line.
-									</p>
-								</div>
-							{:else if !isRegistered}
-								<input type="hidden" name="isTeamTournament" value="false" />
-							{/if}
-
-							{#if form?.registrationError}
-								<p class="text-xs text-red-300">{form.registrationError}</p>
-							{/if}
-
-							<Button
-								class="w-[140px] bg-accept text-[12px]"
-								variant="accept"
-								type="submit">{registerButtonText}</Button
-							>
-						</form>
-					{/if}
-				</Content>
-			</Banner>
-		</div>
-
-		<Group let:Title let:Content>
-			<Title>Description</Title>
-			<Content class="text-justify">
-				{#if data.tournament.description?.trim()}
-					<Markdown value={data.tournament.description} />
-				{:else}
-					No description
-				{/if}
-			</Content>
-		</Group>
-
-		<Group let:Title let:Content>
-			<Title>Rules</Title>
-			<Content class="text-justify">
-				{#if data.tournament.rules?.trim()}
-					<Markdown value={data.tournament.rules} />
-				{:else}
-					No rules provided.
-				{/if}
-			</Content>
-		</Group>
+	<ContentItem>
+		<InfoTab
+			tournament={data.tournament}
+			session={data.session}
+			participants={data.participants}
+			host={data.host}
+			{form}
+		/>
 	</ContentItem>
 
-	<ContentItem class="flex flex-col gap-3">
-		{#if data.tournament.isTeam}
-			{#if data.teams.length === 0}
-				<p>Be the first team to register ;)</p>
-			{:else}
-				{#each data.teams as team}
-					<Group let:Title let:Content>
-						<Title>{team.name}</Title>
-						<Content class="flex flex-wrap gap-3">
-							{#each team.participants as participant}
-								<a href="/users/{participant.id}">
-									<PlayerCard osuId={participant.osuId} username={participant.osuUsername} />
-								</a>
-							{/each}
-						</Content>
-					</Group>
-				{/each}
-			{/if}
-		{:else}
-			<div class="flex flex-grow flex-wrap gap-3">
-				{#each data.participants as participant}
-					<a href="/users/{participant.id}">
-						<PlayerCard osuId={participant.osuId} username={participant.osuUsername} />
-					</a>
-				{:else}
-					<p>Be the first one to register ;)</p>
-				{/each}
-			</div>
-		{/if}
+	<ContentItem>
+		<ParticipantsTab tournament={data.tournament} participants={data.participants} teams={data.teams} />
 	</ContentItem>
 
-	<ContentItem class="flex flex-col gap-3">
-		{#each sortedStages as stage}
-			<div class="border-border rounded-md border px-3 py-2">
-				<p class="text-sm font-medium">{stage.name}</p>
-				<p class="text-xs text-muted-foreground">
-					{new Date(stage.startsAt).toLocaleString()} - {new Date(stage.endsAt).toLocaleString()}
-				</p>
-			</div>
-		{:else}
-			<p>No stages added yet.</p>
-		{/each}
+	<ContentItem>
+		<ScheduleTab stages={data.stages} />
 	</ContentItem>
 
-	<ContentItem class="flex flex-col gap-3">
-		{#if sortedStages.length === 0}
-			<p>No stages added yet.</p>
-		{:else}
-			<TabGroup let:Head let:ContentItem class="flex flex-col gap-4 md:flex-row">
-				<div class="w-full md:sticky md:top-8 md:w-[160px] md:shrink-0 md:self-start">
-					<Head let:Item class="flex flex-col gap-2">
-						{#each sortedStages as stage}
-							<Item
-								class="mr-0"
-								buttonClass={buttonVariants({
-									variant: 'default',
-									size: 'sm',
-									className: 'w-full justify-center'
-								})}
-							>
-								{stage.name}
-							</Item>
-						{/each}
-					</Head>
-				</div>
-
-				<div class="min-w-0 flex-1 md:border-l md:border-border md:pl-6">
-					{#each sortedStages as stage}
-						<ContentItem class="flex flex-col gap-4">
-							{#if sortedMappools.filter((mappool) => mappool.stageId === stage.id).length === 0}
-								<p class="text-sm text-muted-foreground">No mappools for this stage yet.</p>
-							{:else}
-								{#each sortedMappools.filter((mappool) => mappool.stageId === stage.id) as mappool}
-									<div class="flex flex-col gap-2">
-										<p class="text-sm font-medium">
-											{new Date(mappool.startsAt).toLocaleString()} - {new Date(mappool.endsAt).toLocaleString()}
-										</p>
-
-										{#if (beatmapsByMappoolId.get(mappool.id) ?? []).length === 0}
-											<p class="text-sm text-muted-foreground">No maps in this mappool.</p>
-										{:else}
-											{#each beatmapsByMappoolId.get(mappool.id) ?? [] as beatmap}
-												<Beatmap
-													difficultyName={beatmap.difficultyName}
-													artist={beatmap.artist}
-													title={beatmap.title}
-													beatmapsetId={beatmap.osuBeatmapsetId}
-													beatmapId={beatmap.osuBeatmapId}
-													mod={beatmap.mod}
-													index={beatmap.index}
-													difficulty={beatmap.difficulty}
-													deleted={beatmap.deleted}
-												/>
-											{/each}
-										{/if}
-									</div>
-								{/each}
-							{/if}
-						</ContentItem>
-					{/each}
-				</div>
-			</TabGroup>
-		{/if}
+	<ContentItem>
+		<MappoolsTab
+			stages={data.stages}
+			mappools={data.mappools}
+			mappoolBeatmaps={data.mappoolBeatmaps}
+		/>
 	</ContentItem>
 </TabGroup>
-
-<div class="flex flex-col gap-16"></div>
