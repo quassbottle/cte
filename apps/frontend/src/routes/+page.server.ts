@@ -6,4 +6,4 @@ export const load: PageServerLoad = ({ locals }) => {
 	};
 };
 
-export const prerender = true;
+export const prerender = false;
