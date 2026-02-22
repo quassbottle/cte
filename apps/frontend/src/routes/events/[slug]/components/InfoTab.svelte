@@ -135,8 +135,8 @@
 					<Item
 						><div class="flex select-none flex-row items-center gap-1 text-[12px]">
 							<UserRound class="h-3 w-3" />
-							{participants.length}
-							{pluralize('participant', participants.length)}
+							{tournament.participantsCount}
+							{pluralize('participant', tournament.participantsCount)}
 						</div></Item
 					>
 					<Item>

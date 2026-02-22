@@ -9,6 +9,7 @@ export interface TournamentDto {
 	rules: string | null;
 	mode: OsuMode;
 	isTeam: boolean;
+	participantsCount: number;
 	registrationOpen: boolean;
 	creatorId: string;
 	startsAt: Date;

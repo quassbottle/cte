@@ -1,5 +1,5 @@
 import { fetcherFactory, type TApiFetcher, type THeaders } from '$lib/api/fetcher';
-import type { StageCreateDto, StageDto } from '$lib/api/types';
+import type { StageCreateDto, StageDto, StageUpdateDto } from '$lib/api/types';
 
 const findMany = async (
 	tournamentId: string,
@@ -26,6 +26,27 @@ const create = async (
 	return fetcher({ method: 'POST', route, headers, body: params });
 };
 
+const update = async (
+	tournamentId: string,
+	id: string,
+	params: StageUpdateDto,
+	headers: THeaders,
+	fetcher: TApiFetcher<StageDto>
+) => {
+	const route = `/api/tournaments/${tournamentId}/stages/${id}`;
+	return fetcher({ method: 'PATCH', route, headers, body: params });
+};
+
+const remove = async (
+	tournamentId: string,
+	id: string,
+	headers: THeaders,
+	fetcher: TApiFetcher<StageDto>
+) => {
+	const route = `/api/tournaments/${tournamentId}/stages/${id}`;
+	return fetcher({ method: 'DELETE', route, headers });
+};
+
 export const stages = (headers: THeaders) => {
 	const fetcher = fetcherFactory();
 
@@ -33,6 +54,10 @@ export const stages = (headers: THeaders) => {
 		findMany: (tournamentId: string, params?: { limit?: number; offset?: number }) =>
 			findMany(tournamentId, params, headers, fetcher as TApiFetcher<StageDto[]>),
 		create: (tournamentId: string, params: StageCreateDto) =>
-			create(tournamentId, params, headers, fetcher as TApiFetcher<StageDto>)
+			create(tournamentId, params, headers, fetcher as TApiFetcher<StageDto>),
+		update: (tournamentId: string, id: string, params: StageUpdateDto) =>
+			update(tournamentId, id, params, headers, fetcher as TApiFetcher<StageDto>),
+		remove: (tournamentId: string, id: string) =>
+			remove(tournamentId, id, headers, fetcher as TApiFetcher<StageDto>)
 	});
 };

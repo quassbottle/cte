@@ -18,6 +18,12 @@
 	const onStageCreated = (event: CustomEvent<StageDto>) => {
 		stages = [...stages, event.detail];
 	};
+	const onStageUpdated = (event: CustomEvent<StageDto>) => {
+		stages = stages.map((stage) => (stage.id === event.detail.id ? event.detail : stage));
+	};
+	const onStageDeleted = (event: CustomEvent<string>) => {
+		stages = stages.filter((stage) => stage.id !== event.detail);
+	};
 </script>
 
 <div class="flex flex-col gap-8">
@@ -44,6 +50,8 @@
 				session={data.session}
 				{stages}
 				on:stageCreated={onStageCreated}
+				on:stageUpdated={onStageUpdated}
+				on:stageDeleted={onStageDeleted}
 			/>
 		</ContentItem>
 

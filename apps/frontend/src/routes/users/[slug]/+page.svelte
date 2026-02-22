@@ -28,6 +28,14 @@
 
 					<div class="flex flex-col">
 						<p class="-translate-y-8 self-end text-[24px] font-semibold">{user.osuUsername}</p>
+						<a
+							class="-translate-y-8 self-end text-[14px] text-white/80 underline transition hover:text-white"
+							href="https://osu.ppy.sh/u/{user.osuId}"
+							target="_blank"
+							rel="noreferrer noopener"
+						>
+							osu! profile
+						</a>
 					</div>
 				</div>
 			</div>

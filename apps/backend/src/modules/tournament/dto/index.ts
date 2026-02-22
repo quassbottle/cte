@@ -13,6 +13,7 @@ export const tournamentDtoSchema = z.object({
   rules: z.string().nullable(),
   mode: tournamentModeSchema,
   isTeam: z.boolean(),
+  participantsCount: z.number().int().nonnegative(),
   registrationOpen: z.boolean(),
   creatorId: userIdSchema,
   startsAt: dateToIsoString,

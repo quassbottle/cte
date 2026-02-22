@@ -200,8 +200,11 @@ export class MappoolService {
     osuBeatmapId: number;
     mod?: string;
     index?: number;
+    osuBeatmapsetId?: number;
+    nextOsuBeatmapId?: number;
   }): Promise<MappoolBeatmapView> {
-    const { id, osuBeatmapId, mod, index } = params;
+    const { id, osuBeatmapId, mod, index, osuBeatmapsetId, nextOsuBeatmapId } =
+      params;
 
     await this.getById({ id });
 
@@ -209,6 +212,45 @@ export class MappoolService {
       id,
       osuBeatmapId,
     });
+
+    const replaceBeatmapRequested =
+      nextOsuBeatmapId !== undefined || osuBeatmapsetId !== undefined;
+
+    if (replaceBeatmapRequested) {
+      const beatmap = await this.beatmapService.findOrCreate({
+        osuBeatmapId: nextOsuBeatmapId!,
+        osuBeatmapsetId: osuBeatmapsetId!,
+      });
+
+      await this.assertBeatmapNotInMappool({
+        id,
+        beatmapId: beatmap.id,
+        exceptBeatmapId: current.mappoolBeatmap.beatmapId,
+      });
+
+      const [updated] = await this.drizzle
+        .update(mappoolsBeatmaps)
+        .set({ beatmapId: beatmap.id })
+        .where(
+          and(
+            eq(mappoolsBeatmaps.mappoolId, id),
+            eq(mappoolsBeatmaps.beatmapId, current.mappoolBeatmap.beatmapId),
+          ),
+        )
+        .returning();
+
+      if (!updated) {
+        throw new MappoolException(
+          'Beatmap in mappool not found',
+          MappoolExceptionCode.MAPPOOL_BEATMAP_NOT_FOUND,
+        );
+      }
+
+      return this.beatmapService.toMappoolBeatmapView({
+        mappoolBeatmap: updated,
+        beatmap,
+      });
+    }
 
     const nextMod =
       mod === undefined
@@ -305,13 +347,17 @@ export class MappoolService {
   private async assertBeatmapNotInMappool(params: {
     id: MappoolId;
     beatmapId: BeatmapId;
+    exceptBeatmapId?: BeatmapId;
   }) {
-    const { id, beatmapId } = params;
+    const { id, beatmapId, exceptBeatmapId } = params;
 
     const mappoolBeatmap = await this.drizzle.query.mappoolsBeatmaps.findFirst({
       where: and(
         eq(mappoolsBeatmaps.mappoolId, id),
         eq(mappoolsBeatmaps.beatmapId, beatmapId),
+        exceptBeatmapId
+          ? ne(mappoolsBeatmaps.beatmapId, exceptBeatmapId)
+          : undefined,
       ),
     });
 

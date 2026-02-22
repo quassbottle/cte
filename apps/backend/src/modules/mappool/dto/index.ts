@@ -65,10 +65,46 @@ export const updateMappoolBeatmapDtoSchema = z
       .transform((value) => value.toUpperCase())
       .optional(),
     index: z.number().int().positive().optional(),
+    beatmapsetId: z.number().int().positive().optional(),
+    beatmapId: z.number().int().positive().optional(),
   })
-  .refine((data) => data.mod !== undefined || data.index !== undefined, {
-    message: 'At least one field is required',
-  });
+  .refine(
+    (data) =>
+      data.mod !== undefined ||
+      data.index !== undefined ||
+      data.beatmapsetId !== undefined ||
+      data.beatmapId !== undefined,
+    {
+      message: 'At least one field is required',
+    },
+  )
+  .refine(
+    (data) =>
+      (data.beatmapsetId === undefined && data.beatmapId === undefined) ||
+      (data.beatmapsetId !== undefined && data.beatmapId !== undefined),
+    {
+      message: 'beatmapsetId and beatmapId must be provided together',
+      path: ['beatmapId'],
+    },
+  )
+  .refine(
+    (data) =>
+      (data.beatmapsetId === undefined && data.beatmapId === undefined) ||
+      data.mod === undefined,
+    {
+      message: 'Cannot change beatmap and mod in one request',
+      path: ['mod'],
+    },
+  )
+  .refine(
+    (data) =>
+      (data.beatmapsetId === undefined && data.beatmapId === undefined) ||
+      data.index === undefined,
+    {
+      message: 'Cannot change beatmap and index in one request',
+      path: ['index'],
+    },
+  );
 
 export class UpdateMappoolBeatmapDto extends createZodDto(
   updateMappoolBeatmapDtoSchema,

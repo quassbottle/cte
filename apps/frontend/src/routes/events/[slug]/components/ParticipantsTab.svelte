@@ -19,7 +19,11 @@
 					<Content class="flex flex-wrap gap-3">
 						{#each team.participants as participant}
 							<a href="/users/{participant.id}">
-								<PlayerCard osuId={participant.osuId} username={participant.osuUsername} />
+								<PlayerCard
+									osuId={participant.osuId}
+									username={participant.osuUsername}
+									isCaptain={participant.id === team.captainId}
+								/>
 							</a>
 						{/each}
 					</Content>

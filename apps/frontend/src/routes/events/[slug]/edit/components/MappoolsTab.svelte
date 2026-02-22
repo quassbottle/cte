@@ -53,6 +53,11 @@
 	let mappoolVisibilityLoadingById: Record<string, boolean> = {};
 	let beatmapIndexInputByKey: Record<string, string> = {};
 	let beatmapModInputByKey: Record<string, string> = {};
+	let beatmapReplaceIdInputByKey: Record<string, string> = {};
+	let beatmapReplaceSetInputByKey: Record<string, string> = {};
+	let beatmapReplaceRequestedIdByKey: Record<string, number | null> = {};
+	let beatmapReplaceMetadataLoadingByKey: Record<string, boolean> = {};
+	let beatmapReplaceMetadataErrorByKey: Record<string, string | null> = {};
 
 	$: sortedStages = [...stages].sort(
 		(left, right) => new Date(left.startsAt).valueOf() - new Date(right.startsAt).valueOf()
@@ -127,6 +132,16 @@
 		return beatmapModInputByKey[key] ?? normalizeMod(fallbackMod);
 	};
 
+	const getBeatmapReplaceIdInput = (mappoolId: string, osuBeatmapId: number) => {
+		const key = getBeatmapManageKey(mappoolId, osuBeatmapId);
+		return beatmapReplaceIdInputByKey[key] ?? String(osuBeatmapId);
+	};
+
+	const getBeatmapReplaceSetInput = (mappoolId: string, osuBeatmapId: number, fallbackBeatmapsetId: number) => {
+		const key = getBeatmapManageKey(mappoolId, osuBeatmapId);
+		return beatmapReplaceSetInputByKey[key] ?? String(fallbackBeatmapsetId);
+	};
+
 	const getPreviewBeatmap = (stageId: string) => {
 		const stageState = stageStateById[stageId];
 		if (!stageState) return null;
@@ -172,6 +187,29 @@
 			});
 		} finally {
 			updateStageState(stageId, { beatmapMetadataLoading: false });
+		}
+	};
+
+	const loadReplacementBeatmapMetadata = async (key: string, beatmapId: number) => {
+		beatmapReplaceMetadataLoadingByKey = { ...beatmapReplaceMetadataLoadingByKey, [key]: true };
+		beatmapReplaceMetadataErrorByKey = { ...beatmapReplaceMetadataErrorByKey, [key]: null };
+
+		try {
+			const response = await api({ token: session?.token }).osu().getBeatmap(beatmapId);
+			if (!response.success || !response.result) {
+				beatmapReplaceMetadataErrorByKey = {
+					...beatmapReplaceMetadataErrorByKey,
+					[key]: response.error?.message ?? 'Failed to load beatmap metadata'
+				};
+				return;
+			}
+
+			beatmapReplaceSetInputByKey = {
+				...beatmapReplaceSetInputByKey,
+				[key]: String(response.result.osuBeatmapsetId)
+			};
+		} finally {
+			beatmapReplaceMetadataLoadingByKey = { ...beatmapReplaceMetadataLoadingByKey, [key]: false };
 		}
 	};
 
@@ -238,6 +276,57 @@
 						[key]: normalizeMod(beatmap.mod)
 					};
 				}
+				if (!(key in beatmapReplaceIdInputByKey)) {
+					beatmapReplaceIdInputByKey = {
+						...beatmapReplaceIdInputByKey,
+						[key]: String(beatmap.osuBeatmapId)
+					};
+				}
+				if (!(key in beatmapReplaceSetInputByKey)) {
+					beatmapReplaceSetInputByKey = {
+						...beatmapReplaceSetInputByKey,
+						[key]: String(beatmap.osuBeatmapsetId)
+					};
+				}
+				if (!(key in beatmapReplaceRequestedIdByKey)) {
+					beatmapReplaceRequestedIdByKey = {
+						...beatmapReplaceRequestedIdByKey,
+						[key]: beatmap.osuBeatmapId
+					};
+				}
+				if (!(key in beatmapReplaceMetadataLoadingByKey)) {
+					beatmapReplaceMetadataLoadingByKey = {
+						...beatmapReplaceMetadataLoadingByKey,
+						[key]: false
+					};
+				}
+				if (!(key in beatmapReplaceMetadataErrorByKey)) {
+					beatmapReplaceMetadataErrorByKey = {
+						...beatmapReplaceMetadataErrorByKey,
+						[key]: null
+					};
+				}
+			}
+		}
+	}
+
+	$: {
+		for (const entry of mappoolBeatmaps) {
+			for (const beatmap of entry.beatmaps) {
+				const key = getBeatmapManageKey(entry.mappoolId, beatmap.osuBeatmapId);
+				const replaceBeatmapId = Number.parseInt(beatmapReplaceIdInputByKey[key] ?? '', 10);
+
+				if (!Number.isInteger(replaceBeatmapId) || replaceBeatmapId <= 0) {
+					if (beatmapReplaceRequestedIdByKey[key] !== null) {
+						beatmapReplaceRequestedIdByKey = { ...beatmapReplaceRequestedIdByKey, [key]: null };
+						beatmapReplaceMetadataErrorByKey = { ...beatmapReplaceMetadataErrorByKey, [key]: null };
+					}
+					continue;
+				}
+
+				if (beatmapReplaceRequestedIdByKey[key] === replaceBeatmapId) continue;
+				beatmapReplaceRequestedIdByKey = { ...beatmapReplaceRequestedIdByKey, [key]: replaceBeatmapId };
+				void loadReplacementBeatmapMetadata(key, replaceBeatmapId);
 			}
 		}
 	}
@@ -433,6 +522,106 @@
 		}
 	};
 
+	const onMappoolBeatmapReplace = async (stageId: string, mappoolId: string, osuBeatmapId: number) => {
+		const key = getBeatmapManageKey(mappoolId, osuBeatmapId);
+		updateStageState(stageId, { beatmapManageError: null });
+		beatmapManageLoadingByKey = { ...beatmapManageLoadingByKey, [key]: true };
+
+		try {
+			const nextOsuBeatmapId = Number.parseInt(beatmapReplaceIdInputByKey[key] ?? '', 10);
+			const nextOsuBeatmapsetId = Number.parseInt(beatmapReplaceSetInputByKey[key] ?? '', 10);
+
+			if (!Number.isInteger(nextOsuBeatmapId) || nextOsuBeatmapId <= 0) {
+				updateStageState(stageId, { beatmapManageError: 'Invalid replacement beatmap id' });
+				return;
+			}
+			if (!Number.isInteger(nextOsuBeatmapsetId) || nextOsuBeatmapsetId <= 0) {
+				updateStageState(stageId, { beatmapManageError: 'Beatmapset id is not loaded yet' });
+				return;
+			}
+
+			const response = await api({ token: session?.token })
+				.mappools()
+				.updateBeatmap(mappoolId, osuBeatmapId, {
+					beatmapId: nextOsuBeatmapId,
+					beatmapsetId: nextOsuBeatmapsetId
+				});
+
+			if (!response.success || !response.result) {
+				updateStageState(stageId, {
+					beatmapManageError: response.error?.message ?? 'Failed to replace beatmap'
+				});
+				return;
+			}
+
+			const updatedBeatmap = response.result as MappoolBeatmapDto;
+			mappoolBeatmaps = mappoolBeatmaps.map((entry) =>
+				entry.mappoolId === mappoolId
+					? {
+							...entry,
+							beatmaps: entry.beatmaps.map((beatmap) =>
+								beatmap.osuBeatmapId === osuBeatmapId ? updatedBeatmap : beatmap
+							)
+						}
+					: entry
+			);
+
+			const nextKey = getBeatmapManageKey(mappoolId, updatedBeatmap.osuBeatmapId);
+			if (nextKey !== key) {
+				beatmapIndexInputByKey = {
+					...beatmapIndexInputByKey,
+					[nextKey]: String(updatedBeatmap.index)
+				};
+				delete beatmapIndexInputByKey[key];
+				beatmapIndexInputByKey = { ...beatmapIndexInputByKey };
+
+				beatmapModInputByKey = {
+					...beatmapModInputByKey,
+					[nextKey]: normalizeMod(updatedBeatmap.mod)
+				};
+				delete beatmapModInputByKey[key];
+				beatmapModInputByKey = { ...beatmapModInputByKey };
+
+				beatmapReplaceIdInputByKey = {
+					...beatmapReplaceIdInputByKey,
+					[nextKey]: String(updatedBeatmap.osuBeatmapId)
+				};
+				delete beatmapReplaceIdInputByKey[key];
+				beatmapReplaceIdInputByKey = { ...beatmapReplaceIdInputByKey };
+
+				beatmapReplaceSetInputByKey = {
+					...beatmapReplaceSetInputByKey,
+					[nextKey]: String(updatedBeatmap.osuBeatmapsetId)
+				};
+				delete beatmapReplaceSetInputByKey[key];
+				beatmapReplaceSetInputByKey = { ...beatmapReplaceSetInputByKey };
+
+				beatmapReplaceRequestedIdByKey = {
+					...beatmapReplaceRequestedIdByKey,
+					[nextKey]: updatedBeatmap.osuBeatmapId
+				};
+				delete beatmapReplaceRequestedIdByKey[key];
+				beatmapReplaceRequestedIdByKey = { ...beatmapReplaceRequestedIdByKey };
+
+				beatmapReplaceMetadataErrorByKey = {
+					...beatmapReplaceMetadataErrorByKey,
+					[nextKey]: null
+				};
+				delete beatmapReplaceMetadataErrorByKey[key];
+				beatmapReplaceMetadataErrorByKey = { ...beatmapReplaceMetadataErrorByKey };
+
+				beatmapReplaceMetadataLoadingByKey = {
+					...beatmapReplaceMetadataLoadingByKey,
+					[nextKey]: false
+				};
+				delete beatmapReplaceMetadataLoadingByKey[key];
+				beatmapReplaceMetadataLoadingByKey = { ...beatmapReplaceMetadataLoadingByKey };
+			}
+		} finally {
+			beatmapManageLoadingByKey = { ...beatmapManageLoadingByKey, [key]: false };
+		}
+	};
+
 	const onMappoolVisibilityToggle = async (stageId: string, mappool: MappoolDto) => {
 		updateStageState(stageId, { mappoolError: null });
 		mappoolVisibilityLoadingById = {
@@ -552,6 +741,32 @@
 																	}}
 																/>
 															</div>
+															<div class="flex w-[160px] flex-col gap-1">
+																<Label for={`beatmap-replace-id-${mappool.id}-${beatmap.osuBeatmapId}`}>Beatmap id</Label>
+																<Input
+																	id={`beatmap-replace-id-${mappool.id}-${beatmap.osuBeatmapId}`}
+																	type="number"
+																	min="1"
+																	value={getBeatmapReplaceIdInput(mappool.id, beatmap.osuBeatmapId)}
+																	on:input={(event) => {
+																		const target = event.currentTarget as HTMLInputElement;
+																		beatmapReplaceIdInputByKey = {
+																			...beatmapReplaceIdInputByKey,
+																			[beatmapManageKey]: target.value
+																		};
+																	}}
+																/>
+															</div>
+															<div class="flex w-[160px] flex-col gap-1">
+																<Label for={`beatmap-replace-set-id-${mappool.id}-${beatmap.osuBeatmapId}`}>Beatmapset id (auto)</Label>
+																<Input
+																	id={`beatmap-replace-set-id-${mappool.id}-${beatmap.osuBeatmapId}`}
+																	type="number"
+																	min="1"
+																	readonly
+																	value={getBeatmapReplaceSetInput(mappool.id, beatmap.osuBeatmapId, beatmap.osuBeatmapsetId)}
+																/>
+															</div>
 															<Button
 																size="sm"
 																variant="outline"
@@ -562,12 +777,29 @@
 															</Button>
 															<Button
 																size="sm"
+																variant="outline"
+																disabled={
+																	beatmapManageLoadingByKey[beatmapManageKey] ||
+																	beatmapReplaceMetadataLoadingByKey[beatmapManageKey]
+																}
+																on:click={() => onMappoolBeatmapReplace(stage.id, mappool.id, beatmap.osuBeatmapId)}
+															>
+																Replace map
+															</Button>
+															<Button
+																size="sm"
 																variant="destructive"
 																disabled={beatmapManageLoadingByKey[beatmapManageKey]}
 																on:click={() => onMappoolBeatmapDelete(stage.id, mappool.id, beatmap.osuBeatmapId)}
 															>
 																Delete map
 															</Button>
+															{#if beatmapReplaceMetadataLoadingByKey[beatmapManageKey]}
+																<p class="text-xs text-muted-foreground">Loading replacement metadata...</p>
+															{/if}
+															{#if beatmapReplaceMetadataErrorByKey[beatmapManageKey]}
+																<p class="text-xs text-red-400">{beatmapReplaceMetadataErrorByKey[beatmapManageKey]}</p>
+															{/if}
 														</div>
 													</div>
 												{/each}

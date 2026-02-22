@@ -29,6 +29,8 @@ export interface MappoolUpdateDto {
 export interface MappoolUpdateBeatmapDto {
 	mod?: string;
 	index?: number;
+	beatmapsetId?: number;
+	beatmapId?: number;
 }
 
 export interface MappoolBeatmapDto {

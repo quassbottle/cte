@@ -7,7 +7,7 @@
 	export let name: string;
 	export let startsAt: Date;
 	export let isTeam: boolean;
-	export let participants = 0;
+	export let participantsCount = 0;
 </script>
 
 <div class="flex w-full flex-col overflow-hidden rounded-2xl bg-[#f5f5f5]">
@@ -33,6 +33,8 @@
 			>
 		</BreadcrumbList>
 
-		<p class="text-[14px] opacity-50">{participants} {pluralize('participant', participants)}</p>
+		<p class="text-[14px] opacity-50">
+			{participantsCount} {pluralize('participant', participantsCount)}
+		</p>
 	</div>
 </div>

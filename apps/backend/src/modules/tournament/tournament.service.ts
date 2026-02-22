@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import { teamId } from 'lib/domain/team/team.id';
 import {
@@ -149,6 +149,70 @@ export class TournamentService {
     }
 
     return [...byTeam.values()];
+  }
+
+  public async getParticipantsCount(params: {
+    id: TournamentId;
+    isTeam: boolean;
+  }): Promise<number> {
+    const { id, isTeam } = params;
+
+    if (isTeam) {
+      const [row] = await this.drizzle
+        .select({ participantsCount: count(teamParticipants.userId) })
+        .from(teamParticipants)
+        .innerJoin(teams, eq(teams.id, teamParticipants.teamId))
+        .where(eq(teams.tournamentId, id));
+
+      return row?.participantsCount ?? 0;
+    }
+
+    const [row] = await this.drizzle
+      .select({ participantsCount: count(soloParticipants.userId) })
+      .from(soloParticipants)
+      .where(eq(soloParticipants.tournamentId, id));
+
+    return row?.participantsCount ?? 0;
+  }
+
+  public async getParticipantsCountMap(
+    tournamentIds: TournamentId[],
+  ): Promise<Map<TournamentId, number>> {
+    const counts = new Map<TournamentId, number>();
+
+    if (tournamentIds.length === 0) {
+      return counts;
+    }
+
+    const [soloRows, teamRows] = await Promise.all([
+      this.drizzle
+        .select({
+          tournamentId: soloParticipants.tournamentId,
+          participantsCount: count(soloParticipants.userId),
+        })
+        .from(soloParticipants)
+        .where(inArray(soloParticipants.tournamentId, tournamentIds))
+        .groupBy(soloParticipants.tournamentId),
+      this.drizzle
+        .select({
+          tournamentId: teams.tournamentId,
+          participantsCount: count(teamParticipants.userId),
+        })
+        .from(teams)
+        .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
+        .where(inArray(teams.tournamentId, tournamentIds))
+        .groupBy(teams.tournamentId),
+    ]);
+
+    for (const row of soloRows) {
+      counts.set(row.tournamentId, row.participantsCount);
+    }
+
+    for (const row of teamRows) {
+      counts.set(row.tournamentId, row.participantsCount);
+    }
+
+    return counts;
   }
 
   public async update(params: {

@@ -121,7 +121,7 @@ export class MappoolController {
   )
   @ApiResponse({
     status: 200,
-    description: 'Updates mappool beatmap mod and/or index.',
+    description: 'Updates mappool beatmap mod/index or replaces beatmap.',
     type: MappoolBeatmapDto.Output,
   })
   public async updateBeatmap(
@@ -134,6 +134,8 @@ export class MappoolController {
       osuBeatmapId,
       mod: body.mod,
       index: body.index,
+      osuBeatmapsetId: body.beatmapsetId,
+      nextOsuBeatmapId: body.beatmapId,
     });
 
     return mappoolBeatmapDtoSchema.parse(updated);

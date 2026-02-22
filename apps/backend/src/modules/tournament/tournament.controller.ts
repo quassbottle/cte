@@ -46,9 +46,17 @@ export class TournamentController {
     @Query() query: PaginationDto,
   ): Promise<TournamentDto[]> {
     const tournaments = await this.tournamentService.findMany(query);
+    const participantsCountByTournamentId =
+      await this.tournamentService.getParticipantsCountMap(
+        tournaments.map((tournament) => tournament.id),
+      );
 
     return tournaments.map((tournament) =>
-      tournamentDtoSchema.parse(tournament),
+      tournamentDtoSchema.parse({
+        ...tournament,
+        participantsCount:
+          participantsCountByTournamentId.get(tournament.id) ?? 0,
+      }),
     );
   }
 
@@ -62,8 +70,11 @@ export class TournamentController {
     @Param('id', TournamentIdPipe) id: TournamentId,
   ): Promise<TournamentDto> {
     const tournament = await this.tournamentService.getById({ id });
+    const participantsCount = await this.tournamentService.getParticipantsCount(
+      { id, isTeam: tournament.isTeam },
+    );
 
-    return tournamentDtoSchema.parse(tournament);
+    return tournamentDtoSchema.parse({ ...tournament, participantsCount });
   }
 
   @Get(':id/participants')
@@ -128,7 +139,7 @@ export class TournamentController {
       creatorId: user.id,
     });
 
-    return tournamentDtoSchema.parse(created);
+    return tournamentDtoSchema.parse({ ...created, participantsCount: 0 });
   }
 
   @Patch(':id')
@@ -146,8 +157,11 @@ export class TournamentController {
     @Body() body: UpdateTournamentDto,
   ): Promise<TournamentDto> {
     const updated = await this.tournamentService.update({ id, data: body });
+    const participantsCount = await this.tournamentService.getParticipantsCount(
+      { id, isTeam: updated.isTeam },
+    );
 
-    return tournamentDtoSchema.parse(updated);
+    return tournamentDtoSchema.parse({ ...updated, participantsCount });
   }
 
   @Delete(':id')
@@ -164,8 +178,11 @@ export class TournamentController {
     @Param('id', TournamentIdPipe) id: TournamentId,
   ): Promise<TournamentDto> {
     const deleted = await this.tournamentService.softDelete({ id });
+    const participantsCount = await this.tournamentService.getParticipantsCount(
+      { id, isTeam: deleted.isTeam },
+    );
 
-    return tournamentDtoSchema.parse(deleted);
+    return tournamentDtoSchema.parse({ ...deleted, participantsCount });
   }
 
   @Post(':id/register')
