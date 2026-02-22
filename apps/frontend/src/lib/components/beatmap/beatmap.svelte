@@ -29,13 +29,18 @@
 		class: className
 	}: BeatmapProps = $props();
 
-	let idCopied = false;
-	let mpMapCopied = false;
+	let idCopied = $state(false);
+	let mpMapCopied = $state(false);
+	let idCopyFailed = $state(false);
+	let mpMapCopyFailed = $state(false);
 	let idCopiedTimeout: ReturnType<typeof setTimeout> | null = null;
 	let mpMapCopiedTimeout: ReturnType<typeof setTimeout> | null = null;
+	let idCopyFailedTimeout: ReturnType<typeof setTimeout> | null = null;
+	let mpMapCopyFailedTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	const showCopiedState = (type: 'id' | 'mp') => {
 		if (type === 'id') {
+			idCopyFailed = false;
 			idCopied = true;
 			if (idCopiedTimeout) {
 				clearTimeout(idCopiedTimeout);
@@ -47,6 +52,7 @@
 			return;
 		}
 
+		mpMapCopyFailed = false;
 		mpMapCopied = true;
 		if (mpMapCopiedTimeout) {
 			clearTimeout(mpMapCopiedTimeout);
@@ -57,27 +63,71 @@
 		}, 1200);
 	};
 
+	const showCopyFailedState = (type: 'id' | 'mp') => {
+		if (type === 'id') {
+			idCopied = false;
+			idCopyFailed = true;
+			if (idCopyFailedTimeout) {
+				clearTimeout(idCopyFailedTimeout);
+			}
+			idCopyFailedTimeout = setTimeout(() => {
+				idCopyFailed = false;
+				idCopyFailedTimeout = null;
+			}, 1200);
+			return;
+		}
+
+		mpMapCopied = false;
+		mpMapCopyFailed = true;
+		if (mpMapCopyFailedTimeout) {
+			clearTimeout(mpMapCopyFailedTimeout);
+		}
+		mpMapCopyFailedTimeout = setTimeout(() => {
+			mpMapCopyFailed = false;
+			mpMapCopyFailedTimeout = null;
+		}, 1200);
+	};
+
 	const copyToClipboard = async (value: string) => {
-		if (typeof navigator === 'undefined' || !navigator.clipboard) {
+		if (typeof window === 'undefined' || typeof navigator === 'undefined') {
 			return false;
 		}
 
-		await navigator.clipboard.writeText(value);
-		return true;
+		if (!window.isSecureContext) {
+			console.error('Clipboard API unavailable: insecure context');
+			return false;
+		}
+
+		if (!navigator.clipboard) {
+			console.error('Clipboard API unavailable: navigator.clipboard is undefined');
+			return false;
+		}
+
+		try {
+			await navigator.clipboard.writeText(value);
+			return true;
+		} catch (error) {
+			console.error('Clipboard write failed', error);
+			return false;
+		}
 	};
 
 	const onCopyId = async () => {
 		const copied = await copyToClipboard(String(beatmapId));
 		if (copied) {
 			showCopiedState('id');
+			return;
 		}
+		showCopyFailedState('id');
 	};
 
 	const onCopyMpMap = async () => {
 		const copied = await copyToClipboard(`!mp map ${beatmapId}`);
 		if (copied) {
 			showCopiedState('mp');
+			return;
 		}
+		showCopyFailedState('mp');
 	};
 </script>
 
@@ -121,14 +171,14 @@
 				class="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
 				on:click={onCopyId}
 			>
-				{idCopied ? 'Copied' : 'Copy ID'}
+				{idCopied ? 'Copied' : idCopyFailed ? 'Copy failed' : 'Copy ID'}
 			</button>
 			<button
 				type="button"
 				class="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
 				on:click={onCopyMpMap}
 			>
-				{mpMapCopied ? 'Copied' : 'Copy MP MAP'}
+				{mpMapCopied ? 'Copied' : mpMapCopyFailed ? 'Copy failed' : 'Copy MP MAP'}
 			</button>
 		</div>
 	</div>
