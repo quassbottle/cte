@@ -39,6 +39,7 @@
 
 	$: isLoggedIn = Boolean(session?.id);
 	$: isRegistered = Boolean(session?.id && participants.some((participant) => participant.id === session?.id));
+	$: participantsCount = participants?.length ?? tournament.participantsCount ?? 0;
 	$: canShowRegistrationForm = tournament.registrationOpen || isRegistered;
 	$: registerButtonText = isRegistered
 		? tournament.isTeam
@@ -135,8 +136,7 @@
 					<Item
 						><div class="flex select-none flex-row items-center gap-1 text-[12px]">
 							<UserRound class="h-3 w-3" />
-							{tournament.participantsCount}
-							{pluralize('participant', tournament.participantsCount)}
+							<span>{participantsCount} {pluralize('participant', participantsCount)}</span>
 						</div></Item
 					>
 					<Item>
