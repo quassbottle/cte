@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, ilike } from 'drizzle-orm';
+import { eq, ilike, or } from 'drizzle-orm';
 import {
   UserException,
   UserExceptionCode,
 } from 'lib/domain/user/user.exception';
-import { userId, userIdSchema, UserId } from 'lib/domain/user/user.id';
+import { userId, UserId } from 'lib/domain/user/user.id';
 import { DbUser, Schema, users } from 'lib/infrastructure/db';
 
 @Injectable()
@@ -54,17 +54,16 @@ export class UserService {
       );
     }
 
-    const parsedId = userIdSchema.safeParse(query);
-    if (parsedId.success) {
-      return this.getById({ id: parsedId.data });
-    }
-
-    if (/^\d+$/.test(query)) {
-      return this.getByOsuId({ osuId: Number(query) });
-    }
-
+    const parsedOsuId = Number(query);
+    const hasOsuId = Number.isInteger(parsedOsuId);
     const candidate = await this.drizzle.query.users.findFirst({
-      where: ilike(users.osuUsername, query),
+      where: hasOsuId
+        ? or(
+            eq(users.id, query as UserId),
+            eq(users.osuId, parsedOsuId),
+            ilike(users.osuUsername, query),
+          )
+        : or(eq(users.id, query as UserId), ilike(users.osuUsername, query)),
     });
 
     if (!candidate) {
