@@ -12,8 +12,13 @@ const getMe = async (headers: THeaders, fetcher: TApiFetcher<UserDto>) => {
 };
 
 const lookup = async (query: string, headers: THeaders, fetcher: TApiFetcher<UserDto>) => {
-	const route = `/api/users/lookup?query=${encodeURIComponent(query)}`;
-	return fetcher({ method: 'GET', route, headers });
+	const route = '/api/users/lookup';
+	return fetcher({
+		method: 'GET',
+		route,
+		headers,
+		query: new URLSearchParams([['query', query]])
+	});
 };
 
 export const users = (headers: THeaders) => {

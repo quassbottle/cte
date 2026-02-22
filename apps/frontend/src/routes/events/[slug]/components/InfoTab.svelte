@@ -97,7 +97,7 @@
 	const lookupAndAddUser = async () => {
 		const query = teammateQuery.trim();
 		if (!query) {
-			lookupError = 'Enter user id, osu id, or username.';
+			lookupError = 'Enter osu id or osu username (local id also supported).';
 			return;
 		}
 
@@ -194,7 +194,7 @@
 											<div>
 												<p class="text-xl font-semibold">Register Team</p>
 												<p class="text-sm text-black/60">
-													Add teammates by `domaind id`, osu id, or username.
+													Add teammates by osu id or osu username. Local id is also supported.
 												</p>
 											</div>
 											<Button variant="ghost" size="icon" on:click={() => (isRegistrationModalOpen = false)}>
@@ -228,7 +228,7 @@
 													<input
 														name="teamParticipantLookup"
 														class="border-input bg-background ring-offset-background focus-visible:ring-ring h-9 flex-1 rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-														placeholder="domaind id / osu id / username"
+														placeholder="osu id / osu username"
 														bind:value={teammateQuery}
 														on:keydown={(event) => {
 															if (event.key === 'Enter') {

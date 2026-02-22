@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq } from 'drizzle-orm';
+import { eq, ilike } from 'drizzle-orm';
 import {
   UserException,
   UserExceptionCode,
@@ -64,7 +64,7 @@ export class UserService {
     }
 
     const candidate = await this.drizzle.query.users.findFirst({
-      where: eq(users.osuUsername, query),
+      where: ilike(users.osuUsername, query),
     });
 
     if (!candidate) {
