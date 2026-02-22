@@ -89,27 +89,39 @@
 	};
 
 	const copyToClipboard = async (value: string) => {
-		if (typeof window === 'undefined' || typeof navigator === 'undefined') {
+		if (typeof document === 'undefined' || typeof navigator === 'undefined') {
 			return false;
 		}
 
-		if (!window.isSecureContext) {
-			console.error('Clipboard API unavailable: insecure context');
-			return false;
+		if (navigator.clipboard) {
+			try {
+				await navigator.clipboard.writeText(value);
+				return true;
+			} catch (error) {
+				console.error('Clipboard write failed, trying fallback', error);
+			}
 		}
 
-		if (!navigator.clipboard) {
-			console.error('Clipboard API unavailable: navigator.clipboard is undefined');
-			return false;
-		}
+		const textarea = document.createElement('textarea');
+		textarea.value = value;
+		textarea.setAttribute('readonly', '');
+		textarea.style.position = 'fixed';
+		textarea.style.opacity = '0';
+		textarea.style.pointerEvents = 'none';
+		document.body.appendChild(textarea);
+		textarea.focus();
+		textarea.select();
 
+		let copied = false;
 		try {
-			await navigator.clipboard.writeText(value);
-			return true;
+			copied = document.execCommand('copy');
 		} catch (error) {
-			console.error('Clipboard write failed', error);
-			return false;
+			console.error('Fallback copy failed', error);
+			copied = false;
 		}
+
+		document.body.removeChild(textarea);
+		return copied;
 	};
 
 	const onCopyId = async () => {
