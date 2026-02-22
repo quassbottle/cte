@@ -20,9 +20,7 @@
 	$: beatmapsByMappoolId = new Map(
 		mappoolBeatmaps.map((entry) => [
 			entry.mappoolId,
-			[...entry.beatmaps].sort((left, right) =>
-				left.mod === right.mod ? left.index - right.index : left.mod.localeCompare(right.mod)
-			)
+			[...entry.beatmaps]
 		])
 	);
 
