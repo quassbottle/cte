@@ -8,10 +8,15 @@
 	const markdownRenderer = new marked.Renderer();
 	markdownRenderer.html = () => '';
 
-	$: hasValue = Boolean(value?.trim());
+	$: normalizedValue = (value ?? '').replace(/\r\n/g, '\n');
+	$: markdownValue =
+		normalizedValue.includes('\n') || !normalizedValue.includes('\\n')
+			? normalizedValue
+			: normalizedValue.replace(/\\n/g, '\n');
+	$: hasValue = Boolean(markdownValue.trim());
 	$: html = hasValue
 		? DOMPurify.sanitize(
-				marked.parse(value as string, {
+				marked.parse(markdownValue, {
 					renderer: markdownRenderer,
 					breaks: true,
 					gfm: true
@@ -21,5 +26,15 @@
 </script>
 
 {#if hasValue}
-	<div class={`prose max-w-none ${className}`}>{@html html}</div>
+	<div
+		class={`prose prose-neutral dark:prose-invert max-w-none
+			prose-headings:mb-3 prose-headings:mt-6 prose-headings:first:mt-0
+			prose-p:my-3 prose-p:leading-7
+			prose-ol:my-3 prose-ol:pl-6 prose-ul:my-3 prose-ul:pl-6
+			prose-li:my-1
+			prose-hr:my-6
+			${className}`}
+	>
+		{@html html}
+	</div>
 {/if}
