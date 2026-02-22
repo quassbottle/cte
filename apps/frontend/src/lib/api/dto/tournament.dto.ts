@@ -23,6 +23,13 @@ export interface TournamentParticipantDto {
 	osuUsername: string;
 }
 
+export interface TournamentTeamDto {
+	id: string;
+	name: string;
+	captainId: string;
+	participants: TournamentParticipantDto[];
+}
+
 export interface TournamentCreateDto {
 	name: string;
 	description?: string | null;

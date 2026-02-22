@@ -121,7 +121,7 @@ export class MappoolController {
   )
   @ApiResponse({
     status: 200,
-    description: 'Updates mappool beatmap index.',
+    description: 'Updates mappool beatmap mod and/or index.',
     type: MappoolBeatmapDto.Output,
   })
   public async updateBeatmap(
@@ -129,9 +129,10 @@ export class MappoolController {
     @Param('osuBeatmapId', ParseIntPipe) osuBeatmapId: number,
     @Body() body: UpdateMappoolBeatmapDto,
   ): Promise<MappoolBeatmapDto> {
-    const updated = await this.mappoolService.updateBeatmapIndex({
+    const updated = await this.mappoolService.updateBeatmap({
       id,
       osuBeatmapId,
+      mod: body.mod,
       index: body.index,
     });
 

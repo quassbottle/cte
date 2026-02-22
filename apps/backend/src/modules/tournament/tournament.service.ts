@@ -102,6 +102,55 @@ export class TournamentService {
     return found.map(({ user }) => user);
   }
 
+  public async getTeams(params: { id: TournamentId }): Promise<
+    {
+      id: string;
+      name: string;
+      captainId: UserId;
+      participants: DbUser[];
+    }[]
+  > {
+    const { id } = params;
+
+    const tournament = await this.getById({ id });
+    if (!tournament.isTeam) return [];
+
+    const rows = await this.drizzle
+      .select({
+        teamId: teams.id,
+        teamName: teams.name,
+        captainId: teams.captainId,
+        user: users,
+      })
+      .from(teams)
+      .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
+      .innerJoin(users, eq(users.id, teamParticipants.userId))
+      .where(eq(teams.tournamentId, id))
+      .orderBy(asc(teams.name), asc(users.osuUsername));
+
+    const byTeam = new Map<
+      string,
+      { id: string; name: string; captainId: UserId; participants: DbUser[] }
+    >();
+
+    for (const row of rows) {
+      const current = byTeam.get(row.teamId);
+      if (current) {
+        current.participants.push(row.user);
+        continue;
+      }
+
+      byTeam.set(row.teamId, {
+        id: row.teamId,
+        name: row.teamName,
+        captainId: row.captainId,
+        participants: [row.user],
+      });
+    }
+
+    return [...byTeam.values()];
+  }
+
   public async update(params: {
     id: TournamentId;
     data: TournamentUpdateParams;

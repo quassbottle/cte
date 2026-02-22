@@ -195,12 +195,13 @@ export class MappoolService {
     });
   }
 
-  public async updateBeatmapIndex(params: {
+  public async updateBeatmap(params: {
     id: MappoolId;
     osuBeatmapId: number;
-    index: number;
+    mod?: string;
+    index?: number;
   }): Promise<MappoolBeatmapView> {
-    const { id, osuBeatmapId, index } = params;
+    const { id, osuBeatmapId, mod, index } = params;
 
     await this.getById({ id });
 
@@ -209,16 +210,26 @@ export class MappoolService {
       osuBeatmapId,
     });
 
+    const nextMod =
+      mod === undefined
+        ? current.mappoolBeatmap.mod
+        : this.normalizeMod(mod);
+    const nextIndex =
+      index ??
+      (nextMod === current.mappoolBeatmap.mod
+        ? current.mappoolBeatmap.index
+        : await this.getNextBeatmapIndex({ id, mod: nextMod }));
+
     await this.assertIndexIsAvailable({
       id,
-      mod: current.mappoolBeatmap.mod,
-      index,
+      mod: nextMod,
+      index: nextIndex,
       beatmapId: current.mappoolBeatmap.beatmapId,
     });
 
     const [updated] = await this.drizzle
       .update(mappoolsBeatmaps)
-      .set({ index })
+      .set({ mod: nextMod, index: nextIndex })
       .where(
         and(
           eq(mappoolsBeatmaps.mappoolId, id),

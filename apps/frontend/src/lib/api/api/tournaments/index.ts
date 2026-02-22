@@ -4,6 +4,7 @@ import type {
 	TournamentCreateDto,
 	TournamentDto,
 	TournamentParticipantDto,
+	TournamentTeamDto,
 	TournamentUpdateDto
 } from '$lib/api/types';
 
@@ -56,6 +57,11 @@ const participants = async (
 	return fetcher({ method: 'GET', route, headers, query });
 };
 
+const teams = async (id: string, headers: THeaders, fetcher: TApiFetcher<TournamentTeamDto[]>) => {
+	const route = `/api/tournaments/${id}/teams`;
+	return fetcher({ method: 'GET', route, headers });
+};
+
 const create = async (
 	params: TournamentCreateDto,
 	headers: THeaders,
@@ -85,6 +91,7 @@ export const tournaments = (headers: THeaders) => {
 		unregister: (id: string) => unregister(id, headers, fetcher as TApiFetcher<void>),
 		participants: (id: string, params?: { limit?: number; offset?: number }) =>
 			participants(id, params, headers, fetcher as TApiFetcher<TournamentParticipantDto[]>),
+		teams: (id: string) => teams(id, headers, fetcher as TApiFetcher<TournamentTeamDto[]>),
 		findMany: (params: { limit?: number; offset?: number }) =>
 			findMany(params, headers, fetcher as TApiFetcher<TournamentDto[]>),
 		create: (params: TournamentCreateDto) =>

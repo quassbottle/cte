@@ -1,5 +1,11 @@
 import { fetcherFactory, type TApiFetcher, type THeaders } from '$lib/api/fetcher';
-import type { MappoolAddBeatmapDto, MappoolBeatmapDto, MappoolCreateDto, MappoolDto } from '$lib/api/types';
+import type {
+	MappoolAddBeatmapDto,
+	MappoolBeatmapDto,
+	MappoolCreateDto,
+	MappoolDto,
+	MappoolUpdateBeatmapDto
+} from '$lib/api/types';
 
 const findMany = async (
 	params: { limit?: number; offset?: number } = {},
@@ -48,6 +54,27 @@ const addBeatmap = async (
 	return fetcher({ method: 'POST', route, headers, body: params });
 };
 
+const updateBeatmap = async (
+	id: string,
+	osuBeatmapId: number,
+	params: MappoolUpdateBeatmapDto,
+	headers: THeaders,
+	fetcher: TApiFetcher<MappoolBeatmapDto>
+) => {
+	const route = `/api/mappools/${id}/beatmaps/${osuBeatmapId}`;
+	return fetcher({ method: 'PATCH', route, headers, body: params });
+};
+
+const deleteBeatmap = async (
+	id: string,
+	osuBeatmapId: number,
+	headers: THeaders,
+	fetcher: TApiFetcher<MappoolBeatmapDto>
+) => {
+	const route = `/api/mappools/${id}/beatmaps/${osuBeatmapId}`;
+	return fetcher({ method: 'DELETE', route, headers });
+};
+
 export const mappools = (headers: THeaders) => {
 	const fetcher = fetcherFactory();
 
@@ -58,6 +85,10 @@ export const mappools = (headers: THeaders) => {
 		create: (params: MappoolCreateDto) => create(params, headers, fetcher as TApiFetcher<MappoolDto>),
 		findBeatmaps: (id: string) => findBeatmaps(id, headers, fetcher as TApiFetcher<MappoolBeatmapDto[]>),
 		addBeatmap: (id: string, params: MappoolAddBeatmapDto) =>
-			addBeatmap(id, params, headers, fetcher as TApiFetcher<MappoolBeatmapDto>)
+			addBeatmap(id, params, headers, fetcher as TApiFetcher<MappoolBeatmapDto>),
+		updateBeatmap: (id: string, osuBeatmapId: number, params: MappoolUpdateBeatmapDto) =>
+			updateBeatmap(id, osuBeatmapId, params, headers, fetcher as TApiFetcher<MappoolBeatmapDto>),
+		deleteBeatmap: (id: string, osuBeatmapId: number) =>
+			deleteBeatmap(id, osuBeatmapId, headers, fetcher as TApiFetcher<MappoolBeatmapDto>)
 	});
 };

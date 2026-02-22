@@ -66,10 +66,15 @@
 	let mappoolErrorByStage: Record<string, string | null> = {};
 
 	let selectedMappoolIdByStage: Record<string, string> = {};
+	let beatmapModByStage: Record<string, string> = {};
 	let beatmapIdByStage: Record<string, string> = {};
 	let beatmapsetIdByStage: Record<string, string> = {};
 	let beatmapLoadingByStage: Record<string, boolean> = {};
 	let beatmapErrorByStage: Record<string, string | null> = {};
+	let beatmapManageErrorByStage: Record<string, string | null> = {};
+	let beatmapManageLoadingByKey: Record<string, boolean> = {};
+	let beatmapIndexInputByKey: Record<string, string> = {};
+	let beatmapModInputByKey: Record<string, string> = {};
 	let beatmapMetadataByStage: Record<string, OsuBeatmapMetadataDto | null> = {};
 	let beatmapMetadataLoadingByStage: Record<string, boolean> = {};
 	let beatmapMetadataErrorByStage: Record<string, string | null> = {};
@@ -94,6 +99,7 @@
 	const getStageMappools = (stageId: string) =>
 		sortedMappools.filter((mappool) => mappool.stageId === stageId);
 	const getStageMappoolId = (stageId: string) => getStageMappools(stageId)[0]?.id ?? '';
+	const getBeatmapManageKey = (mappoolId: string, osuBeatmapId: number) => `${mappoolId}:${osuBeatmapId}`;
 	const getNextIndexForMod = (mappoolId: string, mod: string) => {
 		const normalizedMod = normalizeMod(mod);
 		const byMod = (beatmapsByMappoolId.get(mappoolId) ?? []).filter(
@@ -104,8 +110,10 @@
 	};
 	const getStagePreviewIndex = (stageId: string) => {
 		const mappoolId = selectedMappoolIdByStage[stageId];
+		const mod = normalizeMod(beatmapModByStage[stageId] ?? '');
+		if (!mod) return 1;
 		if (!mappoolId) return 1;
-		return getNextIndexForMod(mappoolId, 'NM');
+		return getNextIndexForMod(mappoolId, mod);
 	};
 	const loadBeatmapMetadata = async (stageId: string, beatmapId: number) => {
 		beatmapMetadataLoadingByStage = { ...beatmapMetadataLoadingByStage, [stageId]: true };
@@ -136,6 +144,8 @@
 	const getPreviewBeatmap = (stageId: string) => {
 		const beatmapId = Number.parseInt(beatmapIdByStage[stageId] ?? '', 10);
 		if (!Number.isInteger(beatmapId) || beatmapId <= 0) return null;
+		const mod = normalizeMod(beatmapModByStage[stageId] ?? '');
+		if (!mod) return null;
 		const metadata = beatmapMetadataByStage[stageId];
 		if (!metadata || metadata.osuBeatmapId !== beatmapId) return null;
 		return {
@@ -144,11 +154,20 @@
 			difficultyName: metadata.difficultyName,
 			beatmapsetId: metadata.osuBeatmapsetId,
 			beatmapId,
-			mod: 'NM',
+			mod,
 			index: getStagePreviewIndex(stageId),
 			difficulty: metadata.difficulty ?? null,
 			deleted: metadata.deleted ?? false
 		};
+	};
+
+	const getBeatmapIndexInput = (mappoolId: string, osuBeatmapId: number, fallbackIndex: number) => {
+		const key = getBeatmapManageKey(mappoolId, osuBeatmapId);
+		return beatmapIndexInputByKey[key] ?? String(fallbackIndex);
+	};
+	const getBeatmapModInput = (mappoolId: string, osuBeatmapId: number, fallbackMod: string) => {
+		const key = getBeatmapManageKey(mappoolId, osuBeatmapId);
+		return beatmapModInputByKey[key] ?? normalizeMod(fallbackMod);
 	};
 
 	$: {
@@ -163,6 +182,12 @@
 				mappoolEndsAtByStage = {
 					...mappoolEndsAtByStage,
 					[stage.id]: toDateTimeLocalValue(stage.endsAt)
+				};
+			}
+			if (!beatmapModByStage[stage.id]) {
+				beatmapModByStage = {
+					...beatmapModByStage,
+					[stage.id]: 'NM'
 				};
 			}
 			if (!(stage.id in requestedBeatmapIdByStage)) {
@@ -206,6 +231,26 @@
 			if (requestedBeatmapIdByStage[stage.id] === beatmapId) continue;
 			requestedBeatmapIdByStage = { ...requestedBeatmapIdByStage, [stage.id]: beatmapId };
 			void loadBeatmapMetadata(stage.id, beatmapId);
+		}
+	}
+
+	$: {
+		for (const entry of mappoolBeatmaps) {
+			for (const beatmap of entry.beatmaps) {
+				const key = getBeatmapManageKey(entry.mappoolId, beatmap.osuBeatmapId);
+				if (!(key in beatmapIndexInputByKey)) {
+					beatmapIndexInputByKey = {
+						...beatmapIndexInputByKey,
+						[key]: String(beatmap.index)
+					};
+				}
+				if (!(key in beatmapModInputByKey)) {
+					beatmapModInputByKey = {
+						...beatmapModInputByKey,
+						[key]: normalizeMod(beatmap.mod)
+					};
+				}
+			}
 		}
 	}
 
@@ -363,11 +408,15 @@
 	try {
 			const mappoolId = selectedMappoolIdByStage[stageId];
 			const beatmapId = Number.parseInt(beatmapIdByStage[stageId] ?? '', 10);
+			const mod = normalizeMod(beatmapModByStage[stageId] ?? '');
 			const metadata = beatmapMetadataByStage[stageId];
-			const mod = 'NM';
 
 			if (!mappoolId) {
 				beatmapErrorByStage = { ...beatmapErrorByStage, [stageId]: 'Select a mappool first' };
+				return;
+			}
+			if (!mod) {
+				beatmapErrorByStage = { ...beatmapErrorByStage, [stageId]: 'Mod is required' };
 				return;
 			}
 			if (!Number.isInteger(beatmapId) || beatmapId <= 0) {
@@ -417,41 +466,94 @@
 			beatmapLoadingByStage = { ...beatmapLoadingByStage, [stageId]: false };
 		}
 	};
+
+	const onMappoolBeatmapIndexUpdate = async (
+		stageId: string,
+		mappoolId: string,
+		osuBeatmapId: number
+	) => {
+		const key = getBeatmapManageKey(mappoolId, osuBeatmapId);
+		beatmapManageErrorByStage = { ...beatmapManageErrorByStage, [stageId]: null };
+		beatmapManageLoadingByKey = { ...beatmapManageLoadingByKey, [key]: true };
+
+		try {
+			const index = Number.parseInt(beatmapIndexInputByKey[key] ?? '', 10);
+			const mod = normalizeMod(beatmapModInputByKey[key] ?? '');
+			if (!Number.isInteger(index) || index <= 0) {
+				beatmapManageErrorByStage = {
+					...beatmapManageErrorByStage,
+					[stageId]: 'Index must be a positive integer'
+				};
+				return;
+			}
+			if (!mod) {
+				beatmapManageErrorByStage = {
+					...beatmapManageErrorByStage,
+					[stageId]: 'Mod must not be empty'
+				};
+				return;
+			}
+
+			const response = await api({ token: data.session?.token })
+				.mappools()
+				.updateBeatmap(mappoolId, osuBeatmapId, { mod, index });
+			if (!response.success || !response.result) {
+				beatmapManageErrorByStage = {
+					...beatmapManageErrorByStage,
+					[stageId]: response.error?.message ?? 'Failed to update beatmap index'
+				};
+				return;
+			}
+
+			mappoolBeatmaps = mappoolBeatmaps.map((entry) =>
+				entry.mappoolId === mappoolId
+					? {
+							...entry,
+							beatmaps: entry.beatmaps.map((beatmap) =>
+								beatmap.osuBeatmapId === osuBeatmapId
+									? (response.result as MappoolBeatmapDto)
+									: beatmap
+							)
+						}
+					: entry
+			);
+			beatmapIndexInputByKey = { ...beatmapIndexInputByKey, [key]: String(index) };
+			beatmapModInputByKey = { ...beatmapModInputByKey, [key]: mod };
+		} finally {
+			beatmapManageLoadingByKey = { ...beatmapManageLoadingByKey, [key]: false };
+		}
+	};
+
+	const onMappoolBeatmapDelete = async (stageId: string, mappoolId: string, osuBeatmapId: number) => {
+		const key = getBeatmapManageKey(mappoolId, osuBeatmapId);
+		beatmapManageErrorByStage = { ...beatmapManageErrorByStage, [stageId]: null };
+		beatmapManageLoadingByKey = { ...beatmapManageLoadingByKey, [key]: true };
+
+		try {
+			const response = await api({ token: data.session?.token }).mappools().deleteBeatmap(mappoolId, osuBeatmapId);
+			if (!response.success) {
+				beatmapManageErrorByStage = {
+					...beatmapManageErrorByStage,
+					[stageId]: response.error?.message ?? 'Failed to delete beatmap'
+				};
+				return;
+			}
+
+			mappoolBeatmaps = mappoolBeatmaps.map((entry) =>
+				entry.mappoolId === mappoolId
+					? {
+							...entry,
+							beatmaps: entry.beatmaps.filter((beatmap) => beatmap.osuBeatmapId !== osuBeatmapId)
+						}
+					: entry
+			);
+		} finally {
+			beatmapManageLoadingByKey = { ...beatmapManageLoadingByKey, [key]: false };
+		}
+	};
 </script>
 
 <div class="flex flex-col gap-8">
-	<div class="relative">
-		<Banner
-			class="relative h-[260px] text-white"
-			let:Content
-			src={'https://assets.ppy.sh/beatmaps/2315685/covers/cover@2x.jpg'}
-		>
-			<Content class="absolute bottom-0 left-0 flex w-[60%] flex-col p-6">
-				<p class="text-[32px] font-semibold">Edit: {data.tournament.name}</p>
-				<BreadcrumbList let:Item>
-					<Item
-						><div class="flex select-none flex-row items-center gap-1 text-[12px]">
-							<Calendar class="h-3 w-3" />
-							{new Date(data.tournament.startsAt).toDateString()}
-						</div></Item
-					>
-					<Item
-						><div class="flex select-none flex-row items-center gap-1 text-[12px]">
-							<UsersRound class="h-3 w-3" />
-							{isTeam ? 'Team tournament' : 'Solo tournament'}
-						</div></Item
-					>
-					<Item>
-						<div class="flex select-none flex-row items-center gap-1 text-[12px]">
-							<GameModeIcon class="h-3 w-3 invert" gamemode={mode} />
-							{gamemodes.find((item) => item.value === mode)?.label ?? mode}
-						</div>
-					</Item>
-				</BreadcrumbList>
-			</Content>
-		</Banner>
-	</div>
-
 	<TabGroup let:Head let:ContentItem>
 		<div class="mb-4 flex items-start justify-between">
 			<Head let:Item class="gap-4 text-[24px] font-semibold">
@@ -465,7 +567,39 @@
 			</a>
 		</div>
 
-		<ContentItem>
+		<ContentItem class="flex flex-col gap-8">
+			<div class="relative">
+				<Banner
+					class="relative h-[260px] text-white"
+					let:Content
+					src={'https://assets.ppy.sh/beatmaps/2315685/covers/cover@2x.jpg'}
+				>
+					<Content class="absolute bottom-0 left-0 flex w-[60%] flex-col p-6">
+						<p class="text-[32px] font-semibold">Edit: {data.tournament.name}</p>
+						<BreadcrumbList let:Item>
+							<Item
+								><div class="flex select-none flex-row items-center gap-1 text-[12px]">
+									<Calendar class="h-3 w-3" />
+									{new Date(data.tournament.startsAt).toDateString()}
+								</div></Item
+							>
+							<Item
+								><div class="flex select-none flex-row items-center gap-1 text-[12px]">
+									<UsersRound class="h-3 w-3" />
+									{isTeam ? 'Team tournament' : 'Solo tournament'}
+								</div></Item
+							>
+							<Item>
+								<div class="flex select-none flex-row items-center gap-1 text-[12px]">
+									<GameModeIcon class="h-3 w-3 invert" gamemode={mode} />
+									{gamemodes.find((item) => item.value === mode)?.label ?? mode}
+								</div>
+							</Item>
+						</BreadcrumbList>
+					</Content>
+				</Banner>
+			</div>
+
 			<Group let:Title let:Content>
 				<Title>Manage tournament</Title>
 				<Content>
@@ -649,17 +783,70 @@
 														<p class="text-xs text-muted-foreground">No maps in this mappool.</p>
 													{:else}
 														{#each beatmapsByMappoolId.get(mappool.id) ?? [] as beatmap}
-															<Beatmap
-																difficultyName={beatmap.difficultyName}
-																artist={beatmap.artist}
-																title={beatmap.title}
-																beatmapsetId={beatmap.osuBeatmapsetId}
-																beatmapId={beatmap.osuBeatmapId}
-																mod={normalizeMod(beatmap.mod)}
-																index={beatmap.index}
-																difficulty={beatmap.difficulty}
-																deleted={beatmap.deleted}
-															/>
+															<div class="rounded-md border border-border p-2">
+																<Beatmap
+																	difficultyName={beatmap.difficultyName}
+																	artist={beatmap.artist}
+																	title={beatmap.title}
+																	beatmapsetId={beatmap.osuBeatmapsetId}
+																	beatmapId={beatmap.osuBeatmapId}
+																	mod={normalizeMod(beatmap.mod)}
+																	index={beatmap.index}
+																	difficulty={beatmap.difficulty}
+																	deleted={beatmap.deleted}
+																/>
+																<div class="mt-2 flex flex-wrap items-end gap-2 px-2 pb-2">
+																	<div class="flex w-[140px] flex-col gap-1">
+																		<Label for={`beatmap-mod-${mappool.id}-${beatmap.osuBeatmapId}`}>Mod</Label>
+																		<Input
+																			id={`beatmap-mod-${mappool.id}-${beatmap.osuBeatmapId}`}
+																			value={getBeatmapModInput(mappool.id, beatmap.osuBeatmapId, beatmap.mod)}
+																			on:input={(event) => {
+																				const target = event.currentTarget as HTMLInputElement;
+																				const key = getBeatmapManageKey(mappool.id, beatmap.osuBeatmapId);
+																				beatmapModInputByKey = {
+																					...beatmapModInputByKey,
+																					[key]: target.value
+																				};
+																			}}
+																		/>
+																	</div>
+																	<div class="flex w-[140px] flex-col gap-1">
+																		<Label for={`beatmap-index-${mappool.id}-${beatmap.osuBeatmapId}`}>Index</Label>
+																		<Input
+																			id={`beatmap-index-${mappool.id}-${beatmap.osuBeatmapId}`}
+																			type="number"
+																			min="1"
+																			value={getBeatmapIndexInput(mappool.id, beatmap.osuBeatmapId, beatmap.index)}
+																			on:input={(event) => {
+																				const target = event.currentTarget as HTMLInputElement;
+																				const key = getBeatmapManageKey(mappool.id, beatmap.osuBeatmapId);
+																				beatmapIndexInputByKey = {
+																					...beatmapIndexInputByKey,
+																					[key]: target.value
+																				};
+																			}}
+																		/>
+																	</div>
+																	<Button
+																		size="sm"
+																		variant="outline"
+																		disabled={beatmapManageLoadingByKey[getBeatmapManageKey(mappool.id, beatmap.osuBeatmapId)]}
+																		on:click={() =>
+																			onMappoolBeatmapIndexUpdate(stage.id, mappool.id, beatmap.osuBeatmapId)}
+																	>
+																		Update index
+																	</Button>
+																	<Button
+																		size="sm"
+																		variant="destructive"
+																		disabled={beatmapManageLoadingByKey[getBeatmapManageKey(mappool.id, beatmap.osuBeatmapId)]}
+																		on:click={() => onMappoolBeatmapDelete(stage.id, mappool.id, beatmap.osuBeatmapId)}
+																	>
+																		Delete map
+																	</Button>
+																</div>
+															</div>
 														{/each}
 													{/if}
 												</div>
@@ -739,11 +926,14 @@
 
 									<div class="flex flex-col gap-4 md:flex-row">
 										<div class="flex w-full max-w-sm flex-col gap-1.5">
-											<Label for={`mappool-mod-${stage.id}`}>Mod (fixed)</Label>
+											<Label for={`mappool-mod-${stage.id}`}>
+												Mod {#if getPreviewBeatmap(stage.id)}(slot: {getPreviewBeatmap(stage.id)?.mod}{getPreviewBeatmap(stage.id)?.index}){/if}
+											</Label>
 											<Input
 												id={`mappool-mod-${stage.id}`}
-												value="NM"
-												readonly
+												placeholder="NM, HD, HR..."
+												required
+												bind:value={beatmapModByStage[stage.id]}
 											/>
 										</div>
 										<div class="flex w-full max-w-sm flex-col gap-1.5">
@@ -777,7 +967,7 @@
 									{#if getPreviewBeatmap(stage.id)}
 										<div class="flex w-full max-w-xl flex-col gap-2">
 											<p class="text-xs text-muted-foreground">
-												Preview of map to add (slot NM{getPreviewBeatmap(stage.id)?.index ?? 1})
+												Preview of map to add (slot {getPreviewBeatmap(stage.id)?.mod}{getPreviewBeatmap(stage.id)?.index ?? 1})
 											</p>
 											<Beatmap
 												artist={getPreviewBeatmap(stage.id)?.artist ?? ''}
@@ -795,6 +985,9 @@
 
 									{#if beatmapErrorByStage[stage.id]}
 										<p class="text-sm text-red-400">{beatmapErrorByStage[stage.id]}</p>
+									{/if}
+									{#if beatmapManageErrorByStage[stage.id]}
+										<p class="text-sm text-red-400">{beatmapManageErrorByStage[stage.id]}</p>
 									{/if}
 									<div>
 										<Button

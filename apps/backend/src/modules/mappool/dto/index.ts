@@ -54,9 +54,19 @@ export class AddMappoolBeatmapDto extends createZodDto(
   addMappoolBeatmapDtoSchema,
 ) {}
 
-export const updateMappoolBeatmapDtoSchema = z.object({
-  index: z.number().int().positive(),
-});
+export const updateMappoolBeatmapDtoSchema = z
+  .object({
+    mod: z
+      .string()
+      .trim()
+      .min(1)
+      .transform((value) => value.toUpperCase())
+      .optional(),
+    index: z.number().int().positive().optional(),
+  })
+  .refine((data) => data.mod !== undefined || data.index !== undefined, {
+    message: 'At least one field is required',
+  });
 
 export class UpdateMappoolBeatmapDto extends createZodDto(
   updateMappoolBeatmapDtoSchema,

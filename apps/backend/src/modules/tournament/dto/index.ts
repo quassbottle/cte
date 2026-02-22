@@ -1,4 +1,5 @@
 import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
+import { teamIdSchema } from 'lib/domain/team/team.id';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
 import { tournamentModeSchema } from 'lib/domain/tournament/tournament.mode';
 import { userIdSchema } from 'lib/domain/user/user.id';
@@ -96,3 +97,12 @@ export const tournamentParticipantDtoSchema = z.object({
 export class TournamentParticipantDto extends createZodDto(
   tournamentParticipantDtoSchema,
 ) {}
+
+export const tournamentTeamDtoSchema = z.object({
+  id: teamIdSchema,
+  name: z.string(),
+  captainId: userIdSchema,
+  participants: z.array(tournamentParticipantDtoSchema),
+});
+
+export class TournamentTeamDto extends createZodDto(tournamentTeamDtoSchema) {}

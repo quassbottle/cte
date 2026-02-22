@@ -23,9 +23,11 @@ import {
   RegisterTournamentDto,
   TournamentDto,
   TournamentParticipantDto,
+  TournamentTeamDto,
   UpdateTournamentDto,
   tournamentDtoSchema,
   tournamentParticipantDtoSchema,
+  tournamentTeamDtoSchema,
 } from './dto';
 import { TournamentService } from './tournament.service';
 
@@ -81,6 +83,29 @@ export class TournamentController {
 
     return participants.map((participant) =>
       tournamentParticipantDtoSchema.parse(participant),
+    );
+  }
+
+  @Get(':id/teams')
+  @ApiResponse({
+    status: 200,
+    description: 'Returns teams of the tournament with participants.',
+    type: [TournamentTeamDto.Output],
+  })
+  public async getTeams(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+  ): Promise<TournamentTeamDto[]> {
+    const teams = await this.tournamentService.getTeams({ id });
+
+    return teams.map((team) =>
+      tournamentTeamDtoSchema.parse({
+        id: team.id,
+        name: team.name,
+        captainId: team.captainId,
+        participants: team.participants.map((participant) =>
+          tournamentParticipantDtoSchema.parse(participant),
+        ),
+      }),
     );
   }
 
