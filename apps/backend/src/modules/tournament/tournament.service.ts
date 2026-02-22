@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, eq, inArray, isNull } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import { teamId } from 'lib/domain/team/team.id';
 import {
@@ -215,6 +215,12 @@ export class TournamentService {
     const { id, userId, data } = params;
 
     const tournament = await this.getById({ id });
+    if (!tournament.registrationOpen) {
+      throw new TournamentException(
+        'Tournament registration is closed',
+        TournamentExceptionCode.TOURNAMENT_REGISTRATION_CLOSED,
+      );
+    }
 
     if (tournament.isTeam) {
       await this.registerTeam({ tournamentId: id, captainId: userId, data });

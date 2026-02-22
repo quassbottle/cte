@@ -27,6 +27,7 @@
 	let endsAt = toDateTimeLocalValue(tournament.endsAt);
 	let mode: OsuMode = tournament.mode;
 	let isTeam = tournament.isTeam;
+	let registrationOpen = tournament.registrationOpen;
 
 	let isLoading = false;
 	let errorMessage: string | null = null;
@@ -54,7 +55,8 @@
 				mode,
 				startsAt: startsAtDate.toISOString(),
 				endsAt: endsAtDate.toISOString(),
-				isTeam
+				isTeam,
+				registrationOpen
 			};
 
 			const response = await api({ token: session?.token }).tournaments().update(tournament.id, body);
@@ -164,6 +166,10 @@
 				<label class="mt-1 flex w-fit select-none items-center gap-2 text-sm">
 					<input type="checkbox" bind:checked={isTeam} />
 					<span>Team tournament</span>
+				</label>
+				<label class="mt-1 flex w-fit select-none items-center gap-2 text-sm">
+					<input type="checkbox" bind:checked={registrationOpen} />
+					<span>Registration open</span>
 				</label>
 
 				{#if errorMessage}

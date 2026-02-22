@@ -15,6 +15,7 @@ export const tournaments = pgTable('tournaments', {
   rules: text('rules'),
   mode: text('mode').$type<TournamentMode>().notNull().default('osu'),
   isTeam: boolean('is_team').notNull().default(false),
+  registrationOpen: boolean('registration_open').notNull().default(true),
 
   creatorId: text('creator_id')
     .notNull()

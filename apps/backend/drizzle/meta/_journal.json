@@ -71,6 +71,13 @@
       "when": 1771702653900,
       "tag": "0009_redundant_ben_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1771761600000,
+      "tag": "0010_handy_registration_switch",
+      "breakpoints": true
     }
   ]
 }

@@ -9,6 +9,7 @@ export interface TournamentDto {
 	rules: string | null;
 	mode: OsuMode;
 	isTeam: boolean;
+	registrationOpen: boolean;
 	creatorId: string;
 	startsAt: Date;
 	endsAt: Date;
@@ -36,6 +37,7 @@ export interface TournamentCreateDto {
 	rules?: string | null;
 	mode?: OsuMode;
 	isTeam?: boolean;
+	registrationOpen?: boolean;
 	startsAt: Date | string;
 	endsAt: Date | string;
 }
@@ -46,6 +48,7 @@ export interface TournamentUpdateDto {
 	rules?: string | null;
 	mode?: OsuMode;
 	isTeam?: boolean;
+	registrationOpen?: boolean;
 	startsAt?: Date | string;
 	endsAt?: Date | string;
 }

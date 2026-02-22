@@ -13,6 +13,7 @@ export const tournamentDtoSchema = z.object({
   rules: z.string().nullable(),
   mode: tournamentModeSchema,
   isTeam: z.boolean(),
+  registrationOpen: z.boolean(),
   creatorId: userIdSchema,
   startsAt: dateToIsoString,
   endsAt: dateToIsoString,
@@ -30,6 +31,7 @@ export const createTournamentDtoSchema = z
     rules: z.string().trim().nullish(),
     mode: tournamentModeSchema.optional().default('osu'),
     isTeam: z.boolean().optional().default(false),
+    registrationOpen: z.boolean().optional().default(true),
     startsAt: isoStringToDate,
     endsAt: isoStringToDate,
   })
@@ -54,6 +56,7 @@ export const updateTournamentDtoSchema = z
     rules: z.string().trim().nullish(),
     mode: tournamentModeSchema.optional(),
     isTeam: z.boolean().optional(),
+    registrationOpen: z.boolean().optional(),
     startsAt: isoStringToDate.optional(),
     endsAt: isoStringToDate.optional(),
   })

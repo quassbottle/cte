@@ -9,7 +9,14 @@ export type TournamentCreateParams = Omit<
 export type TournamentUpdateParams = Partial<
   Pick<
     DbTournamentCreateParams,
-    'name' | 'description' | 'rules' | 'mode' | 'isTeam' | 'startsAt' | 'endsAt'
+    | 'name'
+    | 'description'
+    | 'rules'
+    | 'mode'
+    | 'isTeam'
+    | 'registrationOpen'
+    | 'startsAt'
+    | 'endsAt'
   >
 >;
 
