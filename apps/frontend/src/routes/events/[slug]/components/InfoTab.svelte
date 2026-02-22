@@ -39,7 +39,7 @@
 
 	$: isLoggedIn = Boolean(session?.id);
 	$: isRegistered = Boolean(session?.id && participants.some((participant) => participant.id === session?.id));
-	$: participantsCount = participants?.length ?? tournament.participantsCount ?? 0;
+	$: participantsCount = tournament.participantsCount ?? participants?.length ?? 0;
 	$: canShowRegistrationForm = tournament.registrationOpen || isRegistered;
 	$: registerButtonText = isRegistered
 		? tournament.isTeam
