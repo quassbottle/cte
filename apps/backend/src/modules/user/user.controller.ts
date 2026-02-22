@@ -1,4 +1,4 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, Get, Param, Query, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { UserIdPipe } from 'lib/common/pipes/user-id.pipe';
 import { UserId } from 'lib/domain/user/user.id';
@@ -21,6 +21,22 @@ export class UserController {
     type: UserDto,
   })
   public getMe(@RequestUser() user: DbUser): UserDto {
+    return userDtoSchema.parse(user);
+  }
+
+  @Get('lookup')
+  @ApiResponse({
+    status: 200,
+    description: 'Returns the user by internal ID, osu! ID, or osu! username.',
+    type: UserDto,
+  })
+  public async getByLookup(@Query('query') query?: string): Promise<UserDto> {
+    if (!query?.trim()) {
+      throw new BadRequestException('query is required');
+    }
+
+    const user = await this.userService.getByLookup({ query });
+
     return userDtoSchema.parse(user);
   }
 

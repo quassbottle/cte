@@ -4,7 +4,7 @@ import {
   UserException,
   UserExceptionCode,
 } from 'lib/domain/user/user.exception';
-import { userId, UserId } from 'lib/domain/user/user.id';
+import { userId, userIdSchema, UserId } from 'lib/domain/user/user.id';
 import { DbUser, Schema, users } from 'lib/infrastructure/db';
 
 @Injectable()
@@ -33,6 +33,38 @@ export class UserService {
 
     const candidate = await this.drizzle.query.users.findFirst({
       where: eq(users.id, id),
+    });
+
+    if (!candidate) {
+      throw new UserException(
+        `User not found`,
+        UserExceptionCode.USER_NOT_FOUND,
+      );
+    }
+
+    return candidate;
+  }
+
+  public async getByLookup(params: { query: string }): Promise<DbUser> {
+    const query = params.query.trim();
+    if (!query) {
+      throw new UserException(
+        `User not found`,
+        UserExceptionCode.USER_NOT_FOUND,
+      );
+    }
+
+    const parsedId = userIdSchema.safeParse(query);
+    if (parsedId.success) {
+      return this.getById({ id: parsedId.data });
+    }
+
+    if (/^\d+$/.test(query)) {
+      return this.getByOsuId({ osuId: Number(query) });
+    }
+
+    const candidate = await this.drizzle.query.users.findFirst({
+      where: eq(users.osuUsername, query),
     });
 
     if (!candidate) {
