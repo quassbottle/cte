@@ -3,6 +3,7 @@ export interface MappoolDto {
 	stageId: string;
 	startsAt: Date | string;
 	endsAt: Date | string;
+	hidden: boolean;
 	createdAt: Date | string;
 	updatedAt: Date | string;
 }
@@ -17,6 +18,12 @@ export interface MappoolAddBeatmapDto {
 	mod: string;
 	beatmapsetId: number;
 	beatmapId: number;
+}
+
+export interface MappoolUpdateDto {
+	startsAt?: Date | string;
+	endsAt?: Date | string;
+	hidden?: boolean;
 }
 
 export interface MappoolUpdateBeatmapDto {

@@ -50,6 +50,7 @@
 	let mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[] = initialMappoolBeatmaps ?? [];
 	let stageStateById: Record<string, StageFormState> = {};
 	let beatmapManageLoadingByKey: Record<string, boolean> = {};
+	let mappoolVisibilityLoadingById: Record<string, boolean> = {};
 	let beatmapIndexInputByKey: Record<string, string> = {};
 	let beatmapModInputByKey: Record<string, string> = {};
 
@@ -433,6 +434,35 @@
 			beatmapManageLoadingByKey = { ...beatmapManageLoadingByKey, [key]: false };
 		}
 	};
+
+	const onMappoolVisibilityToggle = async (stageId: string, mappool: MappoolDto) => {
+		updateStageState(stageId, { mappoolError: null });
+		mappoolVisibilityLoadingById = {
+			...mappoolVisibilityLoadingById,
+			[mappool.id]: true
+		};
+
+		try {
+			const response = await api({ token: session?.token })
+				.mappools()
+				.update(mappool.id, { hidden: !mappool.hidden });
+			if (!response.success || !response.result) {
+				updateStageState(stageId, {
+					mappoolError: response.error?.message ?? 'Failed to update mappool visibility'
+				});
+				return;
+			}
+
+			mappools = mappools.map((candidate) =>
+				candidate.id === mappool.id ? (response.result as MappoolDto) : candidate
+			);
+		} finally {
+			mappoolVisibilityLoadingById = {
+				...mappoolVisibilityLoadingById,
+				[mappool.id]: false
+			};
+		}
+	};
 </script>
 
 <div class="flex flex-col gap-3">
@@ -468,6 +498,19 @@
 								{#each stageMappools as mappool}
 									{@const mappoolBeatmapsList = beatmapsByMappoolId.get(mappool.id) ?? []}
 									<div class="border-border rounded-md border px-3 py-3">
+										<div class="flex items-center justify-between gap-2">
+											<p class="text-xs text-muted-foreground">
+												Visibility: {mappool.hidden ? 'Hidden' : 'Visible'}
+											</p>
+											<Button
+												size="sm"
+												variant="outline"
+												disabled={mappoolVisibilityLoadingById[mappool.id]}
+												on:click={() => onMappoolVisibilityToggle(stage.id, mappool)}
+											>
+												{mappool.hidden ? 'Show mappool' : 'Hide mappool'}
+											</Button>
+										</div>
 										<div class="mt-2 flex flex-col gap-2">
 											{#if mappoolBeatmapsList.length === 0}
 												<p class="text-xs text-muted-foreground">No maps in this mappool.</p>

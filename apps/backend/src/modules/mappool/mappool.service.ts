@@ -108,7 +108,7 @@ export class MappoolService {
   }): Promise<DbMappool> {
     const {
       id,
-      data: { startsAt, endsAt },
+      data: { startsAt, endsAt, hidden },
     } = params;
 
     const current = await this.getById({ id });
@@ -125,7 +125,7 @@ export class MappoolService {
 
     const [updated] = await this.drizzle
       .update(mappools)
-      .set({ startsAt, endsAt })
+      .set({ startsAt, endsAt, hidden })
       .where(eq(mappools.id, id))
       .returning();
 

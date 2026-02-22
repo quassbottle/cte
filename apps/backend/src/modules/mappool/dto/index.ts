@@ -10,6 +10,7 @@ export const mappoolDtoSchema = z.object({
   stageId: stageIdSchema,
   startsAt: dateToIsoString,
   endsAt: dateToIsoString,
+  hidden: z.boolean(),
   createdAt: dateToIsoString,
   updatedAt: dateToIsoString,
 });
@@ -33,6 +34,7 @@ export const updateMappoolDtoSchema = z
   .object({
     startsAt: isoStringToDate.optional(),
     endsAt: isoStringToDate.optional(),
+    hidden: z.boolean().optional(),
   })
   .refine((data) => Object.values(data).some((value) => value !== undefined), {
     message: 'At least one field is required',

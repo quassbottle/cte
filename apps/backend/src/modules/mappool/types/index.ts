@@ -6,5 +6,5 @@ export type MappoolCreateParams = Omit<
 >;
 
 export type MappoolUpdateParams = Partial<
-  Pick<DbMappoolCreateParams, 'startsAt' | 'endsAt'>
+  Pick<DbMappoolCreateParams, 'startsAt' | 'endsAt' | 'hidden'>
 >;

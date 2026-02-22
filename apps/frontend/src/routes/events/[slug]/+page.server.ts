@@ -36,8 +36,9 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const host = hostResponse.result as UserDto;
 	const stages = (stagesResponse.result ?? []) as StageDto[];
 	const stageIdSet = new Set(stages.map((stage) => stage.id));
-	const mappools = ((mappoolsResponse.result ?? []) as MappoolDto[]).filter((mappool) =>
-		stageIdSet.has(mappool.stageId)
+	const canEditTournament = tournament.creatorId === locals.session?.id;
+	const mappools = ((mappoolsResponse.result ?? []) as MappoolDto[]).filter(
+		(mappool) => stageIdSet.has(mappool.stageId) && (canEditTournament || !mappool.hidden)
 	);
 	const mappoolBeatmaps = await Promise.all(
 		mappools.map(async (mappool) => {
@@ -48,8 +49,6 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 			};
 		})
 	);
-	const canEditTournament = tournament.creatorId === locals.session?.id;
-
 	return {
 		tournament,
 		participants,

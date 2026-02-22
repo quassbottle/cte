@@ -55,7 +55,7 @@
 				{#each sortedStages as stage}
 					<ContentItem class="flex flex-col gap-4">
 						{#if getStageMappools(stage.id).length === 0}
-							<p class="text-sm text-muted-foreground">No mappools for this stage yet.</p>
+							<p class="text-sm text-muted-foreground">Mappool has not been added yet.</p>
 						{:else}
 							{#each getStageMappools(stage.id) as mappool}
 								<div class="flex flex-col gap-2">

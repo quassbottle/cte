@@ -36,7 +36,7 @@
 		src={`https://assets.ppy.sh/beatmaps/${beatmapsetId}/covers/cover@2x.jpg`}
 	></Banner>
 
-	<div class="flex flex-col gap-2 p-4">
+	<div class="relative flex flex-col gap-2 p-4 pr-24">
 		<a class="text-[20px] font-semibold hover:underline" href={`https://osu.ppy.sh/b/${beatmapId}`}>
 			{artist} - {title}
 		</a>
@@ -57,5 +57,12 @@
 		</BreadcrumbList>
 
 		<Mod mod={mod} index={index} />
+
+		<a
+			class="absolute bottom-4 right-4 rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
+			href={`osu://b/${beatmapId}`}
+		>
+			Direct
+		</a>
 	</div>
 </div>

@@ -4,6 +4,7 @@ import type {
 	MappoolBeatmapDto,
 	MappoolCreateDto,
 	MappoolDto,
+	MappoolUpdateDto,
 	MappoolUpdateBeatmapDto
 } from '$lib/api/types';
 
@@ -33,6 +34,16 @@ const create = async (
 ) => {
 	const route = `/api/mappools`;
 	return fetcher({ method: 'POST', route, headers, body: params });
+};
+
+const update = async (
+	id: string,
+	params: MappoolUpdateDto,
+	headers: THeaders,
+	fetcher: TApiFetcher<MappoolDto>
+) => {
+	const route = `/api/mappools/${id}`;
+	return fetcher({ method: 'PATCH', route, headers, body: params });
 };
 
 const findBeatmaps = async (
@@ -83,6 +94,8 @@ export const mappools = (headers: THeaders) => {
 			findMany(params, headers, fetcher as TApiFetcher<MappoolDto[]>),
 		getById: (id: string) => getById(id, headers, fetcher as TApiFetcher<MappoolDto>),
 		create: (params: MappoolCreateDto) => create(params, headers, fetcher as TApiFetcher<MappoolDto>),
+		update: (id: string, params: MappoolUpdateDto) =>
+			update(id, params, headers, fetcher as TApiFetcher<MappoolDto>),
 		findBeatmaps: (id: string) => findBeatmaps(id, headers, fetcher as TApiFetcher<MappoolBeatmapDto[]>),
 		addBeatmap: (id: string, params: MappoolAddBeatmapDto) =>
 			addBeatmap(id, params, headers, fetcher as TApiFetcher<MappoolBeatmapDto>),
