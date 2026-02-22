@@ -31,14 +31,18 @@
 
 	let idCopied = $state(false);
 	let mpMapCopied = $state(false);
+	let mpModsCopied = $state(false);
 	let idCopyFailed = $state(false);
 	let mpMapCopyFailed = $state(false);
+	let mpModsCopyFailed = $state(false);
 	let idCopiedTimeout: ReturnType<typeof setTimeout> | null = null;
 	let mpMapCopiedTimeout: ReturnType<typeof setTimeout> | null = null;
+	let mpModsCopiedTimeout: ReturnType<typeof setTimeout> | null = null;
 	let idCopyFailedTimeout: ReturnType<typeof setTimeout> | null = null;
 	let mpMapCopyFailedTimeout: ReturnType<typeof setTimeout> | null = null;
+	let mpModsCopyFailedTimeout: ReturnType<typeof setTimeout> | null = null;
 
-	const showCopiedState = (type: 'id' | 'mp') => {
+	const showCopiedState = (type: 'id' | 'mpMap' | 'mpMods') => {
 		if (type === 'id') {
 			idCopyFailed = false;
 			idCopied = true;
@@ -52,18 +56,31 @@
 			return;
 		}
 
-		mpMapCopyFailed = false;
-		mpMapCopied = true;
-		if (mpMapCopiedTimeout) {
-			clearTimeout(mpMapCopiedTimeout);
+		if (type === 'mpMap') {
+			mpMapCopyFailed = false;
+			mpMapCopied = true;
+			if (mpMapCopiedTimeout) {
+				clearTimeout(mpMapCopiedTimeout);
+			}
+			mpMapCopiedTimeout = setTimeout(() => {
+				mpMapCopied = false;
+				mpMapCopiedTimeout = null;
+			}, 1200);
+			return;
 		}
-		mpMapCopiedTimeout = setTimeout(() => {
-			mpMapCopied = false;
-			mpMapCopiedTimeout = null;
+
+		mpModsCopyFailed = false;
+		mpModsCopied = true;
+		if (mpModsCopiedTimeout) {
+			clearTimeout(mpModsCopiedTimeout);
+		}
+		mpModsCopiedTimeout = setTimeout(() => {
+			mpModsCopied = false;
+			mpModsCopiedTimeout = null;
 		}, 1200);
 	};
 
-	const showCopyFailedState = (type: 'id' | 'mp') => {
+	const showCopyFailedState = (type: 'id' | 'mpMap' | 'mpMods') => {
 		if (type === 'id') {
 			idCopied = false;
 			idCopyFailed = true;
@@ -77,15 +94,43 @@
 			return;
 		}
 
-		mpMapCopied = false;
-		mpMapCopyFailed = true;
-		if (mpMapCopyFailedTimeout) {
-			clearTimeout(mpMapCopyFailedTimeout);
+		if (type === 'mpMap') {
+			mpMapCopied = false;
+			mpMapCopyFailed = true;
+			if (mpMapCopyFailedTimeout) {
+				clearTimeout(mpMapCopyFailedTimeout);
+			}
+			mpMapCopyFailedTimeout = setTimeout(() => {
+				mpMapCopyFailed = false;
+				mpMapCopyFailedTimeout = null;
+			}, 1200);
+			return;
 		}
-		mpMapCopyFailedTimeout = setTimeout(() => {
-			mpMapCopyFailed = false;
-			mpMapCopyFailedTimeout = null;
+
+		mpModsCopied = false;
+		mpModsCopyFailed = true;
+		if (mpModsCopyFailedTimeout) {
+			clearTimeout(mpModsCopyFailedTimeout);
+		}
+		mpModsCopyFailedTimeout = setTimeout(() => {
+			mpModsCopyFailed = false;
+			mpModsCopyFailedTimeout = null;
 		}, 1200);
+	};
+
+	const getMpModsCommand = (value: string): string => {
+		const normalizedMod = value.trim().toUpperCase();
+		const baseMod = normalizedMod.match(/^[A-Z]+/)?.[0] ?? normalizedMod;
+
+		if (baseMod === 'FM' || baseMod === 'TB') {
+			return '!mp mods freemod';
+		}
+
+		if (baseMod === 'HD' || baseMod === 'HR' || baseMod === 'DT' || baseMod === 'EZ') {
+			return `!mp mods NF ${baseMod}`;
+		}
+
+		return '!mp mods NF';
 	};
 
 	const copyToClipboard = async (value: string) => {
@@ -136,10 +181,19 @@
 	const onCopyMpMap = async () => {
 		const copied = await copyToClipboard(`!mp map ${beatmapId}`);
 		if (copied) {
-			showCopiedState('mp');
+			showCopiedState('mpMap');
 			return;
 		}
-		showCopyFailedState('mp');
+		showCopyFailedState('mpMap');
+	};
+
+	const onCopyMpMods = async () => {
+		const copied = await copyToClipboard(getMpModsCommand(mod));
+		if (copied) {
+			showCopiedState('mpMods');
+			return;
+		}
+		showCopyFailedState('mpMods');
 	};
 </script>
 
@@ -191,6 +245,13 @@
 				on:click={onCopyMpMap}
 			>
 				{mpMapCopied ? 'Copied' : mpMapCopyFailed ? 'Copy failed' : 'Copy MP MAP'}
+			</button>
+			<button
+				type="button"
+				class="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
+				on:click={onCopyMpMods}
+			>
+				{mpModsCopied ? 'Copied' : mpModsCopyFailed ? 'Copy failed' : 'Copy MP MODS'}
 			</button>
 		</div>
 	</div>
