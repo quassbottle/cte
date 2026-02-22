@@ -12,9 +12,7 @@ import type { Actions, PageServerLoad } from './$types';
 import { api } from '$lib/api/api';
 
 export const load: PageServerLoad = async ({ locals, params }) => {
-	const tournamentResponse = await api({ token: locals.session?.token })
-		.tournaments()
-		.getById(params.slug);
+	const tournamentResponse = await api().tournaments().getById(params.slug);
 
 	if (tournamentResponse.error || !tournamentResponse.result) {
 		throw error(404, 'Tournament not found');
@@ -23,10 +21,13 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const participantsResponse = await api().tournaments().participants(params.slug);
 	const teamsResponse = await api().tournaments().teams(params.slug);
 	const hostResponse = await api().users().getById(tournamentResponse.result.creatorId);
-	const stagesResponse = await api({ token: locals.session?.token }).stages().findMany(params.slug, {
+	const stagesResponse = await api().stages().findMany(params.slug, {
 		limit: 100
 	});
-	const mappoolsResponse = await api({ token: locals.session?.token }).mappools().findMany({
+	const canEditTournament = tournamentResponse.result.creatorId === locals.session?.id;
+	const mappoolsResponse = await api({ token: canEditTournament ? locals.session?.token : undefined })
+		.mappools()
+		.findMany({
 		limit: 100
 	});
 
@@ -36,13 +37,14 @@ export const load: PageServerLoad = async ({ locals, params }) => {
 	const host = hostResponse.result as UserDto;
 	const stages = (stagesResponse.result ?? []) as StageDto[];
 	const stageIdSet = new Set(stages.map((stage) => stage.id));
-	const canEditTournament = tournament.creatorId === locals.session?.id;
 	const mappools = ((mappoolsResponse.result ?? []) as MappoolDto[]).filter(
 		(mappool) => stageIdSet.has(mappool.stageId) && (canEditTournament || !mappool.hidden)
 	);
 	const mappoolBeatmaps = await Promise.all(
 		mappools.map(async (mappool) => {
-			const response = await api({ token: locals.session?.token }).mappools().findBeatmaps(mappool.id);
+			const response = await api({ token: canEditTournament ? locals.session?.token : undefined })
+				.mappools()
+				.findBeatmaps(mappool.id);
 			return {
 				mappoolId: mappool.id,
 				beatmaps: (response.result ?? []) as MappoolBeatmapDto[]

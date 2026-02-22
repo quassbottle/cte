@@ -384,6 +384,8 @@
 					{:else}
 						<p class="mt-2 text-sm text-white/90">Registration is closed.</p>
 					{/if}
+				{:else if tournament.registrationOpen}
+					<p class="mt-2 text-sm text-white/90">Sign in to register.</p>
 				{/if}
 			</Content>
 		</Banner>
