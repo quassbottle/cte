@@ -9,7 +9,10 @@ const config = {
 
 	kit: {
 		// Use a dedicated Node adapter for production runtimes (e.g. Heroku).
-		adapter: adapter()
+		adapter: adapter(),
+		csrf: {
+			checkOrigin: false
+		}
 	}
 };
 
