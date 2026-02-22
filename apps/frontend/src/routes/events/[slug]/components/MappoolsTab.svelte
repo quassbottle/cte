@@ -59,10 +59,6 @@
 						{:else}
 							{#each getStageMappools(stage.id) as mappool}
 								<div class="flex flex-col gap-2">
-									<p class="text-sm font-medium">
-										{new Date(mappool.startsAt).toLocaleString()} - {new Date(mappool.endsAt).toLocaleString()}
-									</p>
-
 									{#if (beatmapsByMappoolId.get(mappool.id) ?? []).length === 0}
 										<p class="text-sm text-muted-foreground">No maps in this mappool.</p>
 									{:else}

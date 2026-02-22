@@ -50,6 +50,7 @@
 	$: registerAction = isRegistered ? 'unregister' : 'register';
 
 	let isRegistrationModalOpen = Boolean(form?.registrationError);
+	let isUnregisterModalOpen = false;
 	let teamName = form?.teamName ?? '';
 	let teammateQuery = '';
 	let lookupError = '';
@@ -303,19 +304,82 @@
 								</div>
 							{/if}
 						{:else}
-							<form method="post" action="?/{registerAction}" class="mt-2 flex flex-col gap-2">
-								{#if !isRegistered}
-									<input type="hidden" name="isTeamTournament" value="false" />
-								{/if}
-
+							<div class="mt-2 flex flex-col gap-2">
 								{#if form?.registrationError}
 									<p class="text-xs text-red-300">{form.registrationError}</p>
 								{/if}
 
-								<Button class="w-[140px] bg-accept text-[12px]" variant="accept" type="submit">
-									{registerButtonText}
-								</Button>
-							</form>
+								{#if isRegistered}
+									<Button
+										class="w-[140px] bg-accept text-[12px]"
+										variant="accept"
+										type="button"
+										on:click={() => (isUnregisterModalOpen = true)}
+									>
+										{registerButtonText}
+									</Button>
+
+									{#if isUnregisterModalOpen}
+										<div
+											class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+											role="dialog"
+											aria-modal="true"
+											tabindex="-1"
+											on:click={(event) => {
+												if (event.target === event.currentTarget) {
+													isUnregisterModalOpen = false;
+												}
+											}}
+											on:keydown={(event) => {
+												if (event.key === 'Escape') {
+													isUnregisterModalOpen = false;
+												}
+											}}
+										>
+											<div class="w-full max-w-md rounded-xl bg-white p-6 text-black shadow-2xl">
+												<div class="mb-4 flex items-start justify-between gap-4">
+													<div>
+														<p class="text-xl font-semibold">Unregister</p>
+														<p class="text-sm text-black/60">
+															Are you sure you want to unregister?
+														</p>
+													</div>
+													<Button
+														variant="ghost"
+														size="icon"
+														on:click={() => (isUnregisterModalOpen = false)}
+													>
+														<X class="h-4 w-4" />
+													</Button>
+												</div>
+
+												<div class="flex items-center gap-2">
+													<Button
+														type="button"
+														variant="outline"
+														on:click={() => (isUnregisterModalOpen = false)}
+													>
+														Cancel
+													</Button>
+													<form method="post" action="?/unregister">
+														<Button class="bg-accept text-[12px]" variant="accept" type="submit">
+															{registerButtonText}
+														</Button>
+													</form>
+												</div>
+											</div>
+										</div>
+									{/if}
+								{:else}
+									<form method="post" action="?/{registerAction}" class="flex flex-col gap-2">
+										<input type="hidden" name="isTeamTournament" value="false" />
+
+										<Button class="w-[140px] bg-accept text-[12px]" variant="accept" type="submit">
+											{registerButtonText}
+										</Button>
+									</form>
+								{/if}
+							</div>
 						{/if}
 					{:else}
 						<p class="mt-2 text-sm text-white/90">Registration is closed.</p>
