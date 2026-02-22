@@ -20,7 +20,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "migration:generate": "drizzle-kit generate --config drizzle.config.ts",
-    "migration:push": "drizzle-kit push --config drizzle.config.ts"
+    "migration:push": "drizzle-kit push --config drizzle.config.ts",
+    "mappool:import": "ts-node -r tsconfig-paths/register ./scripts/import-mappool-from-entries.ts"
   },
   "dependencies": {
     "@casl/ability": "^6.7.3",

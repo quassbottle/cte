@@ -143,3 +143,5 @@ vite.config.ts.timestamp-*
 .turbo
 
 _tmp_*
+
+osu-api-backend-token.json

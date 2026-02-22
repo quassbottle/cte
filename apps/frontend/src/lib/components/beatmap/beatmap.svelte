@@ -47,7 +47,7 @@
 					{difficultyName}
 				</div>
 			</Item>
-			{#if !deleted && difficulty !== null && difficulty > 0}
+			{#if !deleted && difficulty !== null}
 				<Item>
 					<div class="flex flex-row items-center gap-1 text-[12px]">
 						{difficulty} &#9733;

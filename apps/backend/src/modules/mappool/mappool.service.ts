@@ -92,7 +92,7 @@ export class MappoolService {
       .from(mappoolsBeatmaps)
       .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
       .where(eq(mappoolsBeatmaps.mappoolId, id))
-      .orderBy(asc(mappoolsBeatmaps.mod), asc(mappoolsBeatmaps.index));
+      .orderBy(asc(mappoolsBeatmaps.createdAt));
 
     return rows.map((row) =>
       this.beatmapService.toMappoolBeatmapView({
