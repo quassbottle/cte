@@ -215,6 +215,7 @@
 													beatmapsetId={beatmap.osuBeatmapsetId}
 													beatmapId={beatmap.osuBeatmapId}
 													mod={beatmap.mod}
+													index={beatmap.index}
 													difficulty={beatmap.difficulty}
 													deleted={beatmap.deleted}
 												/>

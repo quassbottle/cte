@@ -11,6 +11,7 @@
 		beatmapsetId: number;
 		beatmapId: number;
 		mod?: string;
+		index?: number | null;
 		difficulty?: number | null;
 		deleted?: boolean;
 	};
@@ -22,6 +23,7 @@
 		beatmapsetId,
 		beatmapId,
 		mod = 'NM',
+		index = null,
 		difficulty = null,
 		deleted = false,
 		class: className
@@ -54,6 +56,6 @@
 			{/if}
 		</BreadcrumbList>
 
-		<Mod mod={mod} />
+		<Mod mod={mod} index={index} />
 	</div>
 </div>

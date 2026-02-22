@@ -66,7 +66,6 @@
 	let mappoolErrorByStage: Record<string, string | null> = {};
 
 	let selectedMappoolIdByStage: Record<string, string> = {};
-	let beatmapModByStage: Record<string, string> = {};
 	let beatmapIdByStage: Record<string, string> = {};
 	let beatmapsetIdByStage: Record<string, string> = {};
 	let beatmapLoadingByStage: Record<string, boolean> = {};
@@ -94,6 +93,7 @@
 	const normalizeMod = (mod: string) => mod.trim().toUpperCase();
 	const getStageMappools = (stageId: string) =>
 		sortedMappools.filter((mappool) => mappool.stageId === stageId);
+	const getStageMappoolId = (stageId: string) => getStageMappools(stageId)[0]?.id ?? '';
 	const getNextIndexForMod = (mappoolId: string, mod: string) => {
 		const normalizedMod = normalizeMod(mod);
 		const byMod = (beatmapsByMappoolId.get(mappoolId) ?? []).filter(
@@ -102,12 +102,10 @@
 		const maxIndex = byMod.reduce((max, beatmap) => Math.max(max, beatmap.index), 0);
 		return maxIndex + 1;
 	};
-	const getStageSlotLabel = (stageId: string) => {
+	const getStagePreviewIndex = (stageId: string) => {
 		const mappoolId = selectedMappoolIdByStage[stageId];
-		const mod = normalizeMod(beatmapModByStage[stageId] ?? '');
-		if (!mappoolId || !mod) return null;
-		const index = getNextIndexForMod(mappoolId, mod);
-		return `${mod}${index}`;
+		if (!mappoolId) return 1;
+		return getNextIndexForMod(mappoolId, 'NM');
 	};
 	const loadBeatmapMetadata = async (stageId: string, beatmapId: number) => {
 		beatmapMetadataLoadingByStage = { ...beatmapMetadataLoadingByStage, [stageId]: true };
@@ -137,19 +135,17 @@
 
 	const getPreviewBeatmap = (stageId: string) => {
 		const beatmapId = Number.parseInt(beatmapIdByStage[stageId] ?? '', 10);
-		const beatmapsetId = Number.parseInt(beatmapsetIdByStage[stageId] ?? '', 10);
-		const slotLabel = getStageSlotLabel(stageId);
-		if (!slotLabel || !Number.isInteger(beatmapId) || beatmapId <= 0) return null;
-		if (!Number.isInteger(beatmapsetId) || beatmapsetId <= 0) return null;
+		if (!Number.isInteger(beatmapId) || beatmapId <= 0) return null;
 		const metadata = beatmapMetadataByStage[stageId];
 		if (!metadata || metadata.osuBeatmapId !== beatmapId) return null;
 		return {
 			artist: metadata.artist,
 			title: metadata.title,
 			difficultyName: metadata.difficultyName,
-			beatmapsetId,
+			beatmapsetId: metadata.osuBeatmapsetId,
 			beatmapId,
-			mod: slotLabel,
+			mod: 'NM',
+			index: getStagePreviewIndex(stageId),
 			difficulty: metadata.difficulty ?? null,
 			deleted: metadata.deleted ?? false
 		};
@@ -169,12 +165,6 @@
 					[stage.id]: toDateTimeLocalValue(stage.endsAt)
 				};
 			}
-			if (!beatmapModByStage[stage.id]) {
-				beatmapModByStage = {
-					...beatmapModByStage,
-					[stage.id]: 'NM'
-				};
-			}
 			if (!(stage.id in requestedBeatmapIdByStage)) {
 				requestedBeatmapIdByStage = {
 					...requestedBeatmapIdByStage,
@@ -189,7 +179,7 @@
 			if (stageMappools.length > 0 && !hasSelectedMappool) {
 				selectedMappoolIdByStage = {
 					...selectedMappoolIdByStage,
-					[stage.id]: stageMappools[0].id
+					[stage.id]: getStageMappoolId(stage.id)
 				};
 			}
 			if (stageMappools.length === 0 && selectedMappoolId) {
@@ -312,7 +302,15 @@
 		mappoolErrorByStage = { ...mappoolErrorByStage, [stageId]: null };
 		mappoolLoadingByStage = { ...mappoolLoadingByStage, [stageId]: true };
 
-		try {
+	try {
+			if (getStageMappools(stageId).length > 0) {
+				mappoolErrorByStage = {
+					...mappoolErrorByStage,
+					[stageId]: 'Only one mappool is allowed per stage'
+				};
+				return;
+			}
+
 			const startsAtDate = new Date(mappoolStartsAtByStage[stageId]);
 			const endsAtDate = new Date(mappoolEndsAtByStage[stageId]);
 
@@ -362,18 +360,14 @@
 		beatmapErrorByStage = { ...beatmapErrorByStage, [stageId]: null };
 		beatmapLoadingByStage = { ...beatmapLoadingByStage, [stageId]: true };
 
-		try {
+	try {
 			const mappoolId = selectedMappoolIdByStage[stageId];
 			const beatmapId = Number.parseInt(beatmapIdByStage[stageId] ?? '', 10);
-			const mod = (beatmapModByStage[stageId] ?? '').trim().toUpperCase();
 			const metadata = beatmapMetadataByStage[stageId];
+			const mod = 'NM';
 
 			if (!mappoolId) {
 				beatmapErrorByStage = { ...beatmapErrorByStage, [stageId]: 'Select a mappool first' };
-				return;
-			}
-			if (!mod) {
-				beatmapErrorByStage = { ...beatmapErrorByStage, [stageId]: 'Mod is required' };
 				return;
 			}
 			if (!Number.isInteger(beatmapId) || beatmapId <= 0) {
@@ -623,27 +617,23 @@
 			{#if sortedStages.length === 0}
 				<p>No stages added yet.</p>
 			{:else}
-				<TabGroup let:Head let:ContentItem class="flex flex-col gap-4 md:flex-row">
-					<div class="w-full md:sticky md:top-8 md:w-[160px] md:shrink-0 md:self-start">
-						<Head let:Item class="flex flex-col gap-2">
-							{#each sortedStages as stage}
-								<Item
-									class="mr-0"
-									buttonClass={buttonVariants({
-										variant: 'default',
-										size: 'sm',
-										className: 'w-full justify-center'
-									})}
-								>
-									{stage.name}
-								</Item>
-							{/each}
-						</Head>
-					</div>
-
-					<div class="min-w-0 flex-1 md:border-l md:border-border md:pl-6">
+				<TabGroup let:Head let:ContentItem class="flex flex-col gap-4">
+					<Head let:Item class="flex flex-wrap gap-2">
 						{#each sortedStages as stage}
-							<ContentItem class="flex flex-col gap-6">
+							<Item
+								buttonClass={buttonVariants({
+									variant: 'default',
+									size: 'sm',
+									className: 'w-fit justify-center'
+								})}
+							>
+								{stage.name}
+							</Item>
+						{/each}
+					</Head>
+
+					{#each sortedStages as stage}
+						<ContentItem class="flex flex-col gap-6">
 								<div class="flex flex-col gap-3">
 									<p class="text-sm font-medium">Mappools in {stage.name}</p>
 									{#if sortedMappools.filter((mappool) => mappool.stageId === stage.id).length === 0}
@@ -665,7 +655,8 @@
 																title={beatmap.title}
 																beatmapsetId={beatmap.osuBeatmapsetId}
 																beatmapId={beatmap.osuBeatmapId}
-																mod={`${normalizeMod(beatmap.mod)}${beatmap.index}`}
+																mod={normalizeMod(beatmap.mod)}
+																index={beatmap.index}
 																difficulty={beatmap.difficulty}
 																deleted={beatmap.deleted}
 															/>
@@ -679,6 +670,11 @@
 
 								<form class="flex flex-col gap-3" on:submit={(event) => onMappoolCreate(stage.id, event)}>
 									<p class="text-sm font-medium">Create mappool</p>
+									{#if getStageMappools(stage.id).length > 0}
+										<p class="text-xs text-muted-foreground">
+											This stage already has a mappool. Only one mappool per stage is allowed.
+										</p>
+									{/if}
 									<div class="flex flex-col gap-4 md:flex-row">
 										<div class="flex w-full max-w-sm flex-col gap-1.5">
 											<Label for={`mappool-starts-at-${stage.id}`}>Starts at</Label>
@@ -707,7 +703,9 @@
 											class="w-[160px] bg-accept text-[12px]"
 											variant="accept"
 											type="submit"
-											disabled={mappoolLoadingByStage[stage.id]}
+											disabled={
+												mappoolLoadingByStage[stage.id] || getStageMappools(stage.id).length > 0
+											}
 										>
 											{mappoolLoadingByStage[stage.id] ? 'Creating...' : 'Add mappool'}
 										</Button>
@@ -725,6 +723,7 @@
 											id={`stage-mappool-${stage.id}`}
 											class="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
 											bind:value={selectedMappoolIdByStage[stage.id]}
+											disabled={getStageMappools(stage.id).length <= 1}
 										>
 											{#if getStageMappools(stage.id).length === 0}
 												<option value="">No mappools available</option>
@@ -740,14 +739,11 @@
 
 									<div class="flex flex-col gap-4 md:flex-row">
 										<div class="flex w-full max-w-sm flex-col gap-1.5">
-											<Label for={`mappool-mod-${stage.id}`}>
-												Mod {#if getStageSlotLabel(stage.id)}(slot: {getStageSlotLabel(stage.id)}){/if}
-											</Label>
+											<Label for={`mappool-mod-${stage.id}`}>Mod (fixed)</Label>
 											<Input
 												id={`mappool-mod-${stage.id}`}
-												placeholder="NM, HD, HR..."
-												required
-												bind:value={beatmapModByStage[stage.id]}
+												value="NM"
+												readonly
 											/>
 										</div>
 										<div class="flex w-full max-w-sm flex-col gap-1.5">
@@ -781,7 +777,7 @@
 									{#if getPreviewBeatmap(stage.id)}
 										<div class="flex w-full max-w-xl flex-col gap-2">
 											<p class="text-xs text-muted-foreground">
-												Preview of map to add to slot {getStageSlotLabel(stage.id)}
+												Preview of map to add (slot NM{getPreviewBeatmap(stage.id)?.index ?? 1})
 											</p>
 											<Beatmap
 												artist={getPreviewBeatmap(stage.id)?.artist ?? ''}
@@ -789,7 +785,8 @@
 												difficultyName={getPreviewBeatmap(stage.id)?.difficultyName ?? ''}
 												beatmapsetId={getPreviewBeatmap(stage.id)?.beatmapsetId ?? 1}
 												beatmapId={getPreviewBeatmap(stage.id)?.beatmapId ?? 1}
-												mod={getPreviewBeatmap(stage.id)?.mod ?? 'NM1'}
+												mod={getPreviewBeatmap(stage.id)?.mod ?? 'NM'}
+												index={getPreviewBeatmap(stage.id)?.index ?? 1}
 												difficulty={getPreviewBeatmap(stage.id)?.difficulty ?? null}
 												deleted={getPreviewBeatmap(stage.id)?.deleted ?? false}
 											/>
@@ -815,9 +812,8 @@
 										</Button>
 									</div>
 								</form>
-							</ContentItem>
-						{/each}
-					</div>
+						</ContentItem>
+					{/each}
 				</TabGroup>
 			{/if}
 		</ContentItem>
