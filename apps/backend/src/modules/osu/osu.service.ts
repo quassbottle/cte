@@ -45,6 +45,11 @@ export class OsuBeatmapService {
 
         if (created) {
           return {
+            osuBeatmapsetId: created.osuBeatmapsetId,
+            osuBeatmapId: created.osuBeatmapId,
+            artist: created.artist,
+            title: created.title,
+            difficultyName: created.difficultyName,
             difficulty: this.normalizeStarRate(created.difficulty),
             version: created.version,
             deleted: created.deleted,
@@ -68,6 +73,11 @@ export class OsuBeatmapService {
 
         if (updated) {
           return {
+            osuBeatmapsetId: updated.osuBeatmapsetId,
+            osuBeatmapId: updated.osuBeatmapId,
+            artist: updated.artist,
+            title: updated.title,
+            difficultyName: updated.difficultyName,
             difficulty: this.normalizeStarRate(updated.difficulty),
             version: updated.version,
             deleted: updated.deleted,
@@ -84,6 +94,11 @@ export class OsuBeatmapService {
 
         if (updated) {
           return {
+            osuBeatmapsetId: updated.osuBeatmapsetId,
+            osuBeatmapId: updated.osuBeatmapId,
+            artist: updated.artist,
+            title: updated.title,
+            difficultyName: updated.difficultyName,
             difficulty: this.normalizeStarRate(updated.difficulty),
             version: updated.version,
             deleted: updated.deleted,
@@ -93,6 +108,11 @@ export class OsuBeatmapService {
     }
 
     return {
+      osuBeatmapsetId: existing?.osuBeatmapsetId ?? 1,
+      osuBeatmapId: existing?.osuBeatmapId ?? osuBeatmapId,
+      artist: existing?.artist ?? 'Unknown artist',
+      title: existing?.title ?? 'Unknown title',
+      difficultyName: existing?.difficultyName ?? 'Unknown difficulty',
       difficulty: this.normalizeStarRate(existing?.difficulty ?? 0),
       version: existing?.version ?? 0,
       deleted: existing?.deleted ?? true,

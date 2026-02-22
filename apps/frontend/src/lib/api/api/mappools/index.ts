@@ -1,5 +1,5 @@
 import { fetcherFactory, type TApiFetcher, type THeaders } from '$lib/api/fetcher';
-import type { MappoolBeatmapDto, MappoolDto } from '$lib/api/types';
+import type { MappoolAddBeatmapDto, MappoolBeatmapDto, MappoolCreateDto, MappoolDto } from '$lib/api/types';
 
 const findMany = async (
 	params: { limit?: number; offset?: number } = {},
@@ -20,6 +20,15 @@ const getById = async (id: string, headers: THeaders, fetcher: TApiFetcher<Mappo
 	return fetcher({ method: 'GET', route, headers });
 };
 
+const create = async (
+	params: MappoolCreateDto,
+	headers: THeaders,
+	fetcher: TApiFetcher<MappoolDto>
+) => {
+	const route = `/api/mappools`;
+	return fetcher({ method: 'POST', route, headers, body: params });
+};
+
 const findBeatmaps = async (
 	id: string,
 	headers: THeaders,
@@ -29,6 +38,16 @@ const findBeatmaps = async (
 	return fetcher({ method: 'GET', route, headers });
 };
 
+const addBeatmap = async (
+	id: string,
+	params: MappoolAddBeatmapDto,
+	headers: THeaders,
+	fetcher: TApiFetcher<MappoolBeatmapDto>
+) => {
+	const route = `/api/mappools/${id}/beatmaps`;
+	return fetcher({ method: 'POST', route, headers, body: params });
+};
+
 export const mappools = (headers: THeaders) => {
 	const fetcher = fetcherFactory();
 
@@ -36,6 +55,9 @@ export const mappools = (headers: THeaders) => {
 		findMany: (params?: { limit?: number; offset?: number }) =>
 			findMany(params, headers, fetcher as TApiFetcher<MappoolDto[]>),
 		getById: (id: string) => getById(id, headers, fetcher as TApiFetcher<MappoolDto>),
-		findBeatmaps: (id: string) => findBeatmaps(id, headers, fetcher as TApiFetcher<MappoolBeatmapDto[]>)
+		create: (params: MappoolCreateDto) => create(params, headers, fetcher as TApiFetcher<MappoolDto>),
+		findBeatmaps: (id: string) => findBeatmaps(id, headers, fetcher as TApiFetcher<MappoolBeatmapDto[]>),
+		addBeatmap: (id: string, params: MappoolAddBeatmapDto) =>
+			addBeatmap(id, params, headers, fetcher as TApiFetcher<MappoolBeatmapDto>)
 	});
 };
