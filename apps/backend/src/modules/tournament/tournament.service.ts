@@ -301,6 +301,12 @@ export class TournamentService {
     const { id, userId } = params;
 
     const tournament = await this.getById({ id });
+    if (!tournament.registrationOpen) {
+      throw new TournamentException(
+        'Tournament registration is closed',
+        TournamentExceptionCode.TOURNAMENT_REGISTRATION_CLOSED,
+      );
+    }
 
     if (tournament.isTeam) {
       await this.unregisterTeam({ tournamentId: id, userId });
