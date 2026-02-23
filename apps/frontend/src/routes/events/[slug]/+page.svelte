@@ -72,6 +72,7 @@
 
 	<ContentItem>
 		<MappoolsTab
+			tournamentMode={data.tournament.mode}
 			stages={data.stages}
 			mappools={data.mappools}
 			mappoolBeatmaps={data.mappoolBeatmaps}

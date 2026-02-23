@@ -12,6 +12,7 @@
 		beatmapsetId: number;
 		beatmapId: number;
 		mod?: string;
+		tournamentMode?: 'osu' | 'taiko' | 'fruits' | 'mania';
 		index?: number | null;
 		difficulty?: number | null;
 		deleted?: boolean;
@@ -24,6 +25,7 @@
 		beatmapsetId,
 		beatmapId,
 		mod = 'NM',
+		tournamentMode = 'osu',
 		index = null,
 		difficulty = null,
 		deleted = false,
@@ -43,6 +45,34 @@
 		}
 
 		return '!mp mods NF';
+	};
+
+	const getPlaymodeFromTournamentMode = (value: 'osu' | 'taiko' | 'fruits' | 'mania') => {
+		if (value === 'taiko') return 1;
+		if (value === 'fruits') return 2;
+		if (value === 'mania') return 3;
+		return 0;
+	};
+
+	const getPlaymodeFromSectionMod = (value: string): number | null => {
+		const normalizedMod = value.trim().toUpperCase();
+		const baseMod = normalizedMod.match(/^[A-Z]+/)?.[0] ?? normalizedMod;
+
+		if (baseMod === 'STD') return 0;
+		if (baseMod === 'TAIKO') return 1;
+		if (baseMod === 'CTB') return 2;
+		if (baseMod === 'MANIA') return 3;
+		return null;
+	};
+
+	const getMpMapCommand = (
+		beatmapIdValue: number,
+		modValue: string,
+		tournamentModeValue: 'osu' | 'taiko' | 'fruits' | 'mania'
+	) => {
+		const explicitPlaymode = getPlaymodeFromSectionMod(modValue);
+		const playmode = explicitPlaymode ?? getPlaymodeFromTournamentMode(tournamentModeValue);
+		return `!mp map ${beatmapIdValue} ${playmode}`;
 	};
 </script>
 
@@ -82,7 +112,7 @@
 				Direct
 			</a>
 			<CopyButton label="Copy ID" value={String(beatmapId)} />
-			<CopyButton label="Copy MP MAP" value={`!mp map ${beatmapId}`} />
+			<CopyButton label="Copy MP MAP" value={getMpMapCommand(beatmapId, mod, tournamentMode)} />
 			<CopyButton label="Copy MP MODS" value={getMpModsCommand(mod)} />
 		</div>
 	</div>

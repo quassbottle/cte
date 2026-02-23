@@ -6,6 +6,7 @@
 		MappoolCreateDto,
 		MappoolDto,
 		OsuBeatmapMetadataDto,
+		OsuMode,
 		StageDto,
 		UserSession
 	} from '$lib/api/types';
@@ -16,6 +17,7 @@
 	import { Label } from '$lib/components/ui/label';
 
 	export let session: UserSession | undefined;
+	export let tournamentMode: OsuMode;
 	export let stages: StageDto[];
 	export let initialMappools: MappoolDto[];
 	export let initialMappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
@@ -712,6 +714,7 @@
 															beatmapsetId={beatmap.osuBeatmapsetId}
 															beatmapId={beatmap.osuBeatmapId}
 															mod={normalizeMod(beatmap.mod)}
+															{tournamentMode}
 															index={beatmap.index}
 															difficulty={beatmap.difficulty}
 															deleted={beatmap.deleted}
@@ -924,6 +927,7 @@
 										beatmapsetId={previewBeatmap.beatmapsetId}
 										beatmapId={previewBeatmap.beatmapId}
 										mod={previewBeatmap.mod}
+										{tournamentMode}
 										index={previewBeatmap.index}
 										difficulty={previewBeatmap.difficulty}
 										deleted={previewBeatmap.deleted}

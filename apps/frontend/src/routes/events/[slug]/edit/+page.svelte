@@ -57,6 +57,7 @@
 
 		<ContentItem>
 			<MappoolsTab
+				tournamentMode={data.tournament.mode}
 				session={data.session}
 				{stages}
 				initialMappools={data.mappools}

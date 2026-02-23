@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { MappoolBeatmapDto, MappoolDto, StageDto } from '$lib/api/types';
+	import type { MappoolBeatmapDto, MappoolDto, OsuMode, StageDto } from '$lib/api/types';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
 	import Beatmap from '$lib/components/beatmap/beatmap.svelte';
@@ -7,6 +7,7 @@
 	export let stages: StageDto[];
 	export let mappools: MappoolDto[];
 	export let mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
+	export let tournamentMode: OsuMode;
 
 	$: sortedStages = [...stages].sort(
 		(left, right) => new Date(left.startsAt).valueOf() - new Date(right.startsAt).valueOf()
@@ -68,6 +69,7 @@
 												beatmapsetId={beatmap.osuBeatmapsetId}
 												beatmapId={beatmap.osuBeatmapId}
 												mod={beatmap.mod}
+												{tournamentMode}
 												index={beatmap.index}
 												difficulty={beatmap.difficulty}
 												deleted={beatmap.deleted}
