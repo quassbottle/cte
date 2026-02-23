@@ -1,5 +1,6 @@
 <script lang="ts">
 	import Banner from '../banner/banner.svelte';
+	import CopyButton from './copyButton.svelte';
 	import Mod from '../mod/mod.svelte';
 	import BreadcrumbList from '../ui/breadcrumbList/breadcrumbList.svelte';
 
@@ -29,95 +30,6 @@
 		class: className
 	}: BeatmapProps = $props();
 
-	let idCopied = $state(false);
-	let mpMapCopied = $state(false);
-	let mpModsCopied = $state(false);
-	let idCopyFailed = $state(false);
-	let mpMapCopyFailed = $state(false);
-	let mpModsCopyFailed = $state(false);
-	let idCopiedTimeout: ReturnType<typeof setTimeout> | null = null;
-	let mpMapCopiedTimeout: ReturnType<typeof setTimeout> | null = null;
-	let mpModsCopiedTimeout: ReturnType<typeof setTimeout> | null = null;
-	let idCopyFailedTimeout: ReturnType<typeof setTimeout> | null = null;
-	let mpMapCopyFailedTimeout: ReturnType<typeof setTimeout> | null = null;
-	let mpModsCopyFailedTimeout: ReturnType<typeof setTimeout> | null = null;
-
-	const showCopiedState = (type: 'id' | 'mpMap' | 'mpMods') => {
-		if (type === 'id') {
-			idCopyFailed = false;
-			idCopied = true;
-			if (idCopiedTimeout) {
-				clearTimeout(idCopiedTimeout);
-			}
-			idCopiedTimeout = setTimeout(() => {
-				idCopied = false;
-				idCopiedTimeout = null;
-			}, 1200);
-			return;
-		}
-
-		if (type === 'mpMap') {
-			mpMapCopyFailed = false;
-			mpMapCopied = true;
-			if (mpMapCopiedTimeout) {
-				clearTimeout(mpMapCopiedTimeout);
-			}
-			mpMapCopiedTimeout = setTimeout(() => {
-				mpMapCopied = false;
-				mpMapCopiedTimeout = null;
-			}, 1200);
-			return;
-		}
-
-		mpModsCopyFailed = false;
-		mpModsCopied = true;
-		if (mpModsCopiedTimeout) {
-			clearTimeout(mpModsCopiedTimeout);
-		}
-		mpModsCopiedTimeout = setTimeout(() => {
-			mpModsCopied = false;
-			mpModsCopiedTimeout = null;
-		}, 1200);
-	};
-
-	const showCopyFailedState = (type: 'id' | 'mpMap' | 'mpMods') => {
-		if (type === 'id') {
-			idCopied = false;
-			idCopyFailed = true;
-			if (idCopyFailedTimeout) {
-				clearTimeout(idCopyFailedTimeout);
-			}
-			idCopyFailedTimeout = setTimeout(() => {
-				idCopyFailed = false;
-				idCopyFailedTimeout = null;
-			}, 1200);
-			return;
-		}
-
-		if (type === 'mpMap') {
-			mpMapCopied = false;
-			mpMapCopyFailed = true;
-			if (mpMapCopyFailedTimeout) {
-				clearTimeout(mpMapCopyFailedTimeout);
-			}
-			mpMapCopyFailedTimeout = setTimeout(() => {
-				mpMapCopyFailed = false;
-				mpMapCopyFailedTimeout = null;
-			}, 1200);
-			return;
-		}
-
-		mpModsCopied = false;
-		mpModsCopyFailed = true;
-		if (mpModsCopyFailedTimeout) {
-			clearTimeout(mpModsCopyFailedTimeout);
-		}
-		mpModsCopyFailedTimeout = setTimeout(() => {
-			mpModsCopyFailed = false;
-			mpModsCopyFailedTimeout = null;
-		}, 1200);
-	};
-
 	const getMpModsCommand = (value: string): string => {
 		const normalizedMod = value.trim().toUpperCase();
 		const baseMod = normalizedMod.match(/^[A-Z]+/)?.[0] ?? normalizedMod;
@@ -131,69 +43,6 @@
 		}
 
 		return '!mp mods NF';
-	};
-
-	const copyToClipboard = async (value: string) => {
-		if (typeof document === 'undefined' || typeof navigator === 'undefined') {
-			return false;
-		}
-
-		if (navigator.clipboard) {
-			try {
-				await navigator.clipboard.writeText(value);
-				return true;
-			} catch (error) {
-				console.error('Clipboard write failed, trying fallback', error);
-			}
-		}
-
-		const textarea = document.createElement('textarea');
-		textarea.value = value;
-		textarea.setAttribute('readonly', '');
-		textarea.style.position = 'fixed';
-		textarea.style.opacity = '0';
-		textarea.style.pointerEvents = 'none';
-		document.body.appendChild(textarea);
-		textarea.focus();
-		textarea.select();
-
-		let copied = false;
-		try {
-			copied = document.execCommand('copy');
-		} catch (error) {
-			console.error('Fallback copy failed', error);
-			copied = false;
-		}
-
-		document.body.removeChild(textarea);
-		return copied;
-	};
-
-	const onCopyId = async () => {
-		const copied = await copyToClipboard(String(beatmapId));
-		if (copied) {
-			showCopiedState('id');
-			return;
-		}
-		showCopyFailedState('id');
-	};
-
-	const onCopyMpMap = async () => {
-		const copied = await copyToClipboard(`!mp map ${beatmapId}`);
-		if (copied) {
-			showCopiedState('mpMap');
-			return;
-		}
-		showCopyFailedState('mpMap');
-	};
-
-	const onCopyMpMods = async () => {
-		const copied = await copyToClipboard(getMpModsCommand(mod));
-		if (copied) {
-			showCopiedState('mpMods');
-			return;
-		}
-		showCopyFailedState('mpMods');
 	};
 </script>
 
@@ -232,27 +81,9 @@
 			>
 				Direct
 			</a>
-			<button
-				type="button"
-				class="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
-				on:click={onCopyId}
-			>
-				{idCopied ? 'Copied' : idCopyFailed ? 'Copy failed' : 'Copy ID'}
-			</button>
-			<button
-				type="button"
-				class="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
-				on:click={onCopyMpMap}
-			>
-				{mpMapCopied ? 'Copied' : mpMapCopyFailed ? 'Copy failed' : 'Copy MP MAP'}
-			</button>
-			<button
-				type="button"
-				class="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
-				on:click={onCopyMpMods}
-			>
-				{mpModsCopied ? 'Copied' : mpModsCopyFailed ? 'Copy failed' : 'Copy MP MODS'}
-			</button>
+			<CopyButton label="Copy ID" value={String(beatmapId)} />
+			<CopyButton label="Copy MP MAP" value={`!mp map ${beatmapId}`} />
+			<CopyButton label="Copy MP MODS" value={getMpModsCommand(mod)} />
 		</div>
 	</div>
 </div>
