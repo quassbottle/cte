@@ -24,7 +24,7 @@ cd apps/frontend
 bun run start:prod
 ```
 
-The Bun adapter uses `HTTP_HOST` and `HTTP_PORT`.
+The Bun adapter uses `HTTP_HOST` and `HTTP_PORT`. The frontend `Procfile` maps the platform-provided `PORT` to `HTTP_PORT`.
 
 ## BFF
 
