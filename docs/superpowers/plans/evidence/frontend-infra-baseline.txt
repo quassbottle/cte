@@ -1,0 +1,10 @@
+Frontend infrastructure baseline
+
+Known pre-existing check failures:
+- src/lib/components/ui/button/button.svelte: incompatible class value type
+- src/lib/components/ui/select/select-content.svelte: missing flyAndScale export
+
+Known pre-existing lint failure:
+- prettier-plugin-svelte crashes with "getVisitorKeys is not a function"
+
+Infrastructure acceptance commands must run separately from the existing full check/lint gates until those issues are repaired.

@@ -1,38 +1,106 @@
-# create-svelte
+# Frontend
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+SvelteKit application running on Bun. The frontend owns SSR and exposes an embedded Elysia BFF at `/bff/*`.
 
-## Creating a project
+## Prerequisites
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Bun 1.2 or newer
+- pnpm version declared by the repository root
+- backend running on port 3000 when refreshing the OpenAPI snapshot
 
-```bash
-# create a new project in the current directory
-npm create svelte@latest
+The repository remains a pnpm workspace. Bun is currently the frontend runtime and test runner, not the monorepo package manager.
 
-# create a new project in my-app
-npm create svelte@latest my-app
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+## Development
 
 ```bash
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
+pnpm --dir apps/frontend start:dev
 ```
 
-## Building
-
-To create a production version of your app:
+## Production build
 
 ```bash
-npm run build
+pnpm --dir apps/frontend build
+cd apps/frontend
+bun run start:prod
 ```
 
-You can preview the production build with `npm run preview`.
+The Bun adapter uses `HTTP_HOST` and `HTTP_PORT`. The frontend `Procfile` maps the platform-provided `PORT` to `HTTP_PORT`.
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## BFF
+
+The Elysia application is defined in:
+
+```text
+src/lib/server/bff/app.ts
+```
+
+It is exposed by SvelteKit under:
+
+```text
+/bff/*
+```
+
+Server-side code uses the in-process Eden client:
+
+```ts
+import { bff } from '$lib/server/bff/client';
+
+const { data, error } = await bff.bff.health.get();
+```
+
+Do not import the BFF or Eden client into browser components.
+
+## Generated backend API
+
+The committed OpenAPI snapshot is:
+
+```text
+openapi/backend.json
+```
+
+Refresh it from a running NestJS backend:
+
+```bash
+pnpm --dir apps/frontend api:schema:pull
+```
+
+Regenerate the server-only SDK:
+
+```bash
+pnpm --dir apps/frontend api:generate
+```
+
+Refresh both:
+
+```bash
+pnpm --dir apps/frontend api:refresh
+```
+
+Verify that generated files are current:
+
+```bash
+pnpm --dir apps/frontend api:check
+```
+
+Generated code must remain under `src/lib/server/backend/generated`.
+
+## Infrastructure tests
+
+```bash
+pnpm --dir apps/frontend test:infra
+```
+
+## Environment
+
+Copy `.env.example` to `.env` and adjust:
+
+```dotenv
+BACKEND_API_URL=http://127.0.0.1:3000
+BACKEND_OPENAPI_URL=http://127.0.0.1:3000/docs-json
+```
+
+These values are private and must not use the `PUBLIC_` prefix.
+
+## Deferred work
+
+This infrastructure phase does not migrate the existing authentication or feature API calls. The next phase must keep JWTs out of serialized page data, restore CSRF origin checks, and move authenticated backend calls behind server-only boundaries.
