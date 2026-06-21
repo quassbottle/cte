@@ -1205,13 +1205,15 @@
         "properties": {
           "osuBeatmapsetId": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           },
           "osuBeatmapId": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           },
           "artist": {
             "type": "string"
@@ -1685,18 +1687,21 @@
           },
           "index": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           },
           "osuBeatmapsetId": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           },
           "osuBeatmapId": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           },
           "artist": {
             "type": "string"
@@ -1790,13 +1795,15 @@
           },
           "beatmapsetId": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           },
           "beatmapId": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           }
         },
         "required": [
@@ -1814,18 +1821,21 @@
           },
           "index": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           },
           "beatmapsetId": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           },
           "beatmapId": {
             "type": "integer",
-            "exclusiveMinimum": 0,
-            "maximum": 9007199254740991
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
           }
         }
       },
