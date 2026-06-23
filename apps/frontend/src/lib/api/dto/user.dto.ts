@@ -9,8 +9,8 @@ export interface UserDto {
 	osuId: number;
 	role: 'default' | 'admin';
 	avatarUrl: string;
-	createdAt: Date;
-	updatedAt: Date;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface AuthenticatedUserDto {

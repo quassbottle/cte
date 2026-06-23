@@ -1,5 +1,5 @@
 <script lang="ts">
-	import type { MappoolBeatmapDto, MappoolDto, StageDto, TournamentDto, UserSession } from '$lib/api/types';
+	import type { MappoolBeatmapDto, MappoolDto, StageDto, TournamentDto } from '$lib/api/types';
 	import { Button } from '$lib/components/ui/button';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import MappoolsTab from './components/MappoolsTab.svelte';
@@ -8,22 +8,18 @@
 
 	export let data: {
 		tournament: TournamentDto;
-		session?: UserSession;
 		stages: StageDto[];
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 	};
-
-	let stages: StageDto[] = data.stages ?? [];
-	const onStageCreated = (event: CustomEvent<StageDto>) => {
-		stages = [...stages, event.detail];
-	};
-	const onStageUpdated = (event: CustomEvent<StageDto>) => {
-		stages = stages.map((stage) => (stage.id === event.detail.id ? event.detail : stage));
-	};
-	const onStageDeleted = (event: CustomEvent<string>) => {
-		stages = stages.filter((stage) => stage.id !== event.detail);
-	};
+	export let form:
+		| {
+				action?: string;
+				message?: string;
+				stageId?: string;
+				mappoolId?: string;
+		  }
+		| undefined;
 </script>
 
 <div class="flex flex-col gap-8">
@@ -41,27 +37,20 @@
 		</div>
 
 		<ContentItem>
-			<TournamentTab tournament={data.tournament} session={data.session} />
+			<TournamentTab tournament={data.tournament} {form} />
 		</ContentItem>
 
 		<ContentItem>
-			<StagesTab
-				tournament={data.tournament}
-				session={data.session}
-				{stages}
-				on:stageCreated={onStageCreated}
-				on:stageUpdated={onStageUpdated}
-				on:stageDeleted={onStageDeleted}
-			/>
+			<StagesTab tournament={data.tournament} stages={data.stages} {form} />
 		</ContentItem>
 
 		<ContentItem>
 			<MappoolsTab
 				tournamentMode={data.tournament.mode}
-				session={data.session}
-				{stages}
-				initialMappools={data.mappools}
-				initialMappoolBeatmaps={data.mappoolBeatmaps}
+				stages={data.stages}
+				mappools={data.mappools}
+				mappoolBeatmaps={data.mappoolBeatmaps}
+				{form}
 			/>
 		</ContentItem>
 	</TabGroup>

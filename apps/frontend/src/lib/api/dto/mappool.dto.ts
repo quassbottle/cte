@@ -49,3 +49,7 @@ export interface MappoolBeatmapDto {
 	createdAt: Date | string;
 	updatedAt: Date | string;
 }
+
+export interface MappoolWithBeatmapsDto extends MappoolDto {
+	beatmaps: MappoolBeatmapDto[];
+}

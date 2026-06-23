@@ -2,11 +2,11 @@ export interface StageDto {
 	id: string;
 	name: string;
 	tournamentId: string;
-	startsAt: Date;
-	endsAt: Date;
-	deletedAt: Date | null;
-	createdAt: Date;
-	updatedAt: Date;
+	startsAt: string;
+	endsAt: string;
+	deletedAt: string | null;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface StageCreateDto {

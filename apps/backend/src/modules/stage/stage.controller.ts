@@ -6,13 +6,11 @@ import {
   Param,
   Patch,
   Post,
-  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { StageIdPipe } from 'lib/common/pipes/stage-id.pipe';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
-import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { StageId } from 'lib/domain/stage/stage.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
@@ -39,9 +37,8 @@ export class StageController {
   })
   public async findMany(
     @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
-    @Query() query: PaginationDto,
   ): Promise<StageDto[]> {
-    const stages = await this.stageService.findMany({ tournamentId, ...query });
+    const stages = await this.stageService.findByTournament({ tournamentId });
 
     return stages.map((stage) => stageDtoSchema.parse(stage));
   }

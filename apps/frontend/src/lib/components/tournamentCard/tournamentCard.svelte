@@ -5,7 +5,7 @@
 	import { pluralize } from '$lib/utils/text';
 
 	export let name: string;
-	export let startsAt: Date;
+	export let startsAt: Date | string;
 	export let isTeam: boolean;
 	export let participantsCount = 0;
 </script>

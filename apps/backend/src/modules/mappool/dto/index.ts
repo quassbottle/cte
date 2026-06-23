@@ -116,3 +116,11 @@ export const mappoolBeatmapDtoSchema = mappoolBeatmapViewSchema.extend({
 });
 
 export class MappoolBeatmapDto extends createZodDto(mappoolBeatmapDtoSchema) {}
+
+export const mappoolWithBeatmapsDtoSchema = mappoolDtoSchema.extend({
+  beatmaps: z.array(mappoolBeatmapDtoSchema),
+});
+
+export class MappoolWithBeatmapsDto extends createZodDto(
+  mappoolWithBeatmapsDtoSchema,
+) {}

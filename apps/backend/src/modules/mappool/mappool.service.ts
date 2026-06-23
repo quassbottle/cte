@@ -12,6 +12,7 @@ import {
   StageExceptionCode,
 } from 'lib/domain/stage/stage.exception';
 import { StageId } from 'lib/domain/stage/stage.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import {
   DbBeatmap,
   DbMappool,
@@ -77,6 +78,64 @@ export class MappoolService {
     const found = await this.drizzle.query.mappools.findMany({ limit, offset });
 
     return found;
+  }
+
+  public async findByTournamentWithBeatmaps(params: {
+    tournamentId: TournamentId;
+    includeHidden?: boolean;
+  }): Promise<Array<DbMappool & { beatmaps: MappoolBeatmapView[] }>> {
+    const { tournamentId, includeHidden = false } = params;
+
+    const rows = await this.drizzle
+      .select({
+        mappool: mappools,
+        mappoolBeatmap: mappoolsBeatmaps,
+        beatmap: beatmaps,
+      })
+      .from(mappools)
+      .innerJoin(stages, eq(stages.id, mappools.stageId))
+      .leftJoin(
+        mappoolsBeatmaps,
+        eq(mappoolsBeatmaps.mappoolId, mappools.id),
+      )
+      .leftJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
+      .where(
+        and(
+          eq(stages.tournamentId, tournamentId),
+          isNull(stages.deletedAt),
+          includeHidden ? undefined : eq(mappools.hidden, false),
+        ),
+      )
+      .orderBy(asc(mappools.startsAt), asc(mappoolsBeatmaps.createdAt));
+
+    const byId = new Map<
+      MappoolId,
+      DbMappool & { beatmaps: MappoolBeatmapView[] }
+    >();
+
+    for (const row of rows) {
+      const mappool =
+        byId.get(row.mappool.id) ??
+        ({
+          ...row.mappool,
+          beatmaps: [],
+        } satisfies DbMappool & { beatmaps: MappoolBeatmapView[] });
+
+      if (!byId.has(row.mappool.id)) {
+        byId.set(row.mappool.id, mappool);
+      }
+
+      if (row.mappoolBeatmap && row.beatmap) {
+        mappool.beatmaps.push(
+          this.beatmapService.toMappoolBeatmapView({
+            mappoolBeatmap: row.mappoolBeatmap,
+            beatmap: row.beatmap,
+          }),
+        );
+      }
+    }
+
+    return [...byId.values()];
   }
 
   public async findBeatmaps(params: { id: MappoolId }): Promise<MappoolBeatmapView[]> {

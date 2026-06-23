@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -12,22 +13,84 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { MappoolIdPipe } from 'lib/common/pipes/mappool-id.pipe';
+import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
 import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { MappoolId } from 'lib/domain/mappool/mappool.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
+import { DbUser } from 'lib/infrastructure/db';
+import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
+import { TournamentService } from 'modules/tournament/tournament.service';
 import {
   AddMappoolBeatmapDto,
   CreateMappoolDto,
   MappoolBeatmapDto,
   MappoolDto,
+  MappoolWithBeatmapsDto,
   UpdateMappoolBeatmapDto,
   UpdateMappoolDto,
   mappoolBeatmapDtoSchema,
   mappoolDtoSchema,
+  mappoolWithBeatmapsDtoSchema,
 } from './dto';
 import { MappoolService } from './mappool.service';
+
+@ApiBearerAuth('bearer')
+@Controller('tournaments/:tournamentId/mappools')
+export class TournamentMappoolController {
+  constructor(
+    private readonly mappoolService: MappoolService,
+    private readonly tournamentService: TournamentService,
+  ) {}
+
+  @Get()
+  @ApiResponse({
+    status: 200,
+    description: 'Returns visible tournament mappools with beatmaps.',
+    type: [MappoolWithBeatmapsDto.Output],
+  })
+  public async findByTournament(
+    @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
+  ): Promise<MappoolWithBeatmapsDto[]> {
+    const mappools = await this.mappoolService.findByTournamentWithBeatmaps({
+      tournamentId,
+      includeHidden: false,
+    });
+
+    return mappools.map((mappool) =>
+      mappoolWithBeatmapsDtoSchema.parse(mappool),
+    );
+  }
+
+  @Get('manage')
+  @UseGuards(JwtUserGuard)
+  @ApiResponse({
+    status: 200,
+    description: 'Returns all tournament mappools with beatmaps for tournament creator.',
+    type: [MappoolWithBeatmapsDto.Output],
+  })
+  public async findByTournamentForManagement(
+    @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
+    @RequestUser() user: DbUser,
+  ): Promise<MappoolWithBeatmapsDto[]> {
+    const tournament = await this.tournamentService.getById({ id: tournamentId });
+
+    if (tournament.creatorId !== user.id) {
+      throw new ForbiddenException("You aren't allowed to manage this tournament");
+    }
+
+    const mappools = await this.mappoolService.findByTournamentWithBeatmaps({
+      tournamentId,
+      includeHidden: true,
+    });
+
+    return mappools.map((mappool) =>
+      mappoolWithBeatmapsDtoSchema.parse(mappool),
+    );
+  }
+}
 
 @ApiBearerAuth('bearer')
 @Controller('mappools')

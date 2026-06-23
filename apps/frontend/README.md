@@ -1,6 +1,6 @@
 # Frontend
 
-SvelteKit application running on Bun. The frontend owns SSR and exposes an embedded Elysia BFF at `/bff/*`.
+SvelteKit application running on Bun. The frontend owns SSR, form actions, and narrow JSON routes for browser-only interactions.
 
 ## Prerequisites
 
@@ -26,29 +26,9 @@ bun run start:prod
 
 The Bun adapter uses `HTTP_HOST` and `HTTP_PORT`. The frontend `Procfile` maps the platform-provided `PORT` to `HTTP_PORT`.
 
-## BFF
+## Backend access
 
-The Elysia application is defined in:
-
-```text
-src/lib/server/bff/app.ts
-```
-
-It is exposed by SvelteKit under:
-
-```text
-/bff/*
-```
-
-Server-side code uses the in-process Eden client:
-
-```ts
-import { bff } from '$lib/server/bff/client';
-
-const { data, error } = await bff.bff.health.get();
-```
-
-Do not import the BFF or Eden client into browser components.
+Generated backend SDK code is server-only. Routes, services, and queries should use `createBackendClient` from `src/lib/server/backend/client.ts`; browser components must not import generated backend code.
 
 ## Generated backend API
 
@@ -100,7 +80,3 @@ BACKEND_OPENAPI_URL=http://127.0.0.1:3000/docs-json
 ```
 
 These values are private and must not use the `PUBLIC_` prefix.
-
-## Deferred work
-
-This infrastructure phase does not migrate the existing authentication or feature API calls. The next phase must keep JWTs out of serialized page data, restore CSRF origin checks, and move authenticated backend calls behind server-only boundaries.

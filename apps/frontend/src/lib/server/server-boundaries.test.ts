@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { readdir } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 async function collectFiles(directory: string): Promise<string[]> {
@@ -15,12 +15,37 @@ async function collectFiles(directory: string): Promise<string[]> {
 }
 
 describe('server-only infrastructure boundaries', () => {
-	it('keeps generated and BFF code under src/lib/server', async () => {
+	it('keeps generated backend code under src/lib/server', async () => {
 		const serverRoot = resolve(import.meta.dir);
 		const files = await collectFiles(serverRoot);
 
 		expect(files.some((file) => file.includes('/backend/generated/'))).toBe(true);
-		expect(files.some((file) => file.includes('/bff/'))).toBe(true);
 		expect(files.every((file) => file.startsWith(serverRoot))).toBe(true);
+	});
+
+	it('prevents browser-facing code from importing the generated NestJS client', async () => {
+		const sourceRoot = resolve(import.meta.dir, '../..');
+		const browserRoots = [
+			resolve(sourceRoot, 'routes'),
+			resolve(sourceRoot, 'lib/components')
+		];
+		const files = (await Promise.all(browserRoots.map(collectFiles)))
+			.flat()
+			.filter(
+				(file) =>
+					/\.(svelte|ts)$/.test(file) &&
+					!file.endsWith('.server.ts') &&
+					!file.endsWith('/+server.ts')
+			);
+		const violations: string[] = [];
+
+		for (const file of files) {
+			const source = await readFile(file, 'utf8');
+			if (source.includes('$lib/server/backend')) {
+				violations.push(file);
+			}
+		}
+
+		expect(violations).toEqual([]);
 	});
 });

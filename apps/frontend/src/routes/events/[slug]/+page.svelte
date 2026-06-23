@@ -6,9 +6,9 @@
 		TournamentDto,
 		TournamentParticipantDto,
 		TournamentTeamDto,
-		UserDto,
-		UserSession
+		UserDto
 	} from '$lib/api/types';
+	import type { Viewer } from '$lib/types/viewer';
 	import { Button } from '$lib/components/ui/button';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import InfoTab from './components/InfoTab.svelte';
@@ -18,7 +18,7 @@
 
 	export let data: {
 		tournament: TournamentDto;
-		session?: UserSession;
+		user: Viewer | null;
 		participants: TournamentParticipantDto[];
 		teams: TournamentTeamDto[];
 		host: UserDto;
@@ -55,7 +55,7 @@
 	<ContentItem>
 		<InfoTab
 			tournament={data.tournament}
-			session={data.session}
+			user={data.user}
 			participants={data.participants}
 			host={data.host}
 			{form}

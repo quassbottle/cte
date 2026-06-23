@@ -1,9 +1,9 @@
 <script lang="ts">
-	import type { UserDto } from '$lib/api/types';
+	import type { Viewer } from '$lib/types/viewer';
 	import AuthContainer from './authContainer.svelte';
 	import Logo from '../logo/logo.svelte';
 
-	export let user: UserDto | null;
+	export let user: Viewer | null;
 </script>
 
 <div class="flex w-full items-center justify-between bg-white px-24 py-4">

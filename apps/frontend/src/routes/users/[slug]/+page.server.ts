@@ -1,16 +1,14 @@
-import type { UserDto } from '$lib/api/types';
+import { createBackendClient } from '$lib/server/backend/client';
+import { getUserProfile } from '$lib/server/users/user-profile.query';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
-import { api } from '$lib/api/api';
 
-export const load: PageServerLoad = async ({ params }) => {
-	const candidate = await api().users().getById(params.slug);
-
-	if (candidate.error) {
+export const load: PageServerLoad = async ({ fetch, params }) => {
+	try {
+		return {
+			user: await getUserProfile(createBackendClient({ fetch }), params.slug)
+		};
+	} catch {
 		throw error(404, 'User not found');
 	}
-
-	return {
-		user: candidate.result as UserDto
-	};
 };

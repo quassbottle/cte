@@ -1,12 +1,16 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from 'modules/auth/auth.module';
 import { BeatmapModule } from 'modules/beatmap/beatmap.module';
-import { MappoolController } from './mappool.controller';
+import { TournamentModule } from 'modules/tournament/tournament.module';
+import {
+  MappoolController,
+  TournamentMappoolController,
+} from './mappool.controller';
 import { MappoolService } from './mappool.service';
 
 @Module({
-  imports: [AuthModule, BeatmapModule],
-  controllers: [MappoolController],
+  imports: [AuthModule, BeatmapModule, TournamentModule],
+  controllers: [MappoolController, TournamentMappoolController],
   providers: [MappoolService],
   exports: [MappoolService],
 })

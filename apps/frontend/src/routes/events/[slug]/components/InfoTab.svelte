@@ -1,7 +1,8 @@
-<script lang="ts">
-	import { onMount } from 'svelte';
-	import { api } from '$lib/api/api';
-	import type { TournamentDto, TournamentParticipantDto, UserDto, UserSession } from '$lib/api/types';
+	<script lang="ts">
+		import { enhance } from '$app/forms';
+		import { onMount } from 'svelte';
+		import type { TournamentDto, TournamentParticipantDto, UserDto } from '$lib/api/types';
+	import type { Viewer } from '$lib/types/viewer';
 	import { gamemodes } from '$lib/utils/types';
 	import { pluralize } from '$lib/utils/text';
 	import GameModeIcon from '$lib/components/gamemode/gameModeIcon.svelte';
@@ -14,7 +15,7 @@
 	import Markdown from '$lib/components/markdown/markdown.svelte';
 
 	export let tournament: TournamentDto;
-	export let session: UserSession | undefined;
+	export let user: Viewer | null;
 	export let participants: TournamentParticipantDto[];
 	export let host: UserDto;
 	export let form:
@@ -37,8 +38,8 @@
 			)
 		);
 
-	$: isLoggedIn = Boolean(session?.id);
-	$: isRegistered = Boolean(session?.id && participants.some((participant) => participant.id === session?.id));
+	$: isLoggedIn = Boolean(user?.id);
+	$: isRegistered = Boolean(user?.id && participants.some((participant) => participant.id === user?.id));
 	$: participantsCount = tournament.participantsCount ?? participants?.length ?? 0;
 	$: canShowRegistrationForm = tournament.registrationOpen || isRegistered;
 	$: registerButtonText = isRegistered
@@ -58,6 +59,16 @@
 	let isLookupPending = false;
 	let selectedUsers: SelectedUser[] = [];
 
+	const getUser = async (path: string): Promise<UserDto | null> => {
+		const response = await fetch(path);
+
+		if (!response.ok) {
+			return null;
+		}
+
+		return response.json();
+	};
+
 	onMount(async () => {
 		const idsFromForm = parseParticipantIds(form?.teamParticipantIds);
 		if (!idsFromForm.length) {
@@ -66,8 +77,7 @@
 
 		const resolvedUsers = await Promise.all(
 			idsFromForm.map(async (id) => {
-				const response = await api().users().getById(id);
-				return response.result;
+				return getUser(`/api/users/${id}`);
 			})
 		);
 
@@ -105,15 +115,15 @@
 
 		isLookupPending = true;
 		lookupError = '';
-		const response = await api().users().lookup(query);
+		const user = await getUser(`/api/users/lookup?query=${encodeURIComponent(query)}`);
 		isLookupPending = false;
 
-		if (!response.success || !response.result) {
-			lookupError = response.error?.message ?? 'User not found.';
+		if (!user) {
+			lookupError = 'User not found.';
 			return;
 		}
 
-		addSelectedUser(response.result);
+		addSelectedUser(user);
 	};
 </script>
 
@@ -203,7 +213,7 @@
 											</Button>
 										</div>
 
-										<form method="post" action="?/register" class="flex flex-col gap-4">
+										<form method="post" action="?/register" use:enhance class="flex flex-col gap-4">
 											<input type="hidden" name="isTeamTournament" value="true" />
 											<input
 												type="hidden"
@@ -361,7 +371,7 @@
 													>
 														Cancel
 													</Button>
-													<form method="post" action="?/unregister">
+													<form method="post" action="?/unregister" use:enhance>
 														<Button class="bg-accept text-[12px]" variant="accept" type="submit">
 															{registerButtonText}
 														</Button>
@@ -371,7 +381,7 @@
 										</div>
 									{/if}
 								{:else}
-									<form method="post" action="?/{registerAction}" class="flex flex-col gap-2">
+									<form method="post" action="?/{registerAction}" use:enhance class="flex flex-col gap-2">
 										<input type="hidden" name="isTeamTournament" value="false" />
 
 										<Button class="w-[140px] bg-accept text-[12px]" variant="accept" type="submit">

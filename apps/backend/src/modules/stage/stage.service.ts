@@ -48,23 +48,17 @@ export class StageService {
     return stage;
   }
 
-  public async findMany(params: {
+  public async findByTournament(params: {
     tournamentId: TournamentId;
-    limit: number;
-    offset: number;
   }): Promise<DbStage[]> {
-    const { tournamentId, limit, offset } = params;
+    const { tournamentId } = params;
 
-    const found = await this.drizzle.query.stages.findMany({
+    return this.drizzle.query.stages.findMany({
       where: and(
         eq(stages.tournamentId, tournamentId),
         isNull(stages.deletedAt),
       ),
-      limit,
-      offset,
     });
-
-    return found;
   }
 
   public async update(params: {

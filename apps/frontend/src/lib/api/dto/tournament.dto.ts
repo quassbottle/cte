@@ -12,11 +12,11 @@ export interface TournamentDto {
 	participantsCount: number;
 	registrationOpen: boolean;
 	creatorId: string;
-	startsAt: Date;
-	endsAt: Date;
-	deletedAt: Date | null;
-	createdAt: Date;
-	updatedAt: Date;
+	startsAt: string;
+	endsAt: string;
+	deletedAt: string | null;
+	createdAt: string;
+	updatedAt: string;
 }
 
 export interface TournamentParticipantDto {

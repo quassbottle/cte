@@ -4,14 +4,19 @@ export type BackendRequestError = {
 	body: unknown;
 };
 
-export async function backendFetch<T>(path: string, init: RequestInit): Promise<T> {
+type BackendRequestInit = RequestInit & {
+	fetch?: typeof globalThis.fetch;
+};
+
+export async function backendFetch<T>(path: string, init: BackendRequestInit = {}): Promise<T> {
 	const baseUrl = process.env.BACKEND_API_URL;
+	const { fetch: requestFetch = globalThis.fetch, ...requestInit } = init;
 
 	if (!baseUrl) {
 		throw new Error('BACKEND_API_URL is not set');
 	}
 
-	const response = await fetch(new URL(path, baseUrl), init);
+	const response = await requestFetch(new URL(path, baseUrl), requestInit);
 	const contentType = response.headers.get('content-type') ?? '';
 	const body =
 		response.status === 204

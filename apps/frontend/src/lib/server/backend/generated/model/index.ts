@@ -8,6 +8,8 @@
 
 export * from './addMappoolBeatmapDto';
 export * from './authControllerAuthCallbackParams';
+export * from './authTokenDto';
+export * from './authUrlDto';
 export * from './createMappoolDto';
 export * from './createStageDto';
 export * from './createTournamentDto';
@@ -16,10 +18,12 @@ export * from './mappoolBeatmapDtoOutput';
 export * from './mappoolBeatmapDtoOutputMode';
 export * from './mappoolControllerFindManyParams';
 export * from './mappoolDtoOutput';
+export * from './mappoolWithBeatmapsDtoOutput';
+export * from './mappoolWithBeatmapsDtoOutputBeatmapsItem';
+export * from './mappoolWithBeatmapsDtoOutputBeatmapsItemMode';
 export * from './osuBeatmapMetadataDtoOutput';
 export * from './registerTournamentDto';
 export * from './registerTournamentDtoTeam';
-export * from './stageControllerFindManyParams';
 export * from './stageDtoOutput';
 export * from './tournamentControllerFindManyParams';
 export * from './tournamentControllerGetParticipantsParams';

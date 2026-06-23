@@ -8,15 +8,17 @@
 import type {
   AddMappoolBeatmapDto,
   AuthControllerAuthCallbackParams,
+  AuthTokenDto,
+  AuthUrlDto,
   CreateMappoolDto,
   CreateStageDto,
   CreateTournamentDto,
   MappoolBeatmapDtoOutput,
   MappoolControllerFindManyParams,
   MappoolDtoOutput,
+  MappoolWithBeatmapsDtoOutput,
   OsuBeatmapMetadataDtoOutput,
   RegisterTournamentDto,
-  StageControllerFindManyParams,
   StageDtoOutput,
   TournamentControllerFindManyParams,
   TournamentControllerGetParticipantsParams,
@@ -34,7 +36,7 @@ import type {
 import { backendFetch } from '../fetcher';
 
 export type authControllerAuthCallbackResponse200 = {
-  data: void
+  data: AuthTokenDto
   status: 200
 }
 
@@ -74,7 +76,7 @@ export const authControllerAuthCallback = async (params: AuthControllerAuthCallb
 
 
 export type authControllerInitLoginResponse200 = {
-  data: void
+  data: AuthUrlDto
   status: 200
 }
 
@@ -572,26 +574,17 @@ export type stageControllerFindManyResponseSuccess = (stageControllerFindManyRes
 
 export type stageControllerFindManyResponse = (stageControllerFindManyResponseSuccess)
 
-export const getStageControllerFindManyUrl = (tournamentId: string,
-    params?: StageControllerFindManyParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getStageControllerFindManyUrl = (tournamentId: string,) => {
 
-  Object.entries(params || {}).forEach(([key, value]) => {
 
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : String(value))
-    }
-  });
 
-  const stringifiedParams = normalizedParams.toString();
 
-  return stringifiedParams.length > 0 ? `/api/tournaments/${tournamentId}/stages?${stringifiedParams}` : `/api/tournaments/${tournamentId}/stages`
+  return `/api/tournaments/${tournamentId}/stages`
 }
 
-export const stageControllerFindMany = async (tournamentId: string,
-    params?: StageControllerFindManyParams, options?: RequestInit): Promise<stageControllerFindManyResponse> => {
+export const stageControllerFindMany = async (tournamentId: string, options?: RequestInit): Promise<stageControllerFindManyResponse> => {
 
-  return backendFetch<stageControllerFindManyResponse>(getStageControllerFindManyUrl(tournamentId,params),
+  return backendFetch<stageControllerFindManyResponse>(getStageControllerFindManyUrl(tournamentId),
   {
     ...options,
     method: 'GET'
@@ -1046,6 +1039,72 @@ export const mappoolControllerDeleteBeatmap = async (id: string,
   {
     ...options,
     method: 'DELETE'
+
+
+  }
+);}
+
+
+
+export type tournamentMappoolControllerFindByTournamentResponse200 = {
+  data: MappoolWithBeatmapsDtoOutput[]
+  status: 200
+}
+
+export type tournamentMappoolControllerFindByTournamentResponseSuccess = (tournamentMappoolControllerFindByTournamentResponse200) & {
+  headers: Headers;
+};
+;
+
+export type tournamentMappoolControllerFindByTournamentResponse = (tournamentMappoolControllerFindByTournamentResponseSuccess)
+
+export const getTournamentMappoolControllerFindByTournamentUrl = (tournamentId: string,) => {
+
+
+
+
+  return `/api/tournaments/${tournamentId}/mappools`
+}
+
+export const tournamentMappoolControllerFindByTournament = async (tournamentId: string, options?: RequestInit): Promise<tournamentMappoolControllerFindByTournamentResponse> => {
+
+  return backendFetch<tournamentMappoolControllerFindByTournamentResponse>(getTournamentMappoolControllerFindByTournamentUrl(tournamentId),
+  {
+    ...options,
+    method: 'GET'
+
+
+  }
+);}
+
+
+
+export type tournamentMappoolControllerFindByTournamentForManagementResponse200 = {
+  data: MappoolWithBeatmapsDtoOutput[]
+  status: 200
+}
+
+export type tournamentMappoolControllerFindByTournamentForManagementResponseSuccess = (tournamentMappoolControllerFindByTournamentForManagementResponse200) & {
+  headers: Headers;
+};
+;
+
+export type tournamentMappoolControllerFindByTournamentForManagementResponse = (tournamentMappoolControllerFindByTournamentForManagementResponseSuccess)
+
+export const getTournamentMappoolControllerFindByTournamentForManagementUrl = (tournamentId: string,) => {
+
+
+
+
+  return `/api/tournaments/${tournamentId}/mappools/manage`
+}
+
+export const tournamentMappoolControllerFindByTournamentForManagement = async (tournamentId: string, options?: RequestInit): Promise<tournamentMappoolControllerFindByTournamentForManagementResponse> => {
+
+  return backendFetch<tournamentMappoolControllerFindByTournamentForManagementResponse>(getTournamentMappoolControllerFindByTournamentForManagementUrl(tournamentId),
+  {
+    ...options,
+    method: 'GET'
 
 
   }

@@ -10,10 +10,7 @@ const config = {
 			bundler: 'bun',
 			serveStatic: true,
 			sourceMap: true
-		}),
-		csrf: {
-			checkOrigin: false
-		}
+		})
 	}
 };
 

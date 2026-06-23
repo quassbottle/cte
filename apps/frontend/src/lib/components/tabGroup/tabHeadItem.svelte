@@ -1,22 +1,18 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { getContext, onMount } from 'svelte';
+	import { getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
-
-	let id: number;
 
 	const setActiveTab = getContext('setActiveTab') as (id: number) => void;
 	const getNewTabId = getContext('getNewTabId') as () => number;
 	const activeTab = getContext('activeTab') as Writable<number>;
+	const id = getNewTabId();
 
 	let className = '';
 	export { className as class };
 
 	export let buttonClass = '';
 
-	onMount(() => {
-		id = getNewTabId();
-	});
 </script>
 
 <li class={cn('mr-2', className)} role="presentation">

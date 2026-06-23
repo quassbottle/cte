@@ -1,10 +1,7 @@
-import { authenticateUser } from '$lib/api/auth';
+import { resolveSession } from '$lib/server/auth/session';
 import type { Handle } from '@sveltejs/kit';
 
 export const handle: Handle = async ({ event, resolve }) => {
-	event.locals.session = await authenticateUser(event);
-
-	const response = await resolve(event);
-
-	return response;
+	event.locals.session = await resolveSession(event.cookies, undefined, event.fetch);
+	return resolve(event);
 };
