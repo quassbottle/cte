@@ -82,7 +82,7 @@
 		src={`https://assets.ppy.sh/beatmaps/${beatmapsetId}/covers/cover@2x.jpg`}
 	></Banner>
 
-	<div class="relative flex flex-col gap-2 p-4 pr-72">
+	<div class="flex flex-col gap-3 p-4">
 		<a class="text-[20px] font-semibold hover:underline" href={`https://osu.ppy.sh/b/${beatmapId}`}>
 			{artist} - {title}
 		</a>
@@ -104,7 +104,7 @@
 
 		<Mod mod={mod} index={index} />
 
-		<div class="absolute bottom-4 right-4 flex flex-wrap justify-end gap-2">
+		<div class="flex flex-wrap gap-2">
 			<a
 				class="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
 				href={`osu://b/${beatmapId}`}

@@ -15,6 +15,7 @@
 	import ParticipantsTab from './components/ParticipantsTab.svelte';
 	import ScheduleTab from './components/ScheduleTab.svelte';
 	import MappoolsTab from './components/MappoolsTab.svelte';
+	import type { TournamentRegistrationForm } from './components/info/types';
 
 	export let data: {
 		tournament: TournamentDto;
@@ -27,22 +28,18 @@
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		canEditTournament: boolean;
 	};
-	export let form:
-		| {
-				registrationError?: string;
-				teamName?: string;
-				teamParticipantIds?: string;
-		  }
-		| undefined;
+	export let form: TournamentRegistrationForm;
+
+	let activeTab = 'info';
 </script>
 
-<TabGroup let:Head let:ContentItem>
+<TabGroup bind:value={activeTab} let:Head let:ContentItem>
 	<div class="mb-4 flex items-start justify-between">
 		<Head let:Item class="gap-4 text-[24px] font-semibold">
-			<Item>Info</Item>
-			<Item>Participants</Item>
-			<Item>Schedule</Item>
-			<Item>Mappools</Item>
+			<Item value="info">Info</Item>
+			<Item value="participants">Participants</Item>
+			<Item value="schedule">Schedule</Item>
+			<Item value="mappools">Mappools</Item>
 		</Head>
 
 		{#if data.canEditTournament}
@@ -52,7 +49,7 @@
 		{/if}
 	</div>
 
-	<ContentItem>
+	<ContentItem value="info">
 		<InfoTab
 			tournament={data.tournament}
 			user={data.user}
@@ -62,15 +59,15 @@
 		/>
 	</ContentItem>
 
-	<ContentItem>
+	<ContentItem value="participants">
 		<ParticipantsTab tournament={data.tournament} participants={data.participants} teams={data.teams} />
 	</ContentItem>
 
-	<ContentItem>
+	<ContentItem value="schedule">
 		<ScheduleTab stages={data.stages} />
 	</ContentItem>
 
-	<ContentItem>
+	<ContentItem value="mappools">
 		<MappoolsTab
 			tournamentMode={data.tournament.mode}
 			stages={data.stages}

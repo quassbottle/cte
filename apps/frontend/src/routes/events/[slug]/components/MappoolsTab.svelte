@@ -32,12 +32,13 @@
 	{#if sortedStages.length === 0}
 		<p>No stages added yet.</p>
 	{:else}
-		<TabGroup let:Head let:ContentItem class="flex flex-col gap-4 md:flex-row">
+		<TabGroup value={sortedStages[0]?.id} let:Head let:ContentItem class="flex flex-col gap-4 md:flex-row">
 			<div class="w-full md:sticky md:top-8 md:w-[160px] md:shrink-0 md:self-start">
 				<Head let:Item class="flex flex-col gap-2">
 					{#each sortedStages as stage}
-						<Item
-							class="mr-0"
+							<Item
+								value={stage.id}
+								class="mr-0"
 							buttonClass={buttonVariants({
 								variant: 'default',
 								size: 'sm',
@@ -52,7 +53,7 @@
 
 			<div class="min-w-0 flex-1 md:border-l md:border-border md:pl-6">
 				{#each sortedStages as stage}
-					<ContentItem class="flex flex-col gap-4">
+						<ContentItem value={stage.id} class="flex flex-col gap-4">
 						{#if getStageMappools(stage.id).length === 0}
 							<p class="text-sm text-muted-foreground">Mappool has not been added yet.</p>
 						{:else}

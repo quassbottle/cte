@@ -3,12 +3,14 @@
 	import { getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 
-	const activeTab = getContext('activeTab') as Writable<number>;
-	const getNewContentId = getContext('getNewContentId') as () => number;
-	const id = getNewContentId();
+	const activeTab = getContext('activeTab') as Writable<string>;
+	const getNewContentId = getContext('getNewContentId') as () => string;
 
 	let className = '';
 	export { className as class };
+	export let value: string | undefined = undefined;
+	const fallbackId = getNewContentId();
+	$: id = value ?? fallbackId;
 
 </script>
 

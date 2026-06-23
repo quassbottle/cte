@@ -3,6 +3,8 @@ import { backendErrorMessage, backendErrorStatus } from '$lib/server/backend/err
 import * as commands from '$lib/server/tournaments/tournament-page.commands';
 import { getTournamentPage } from '$lib/server/tournaments/tournament-page.query';
 import { tournamentRegisterFormSchema } from '$lib/schemas/tournament-page.schema';
+import type { BackendClient } from '$lib/server/backend/client';
+import type { SelectedUser } from '$lib/schemas/user.schema';
 import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
@@ -19,6 +21,39 @@ export const load: PageServerLoad = async (event) => {
 	}
 };
 
+const parseParticipantIds = (value: FormDataEntryValue | undefined) =>
+	Array.from(
+		new Set(
+			String(value ?? '')
+				.split(/[\s,]+/)
+				.map((item) => item.trim())
+				.filter(Boolean)
+		)
+	);
+
+const resolveSelectedUsers = async (
+	backend: BackendClient,
+	value: FormDataEntryValue | undefined
+): Promise<SelectedUser[]> => {
+	const users: SelectedUser[] = [];
+
+	for (const id of parseParticipantIds(value)) {
+		try {
+			const response = await backend.users.getById(id);
+			users.push({
+				id: response.data.id,
+				osuId: response.data.osuId,
+				osuUsername: response.data.osuUsername,
+				avatarUrl: `https://a.ppy.sh/${response.data.osuId}`
+			});
+		} catch {
+			// Invalid teammate ids are handled by the registration action itself.
+		}
+	}
+
+	return users;
+};
+
 export const actions: Actions = {
 	register: async (event) => {
 		const { locals, params, request } = event;
@@ -28,22 +63,23 @@ export const actions: Actions = {
 
 		const values = Object.fromEntries(await request.formData());
 		const parsed = tournamentRegisterFormSchema.safeParse(values);
+		const backend = createBackendClient(event);
 
 		if (!parsed.success) {
 			return fail(400, {
 				registrationError: parsed.error.issues[0]?.message ?? 'Invalid registration form.',
 				teamName: String(values.teamName ?? ''),
-				teamParticipantIds: String(values.teamParticipantIds ?? '')
+				selectedUsers: await resolveSelectedUsers(backend, values.teamParticipantIds)
 			});
 		}
 
 		try {
-			await commands.registerTournament(createBackendClient(event), params.slug, parsed.data);
+			await commands.registerTournament(backend, params.slug, parsed.data);
 		} catch (cause) {
 			return fail(backendErrorStatus(cause), {
 				registrationError: backendErrorMessage(cause, 'Failed to register.'),
 				teamName: String(values.teamName ?? ''),
-				teamParticipantIds: String(values.teamParticipantIds ?? '')
+				selectedUsers: await resolveSelectedUsers(backend, values.teamParticipantIds)
 			});
 		}
 

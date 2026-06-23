@@ -3,15 +3,17 @@
 	import { getContext } from 'svelte';
 	import type { Writable } from 'svelte/store';
 
-	const setActiveTab = getContext('setActiveTab') as (id: number) => void;
-	const getNewTabId = getContext('getNewTabId') as () => number;
-	const activeTab = getContext('activeTab') as Writable<number>;
-	const id = getNewTabId();
+	const setActiveTab = getContext('setActiveTab') as (id: string) => void;
+	const getNewTabId = getContext('getNewTabId') as () => string;
+	const activeTab = getContext('activeTab') as Writable<string>;
 
 	let className = '';
 	export { className as class };
 
 	export let buttonClass = '';
+	export let value: string | undefined = undefined;
+	const fallbackId = getNewTabId();
+	$: id = value ?? fallbackId;
 
 </script>
 

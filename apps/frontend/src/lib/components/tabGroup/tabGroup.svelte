@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
-	import { writable } from 'svelte/store';
+	import { writable, type Writable } from 'svelte/store';
 	import { setContext } from 'svelte';
 	import Head from './tabHead.svelte';
 	import ContentItem from './tabContentItem.svelte';
@@ -8,20 +8,29 @@
 	let className = '';
 	export { className as class };
 
-	const activeTab = writable(1);
+	export let value: string | undefined = undefined;
+	export let onValueChange: ((value: string) => void) | undefined = undefined;
 
-	function setActiveTab(id: number) {
+	const activeTab: Writable<string> = writable(value ?? '1');
+
+	$: if (value !== undefined) {
+		activeTab.set(value);
+	}
+
+	function setActiveTab(id: string) {
+		value = id;
 		activeTab.set(id);
+		onValueChange?.(id);
 	}
 
 	let tabCounter = 0;
 	function getNewTabId() {
-		return ++tabCounter;
+		return String(++tabCounter);
 	}
 
 	let contentCounter = 0;
 	function getNewContentId() {
-		return ++contentCounter;
+		return String(++contentCounter);
 	}
 
 	setContext('activeTab', activeTab);

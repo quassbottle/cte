@@ -17,6 +17,7 @@ import {
 	stageUpdateFormSchema,
 	tournamentEditFormSchema
 } from '$lib/schemas/tournament-edit.schema';
+import type { EditAction, TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 import { error, fail } from '@sveltejs/kit';
 import type { Actions, PageServerLoad, RequestEvent } from './$types';
 import type { z } from 'zod';
@@ -29,27 +30,35 @@ const requireSession = (locals: App.Locals) => {
 	return locals.session;
 };
 
-const runFormAction = async <Schema extends z.ZodTypeAny>(
+type ActionContext = {
+	stageId?: string;
+	mappoolId?: string;
+	beatmapId?: string;
+};
+
+const stringValue = (value: FormDataEntryValue | undefined) =>
+	typeof value === 'string' ? value : undefined;
+
+const submitForm = async <Schema extends z.ZodTypeAny>(
 	event: RequestEvent,
-	action: string,
+	action: EditAction,
 	schema: Schema,
+	values: Record<string, FormDataEntryValue>,
+	context: ActionContext,
 	run: (backend: ReturnType<typeof createBackendClient>, input: z.infer<Schema>) => Promise<unknown>
 ) => {
 	requireSession(event.locals);
 	const backend = createBackendClient(event);
-	const values = Object.fromEntries(await event.request.formData());
 	const parsed = schema.safeParse(values);
-	const context = {
-		stageId: typeof values.stageId === 'string' ? values.stageId : undefined,
-		mappoolId: typeof values.mappoolId === 'string' ? values.mappoolId : undefined
-	};
 
 	if (!parsed.success) {
 		return fail(400, {
 			action,
+			ok: false,
 			message: parsed.error.issues[0]?.message ?? 'Invalid form data',
+			errors: parsed.error.flatten().fieldErrors,
 			...context
-		});
+		} satisfies TournamentEditActionResult);
 	}
 
 	try {
@@ -57,16 +66,26 @@ const runFormAction = async <Schema extends z.ZodTypeAny>(
 	} catch (cause) {
 		return fail(backendErrorStatus(cause), {
 			action,
+			ok: false,
 			message: backendErrorMessage(cause, 'Request failed'),
+			errors: {},
 			...context
-		});
+		} satisfies TournamentEditActionResult);
 	}
 
 	return {
 		action,
 		ok: true,
 		...context
-	};
+	} satisfies TournamentEditActionResult;
+};
+
+const withFormValues = async <Result>(
+	event: RequestEvent,
+	run: (values: Record<string, FormDataEntryValue>) => Promise<Result>
+) => {
+	const values = Object.fromEntries(await event.request.formData());
+	return run(values);
 };
 
 export const load: PageServerLoad = async (event) => {
@@ -93,44 +112,113 @@ export const load: PageServerLoad = async (event) => {
 
 export const actions: Actions = {
 	updateTournament: (event) =>
-		runFormAction(event, 'updateTournament', tournamentEditFormSchema, (backend, input) =>
-			commands.updateTournament(backend, event.params.slug, input)
+		withFormValues(event, (values) =>
+			submitForm(event, 'updateTournament', tournamentEditFormSchema, values, {}, (backend, input) =>
+				commands.updateTournament(backend, event.params.slug, input)
+			)
 		),
 	createStage: (event) =>
-		runFormAction(event, 'createStage', stageCreateFormSchema, (backend, input) =>
-			commands.createStage(backend, event.params.slug, input)
+		withFormValues(event, (values) =>
+			submitForm(event, 'createStage', stageCreateFormSchema, values, {}, (backend, input) =>
+				commands.createStage(backend, event.params.slug, input)
+			)
 		),
 	updateStage: (event) =>
-		runFormAction(event, 'updateStage', stageUpdateFormSchema, (backend, input) =>
-			commands.updateStage(backend, event.params.slug, input)
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'updateStage',
+				stageUpdateFormSchema,
+				values,
+				{ stageId: stringValue(values.stageId) },
+				(backend, input) => commands.updateStage(backend, event.params.slug, input)
+			)
 		),
 	deleteStage: (event) =>
-		runFormAction(event, 'deleteStage', stageDeleteFormSchema, (backend, input) =>
-			commands.deleteStage(backend, event.params.slug, input)
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'deleteStage',
+				stageDeleteFormSchema,
+				values,
+				{ stageId: stringValue(values.stageId) },
+				(backend, input) => commands.deleteStage(backend, event.params.slug, input)
+			)
 		),
 	createMappool: (event) =>
-		runFormAction(event, 'createMappool', mappoolCreateFormSchema, (backend, input) =>
-			commands.createMappool(backend, input)
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'createMappool',
+				mappoolCreateFormSchema,
+				values,
+				{ stageId: stringValue(values.stageId) },
+				(backend, input) => commands.createMappool(backend, input)
+			)
 		),
 	updateMappoolVisibility: (event) =>
-		runFormAction(event, 'updateMappoolVisibility', mappoolVisibilityFormSchema, (backend, input) =>
-			commands.updateMappoolVisibility(backend, input)
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'updateMappoolVisibility',
+				mappoolVisibilityFormSchema,
+				values,
+				{ mappoolId: stringValue(values.mappoolId) },
+				(backend, input) => commands.updateMappoolVisibility(backend, input)
+			)
 		),
 	addMappoolBeatmap: (event) =>
-		runFormAction(event, 'addMappoolBeatmap', mappoolBeatmapAddFormSchema, (backend, input) =>
-			commands.addMappoolBeatmap(backend, input)
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'addMappoolBeatmap',
+				mappoolBeatmapAddFormSchema,
+				values,
+				{ mappoolId: stringValue(values.mappoolId) },
+				(backend, input) => commands.addMappoolBeatmap(backend, input)
+			)
 		),
 	updateMappoolBeatmap: (event) =>
-		runFormAction(event, 'updateMappoolBeatmap', mappoolBeatmapUpdateFormSchema, (backend, input) =>
-			commands.updateMappoolBeatmap(backend, input)
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'updateMappoolBeatmap',
+				mappoolBeatmapUpdateFormSchema,
+				values,
+				{
+					mappoolId: stringValue(values.mappoolId),
+					beatmapId: stringValue(values.osuBeatmapId)
+				},
+				(backend, input) => commands.updateMappoolBeatmap(backend, input)
+			)
 		),
 	replaceMappoolBeatmap: (event) =>
-		runFormAction(event, 'replaceMappoolBeatmap', mappoolBeatmapReplaceFormSchema, (backend, input) =>
-			commands.replaceMappoolBeatmap(backend, input)
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'replaceMappoolBeatmap',
+				mappoolBeatmapReplaceFormSchema,
+				values,
+				{
+					mappoolId: stringValue(values.mappoolId),
+					beatmapId: stringValue(values.osuBeatmapId)
+				},
+				(backend, input) => commands.replaceMappoolBeatmap(backend, input)
+			)
 		),
 	deleteMappoolBeatmap: (event) =>
-		runFormAction(event, 'deleteMappoolBeatmap', mappoolBeatmapDeleteFormSchema, (backend, input) =>
-			commands.deleteMappoolBeatmap(backend, input)
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'deleteMappoolBeatmap',
+				mappoolBeatmapDeleteFormSchema,
+				values,
+				{
+					mappoolId: stringValue(values.mappoolId),
+					beatmapId: stringValue(values.osuBeatmapId)
+				},
+				(backend, input) => commands.deleteMappoolBeatmap(backend, input)
+			)
 		)
 };
 
