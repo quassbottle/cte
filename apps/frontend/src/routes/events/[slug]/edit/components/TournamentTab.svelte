@@ -62,7 +62,16 @@
 	<Group let:Title let:Content>
 		<Title>Manage tournament</Title>
 		<Content>
-			<form method="post" action="?/updateTournament" class="flex flex-col gap-4 p-1" use:enhance>
+			<form
+			method="post"
+			action="?/updateTournament"
+			class="flex flex-col gap-4 p-1"
+			use:enhance={() => {
+				return async ({ update }) => {
+					update({ reset: false });
+				};
+			}}
+		>
 				<div class="flex w-full max-w-2xl flex-col gap-1.5">
 					<Label for="name">Name</Label>
 					<Input id="name" name="name" placeholder="Tournament name" required value={tournament.name} />

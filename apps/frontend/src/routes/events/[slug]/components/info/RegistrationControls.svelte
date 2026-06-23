@@ -1,8 +1,8 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
 	import type { TournamentDto, TournamentParticipantDto } from '$lib/api/types';
 	import type { Viewer } from '$lib/types/viewer';
 	import { Button } from '$lib/components/ui/button';
+	import RegisterDialog from './RegisterDialog.svelte';
 	import TeamRegistrationDialog from './TeamRegistrationDialog.svelte';
 	import UnregisterDialog from './UnregisterDialog.svelte';
 	import type { TournamentRegistrationForm } from './types';
@@ -14,7 +14,7 @@
 
 	$: isLoggedIn = Boolean(user?.id);
 	$: isRegistered = Boolean(user?.id && participants.some((participant) => participant.id === user?.id));
-	$: canShowRegistrationForm = tournament.registrationOpen || isRegistered;
+	$: canShowRegistrationForm = tournament.registrationOpen;
 	$: registerButtonText = isRegistered
 		? tournament.isTeam
 			? 'Unregister team'
@@ -24,7 +24,21 @@
 			: 'Register';
 
 	let isRegistrationModalOpen = Boolean(form?.registrationError);
+	let isSoloRegisterModalOpen = false;
 	let isUnregisterModalOpen = false;
+
+	// `use:enhance` form submissions preserve local component state across the
+	// client-side redirect, so a stale modal flag from a prior register/unregister
+	// flow would auto-open the wrong dialog when the relevant conditional block
+	// re-mounts (e.g. after unregister -> register again). Reset the flags based
+	// on the canonical registration state to neutralise that sticky state.
+	$: if (isRegistered) {
+		isRegistrationModalOpen = false;
+		isSoloRegisterModalOpen = false;
+	}
+	$: if (!isRegistered) {
+		isUnregisterModalOpen = false;
+	}
 </script>
 
 {#if isLoggedIn}
@@ -69,13 +83,22 @@
 						/>
 					{/if}
 				{:else}
-					<form method="post" action="?/register" use:enhance class="flex flex-col gap-2">
-						<input type="hidden" name="isTeamTournament" value="false" />
+					<Button
+						class="w-[140px] bg-accept text-[12px]"
+						variant="accept"
+						type="button"
+						on:click={() => (isSoloRegisterModalOpen = true)}
+					>
+						{registerButtonText}
+					</Button>
 
-						<Button class="w-[140px] bg-accept text-[12px]" variant="accept" type="submit">
-							{registerButtonText}
-						</Button>
-					</form>
+					{#if isSoloRegisterModalOpen}
+						<RegisterDialog
+							{form}
+							label={registerButtonText}
+							onClose={() => (isSoloRegisterModalOpen = false)}
+						/>
+					{/if}
 				{/if}
 			</div>
 		{/if}
