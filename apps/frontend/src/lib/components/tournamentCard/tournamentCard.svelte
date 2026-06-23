@@ -1,9 +1,10 @@
 <script lang="ts">
 	import { Calendar } from 'lucide-svelte';
-	import Banner from '../banner/banner.svelte';
+	import TournamentBanner from '../tournamentBanner/tournamentBanner.svelte';
 	import BreadcrumbList from '../ui/breadcrumbList/breadcrumbList.svelte';
 	import { pluralize } from '$lib/utils/text';
 
+	export let id: string;
 	export let name: string;
 	export let startsAt: Date | string;
 	export let isTeam: boolean;
@@ -11,10 +12,10 @@
 </script>
 
 <div class="flex w-full flex-col overflow-hidden rounded-2xl bg-[#f5f5f5]">
-	<Banner
+	<TournamentBanner
 		class="relative h-[200px] text-white"
-		src={'https://assets.ppy.sh/beatmaps/2315685/covers/cover@2x.jpg'}
-	></Banner>
+		seed={id}
+	></TournamentBanner>
 
 	<div class="flex flex-col gap-2 p-4">
 		<p class="text-[20px] font-semibold">{name}</p>

@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
 	import type { TournamentDto } from '$lib/api/types';
-	import Banner from '$lib/components/banner/banner.svelte';
+	import TournamentBanner from '$lib/components/tournamentBanner/tournamentBanner.svelte';
 	import BreadcrumbList from '$lib/components/ui/breadcrumbList/breadcrumbList.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import GameModeIcon from '$lib/components/gamemode/gameModeIcon.svelte';
@@ -28,10 +28,10 @@
 
 <div class="flex flex-col gap-8">
 	<div class="relative">
-		<Banner
+		<TournamentBanner
 			class="relative h-[260px] text-white"
 			let:Content
-			src={'https://assets.ppy.sh/beatmaps/2315685/covers/cover@2x.jpg'}
+			seed={tournament.id}
 		>
 			<Content class="absolute bottom-0 left-0 flex w-[60%] flex-col p-6">
 				<p class="text-[32px] font-semibold">Edit: {tournament.name}</p>
@@ -56,7 +56,7 @@
 					</Item>
 				</BreadcrumbList>
 			</Content>
-		</Banner>
+		</TournamentBanner>
 	</div>
 
 	<Group let:Title let:Content>
