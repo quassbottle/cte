@@ -8,7 +8,7 @@
 	export let isCaptain = false;
 </script>
 
-<div class="flex flex-col items-center gap-2 rounded-lg p-6 bg-[#f5f5f5]">
+<div class="flex flex-col items-center gap-2 rounded-lg border border-border bg-card p-6">
 	<Avatar class="align-center h-[96px] w-[96px] rounded-[24px]">
 		<AvatarImage src={getAvatarUrlByOsuId(osuId)} />
 		<AvatarFallback>CN</AvatarFallback>
@@ -17,7 +17,7 @@
 	<p class="flex items-center gap-1">
 		<span>{username}</span>
 		{#if isCaptain}
-			<Crown size={14} class="text-amber-500" />
+			<Crown size={14} class="text-amber-500 dark:text-amber-400" />
 		{/if}
 	</p>
 </div>

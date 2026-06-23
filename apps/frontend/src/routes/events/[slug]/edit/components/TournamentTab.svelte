@@ -147,7 +147,7 @@
 				</label>
 
 				{#if form?.action === 'updateTournament' && form.message}
-					<p class="text-sm text-red-400">{form.message}</p>
+					<p class="text-sm text-destructive">{form.message}</p>
 				{/if}
 
 				<div class="mt-2 flex gap-2">

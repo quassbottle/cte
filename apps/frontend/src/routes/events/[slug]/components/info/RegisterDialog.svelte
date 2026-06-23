@@ -21,11 +21,11 @@
 		if (event.key === 'Escape') onClose();
 	}}
 >
-	<div class="w-full max-w-md rounded-xl bg-white p-6 text-black shadow-2xl">
+	<div class="w-full max-w-md rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl">
 		<div class="mb-4 flex items-start justify-between gap-4">
 			<div>
 				<p class="text-xl font-semibold">Register</p>
-				<p class="text-sm text-black/60">Are you sure you want to register?</p>
+				<p class="text-sm text-muted-foreground">Are you sure you want to register?</p>
 			</div>
 			<Button variant="ghost" size="icon" on:click={onClose}>
 				<X class="h-4 w-4" />
@@ -33,11 +33,11 @@
 		</div>
 
 		{#if form?.registrationError}
-			<p class="mb-4 text-sm text-red-600">{form.registrationError}</p>
+			<p class="mb-4 text-sm text-destructive">{form.registrationError}</p>
 		{/if}
 
 		<div class="flex items-center gap-2">
-			<Button type="button" variant="outline" on:click={onClose}>Cancel</Button>
+			<Button type="button" variant="outline" class="text-[12px]" on:click={onClose}>Cancel</Button>
 			<form method="post" action="?/register" use:enhance>
 				<input type="hidden" name="isTeamTournament" value="false" />
 				<Button class="bg-accept text-[12px]" variant="accept" type="submit">

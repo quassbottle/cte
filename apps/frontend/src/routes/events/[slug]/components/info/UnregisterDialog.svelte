@@ -19,11 +19,11 @@
 		if (event.key === 'Escape') onClose();
 	}}
 >
-	<div class="w-full max-w-md rounded-xl bg-white p-6 text-black shadow-2xl">
+	<div class="w-full max-w-md rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl">
 		<div class="mb-4 flex items-start justify-between gap-4">
 			<div>
 				<p class="text-xl font-semibold">Unregister</p>
-				<p class="text-sm text-black/60">Are you sure you want to unregister?</p>
+				<p class="text-sm text-muted-foreground">Are you sure you want to unregister?</p>
 			</div>
 			<Button variant="ghost" size="icon" on:click={onClose}>
 				<X class="h-4 w-4" />
@@ -31,7 +31,7 @@
 		</div>
 
 		<div class="flex items-center gap-2">
-			<Button type="button" variant="outline" on:click={onClose}>Cancel</Button>
+			<Button type="button" variant="outline" class="text-[12px]" on:click={onClose}>Cancel</Button>
 			<form method="post" action="?/unregister" use:enhance>
 				<Button class="bg-accept text-[12px]" variant="accept" type="submit">
 					{label}

@@ -19,7 +19,7 @@
 
 <span
 	class={cn(
-		'w-16 rounded-xl text-center  font-semibold text-neutral-800 select-none',
+		'w-16 rounded-xl text-center font-semibold text-neutral-800 dark:text-neutral-100 select-none',
 		variants[getNormalizedMod()] ?? 'bg-zinc-300',
 		className
 	)}>{getNormalizedMod()}{index !== null ? index : ''}</span

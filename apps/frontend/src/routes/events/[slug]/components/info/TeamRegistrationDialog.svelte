@@ -66,11 +66,11 @@
 		if (event.key === 'Escape') onClose();
 	}}
 >
-	<div class="w-full max-w-2xl rounded-xl bg-white p-6 text-black shadow-2xl">
+	<div class="w-full max-w-2xl rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl">
 		<div class="mb-4 flex items-start justify-between gap-4">
 			<div>
 				<p class="text-xl font-semibold">Register Team</p>
-				<p class="text-sm text-black/60">
+				<p class="text-sm text-muted-foreground">
 					Add teammates by osu id or osu username. Local id is also supported.
 				</p>
 			</div>
@@ -123,13 +123,13 @@
 				</div>
 
 				{#if lookupError}
-					<p class="text-xs text-red-600">{lookupError}</p>
+					<p class="text-xs text-destructive">{lookupError}</p>
 				{/if}
 
 				{#if selectedUsers.length > 0}
 					<div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
 						{#each selectedUsers as user}
-							<div class="relative rounded-lg border border-black/10 p-3">
+							<div class="relative rounded-lg border border-border p-3">
 								<Button
 									type="button"
 									size="icon"
@@ -146,7 +146,7 @@
 									</Avatar>
 									<div class="min-w-0">
 										<p class="truncate text-sm font-medium">{user.osuUsername}</p>
-										<p class="truncate text-xs text-black/60">
+										<p class="truncate text-xs text-muted-foreground">
 											id: {user.id} | osu: {user.osuId}
 										</p>
 									</div>
@@ -155,19 +155,19 @@
 						{/each}
 					</div>
 				{:else}
-					<p class="text-xs text-black/60">No teammates added yet.</p>
+					<p class="text-xs text-muted-foreground">No teammates added yet.</p>
 				{/if}
 			</div>
 
 			{#if form?.registrationError}
-				<p class="text-xs text-red-600">{form.registrationError}</p>
+				<p class="text-xs text-destructive">{form.registrationError}</p>
 			{/if}
 
 			<div class="flex items-center gap-2">
 				<Button class="w-[140px] bg-accept text-[12px]" variant="accept" type="submit">
 					Register team
 				</Button>
-				<Button type="button" variant="outline" on:click={onClose}>Cancel</Button>
+				<Button type="button" variant="outline" class="text-[12px]" on:click={onClose}>Cancel</Button>
 			</div>
 		</form>
 	</div>

@@ -6,13 +6,22 @@
 	import { Button } from '$lib/components/ui/button';
 	import { getAvatarUrlByOsuId } from '$lib/utils/osu';
 	import RoundButton from '../ui/roundbutton/RoundButton.svelte';
-	import { Bell } from 'lucide-svelte';
+	import { toggleTheme, resolvedTheme } from '$lib/stores/theme';
+	import { Bell, Moon, Sun } from 'lucide-svelte';
 
 	export let user: Viewer | null;
 </script>
 
-{#if user}
-	<div class="flex flex-row items-center gap-2">
+<div class="flex flex-row items-center gap-2">
+	<RoundButton on:click={toggleTheme} aria-label="Toggle theme">
+		{#if $resolvedTheme === 'dark'}
+			<Sun size="16" />
+		{:else}
+			<Moon size="16" />
+		{/if}
+	</RoundButton>
+
+	{#if user}
 		<RoundButton>
 			<Bell size="16" />
 		</RoundButton>
@@ -22,7 +31,7 @@
 				<AvatarFallback>CN</AvatarFallback>
 			</Avatar>
 		</a>
-	</div>
-{:else}
-	<Button href="/auth/login">Login</Button>
-{/if}
+	{:else}
+		<Button href="/auth/login">Login</Button>
+	{/if}
+</div>

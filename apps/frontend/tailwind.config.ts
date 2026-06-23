@@ -21,7 +21,14 @@ const config: Config = {
 				ring: 'hsl(var(--ring) / <alpha-value>)',
 				background: 'hsl(var(--background) / <alpha-value>)',
 				foreground: 'hsl(var(--foreground) / <alpha-value>)',
-				accept: 'hsl(var(--accept) / <alpha-value>)',
+				accept: {
+					DEFAULT: 'hsl(var(--accept) / <alpha-value>)',
+					foreground: 'hsl(var(--accept-foreground) / <alpha-value>)'
+				},
+				sidebar: {
+					DEFAULT: 'hsl(var(--sidebar) / <alpha-value>)',
+					foreground: 'hsl(var(--sidebar-foreground) / <alpha-value>)'
+				},
 				primary: {
 					DEFAULT: 'hsl(var(--primary) / <alpha-value>)',
 					foreground: 'hsl(var(--primary-foreground) / <alpha-value>)'

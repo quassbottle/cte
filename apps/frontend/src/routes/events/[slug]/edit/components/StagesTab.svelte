@@ -60,7 +60,7 @@
 			</div>
 
 			{#if form?.action === 'createStage' && form.message}
-				<p class="text-sm text-red-400">{form.message}</p>
+				<p class="text-sm text-destructive">{form.message}</p>
 			{/if}
 
 			<div>
@@ -106,7 +106,7 @@
 								</div>
 
 								{#if form?.action === 'updateStage' && form.stageId === stage.id && form.message}
-									<p class="mt-2 text-sm text-red-400">{form.message}</p>
+									<p class="mt-2 text-sm text-destructive">{form.message}</p>
 								{/if}
 
 								<div class="mt-3 flex items-center gap-2">
@@ -118,7 +118,7 @@
 								<input type="hidden" name="stageId" value={stage.id} />
 								<Button variant="destructive" type="submit">Delete</Button>
 								{#if form?.action === 'deleteStage' && form.stageId === stage.id && form.message}
-									<p class="mt-2 text-sm text-red-400">{form.message}</p>
+									<p class="mt-2 text-sm text-destructive">{form.message}</p>
 								{/if}
 							</form>
 						</div>

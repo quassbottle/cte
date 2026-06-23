@@ -76,7 +76,7 @@
 	};
 </script>
 
-<div class="flex w-full flex-col overflow-hidden rounded-2xl bg-[#f5f5f5]">
+<div class="flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card">
 	<Banner
 		class="relative h-[120px] w-full"
 		src={`https://assets.ppy.sh/beatmaps/${beatmapsetId}/covers/cover@2x.jpg`}
@@ -106,7 +106,7 @@
 
 		<div class="flex flex-wrap gap-2">
 			<a
-				class="rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent"
+				class="rounded-md border border-border bg-background px-3 py-1 text-xs font-medium hover:bg-accent"
 				href={`osu://b/${beatmapId}`}
 			>
 				Direct

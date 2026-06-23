@@ -82,7 +82,7 @@
 
 <button
 	type="button"
-	class={`rounded-md border border-border bg-white px-3 py-1 text-xs font-medium hover:bg-accent ${className ?? ''}`}
+	class={`rounded-md border border-border bg-background px-3 py-1 text-xs font-medium hover:bg-accent ${className ?? ''}`}
 	onclick={onCopy}
 >
 	{state === 'copied' ? copiedLabel : state === 'failed' ? failedLabel : label}

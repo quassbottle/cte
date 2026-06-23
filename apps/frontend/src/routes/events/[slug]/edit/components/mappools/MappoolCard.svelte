@@ -29,7 +29,7 @@
 	</div>
 
 	{#if visibilityError}
-		<p class="mt-2 text-sm text-red-400">{visibilityError.message}</p>
+		<p class="mt-2 text-sm text-destructive">{visibilityError.message}</p>
 	{/if}
 
 	<div class="mt-2 flex flex-col gap-2">

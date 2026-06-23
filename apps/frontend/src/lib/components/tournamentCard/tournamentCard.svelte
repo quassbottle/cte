@@ -11,7 +11,8 @@
 	export let participantsCount = 0;
 </script>
 
-<div class="flex w-full flex-col overflow-hidden rounded-2xl bg-[#f5f5f5]">
+<div
+	class="flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:border-primary hover:bg-secondary hover:shadow-md">
 	<TournamentBanner
 		class="relative h-[200px] text-white"
 		seed={id}

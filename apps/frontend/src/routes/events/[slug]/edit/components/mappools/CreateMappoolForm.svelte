@@ -53,7 +53,7 @@
 		</div>
 	</div>
 	{#if createError}
-		<p class="text-sm text-red-400">{createError.message}</p>
+		<p class="text-sm text-destructive">{createError.message}</p>
 	{/if}
 	<div>
 		<Button

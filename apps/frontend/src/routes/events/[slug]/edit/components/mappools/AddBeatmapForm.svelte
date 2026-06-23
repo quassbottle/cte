@@ -80,7 +80,7 @@
 	{/if}
 
 	{#if $metadataState.status === 'error'}
-		<p class="text-sm text-red-400">{$metadataState.message}</p>
+		<p class="text-sm text-destructive">{$metadataState.message}</p>
 	{/if}
 
 	{#if $metadataState.status === 'loaded'}
@@ -103,7 +103,7 @@
 	{/if}
 
 	{#if addError}
-		<p class="text-sm text-red-400">{addError.message}</p>
+		<p class="text-sm text-destructive">{addError.message}</p>
 	{/if}
 
 	<div>

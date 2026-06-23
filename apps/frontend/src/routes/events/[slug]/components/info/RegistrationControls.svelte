@@ -63,7 +63,7 @@
 		{:else}
 			<div class="mt-2 flex flex-col gap-2">
 				{#if form?.registrationError}
-					<p class="text-xs text-red-300">{form.registrationError}</p>
+					<p class="text-xs text-destructive">{form.registrationError}</p>
 				{/if}
 
 				{#if isRegistered}

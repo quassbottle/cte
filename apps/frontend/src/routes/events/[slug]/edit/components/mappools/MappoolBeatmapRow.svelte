@@ -88,6 +88,6 @@
 	</div>
 
 	{#if rowError}
-		<p class="mt-2 text-sm text-red-400">{rowError.message}</p>
+		<p class="mt-2 text-sm text-destructive">{rowError.message}</p>
 	{/if}
 </div>
