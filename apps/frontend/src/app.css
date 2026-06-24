@@ -36,8 +36,8 @@
 
 		--radius: 0.5rem;
 
---accept: 170 70% 51%;
-    --accept-foreground: 222.2 84% 4.9%;
+		--accept: 170 70% 51%;
+		--accept-foreground: 222.2 84% 4.9%;
 
 		--sidebar: 0 0% 100%;
 		--sidebar-foreground: 222.2 84% 4.9%;

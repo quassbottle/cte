@@ -83,8 +83,7 @@ if (browser) {
  */
 export function cycleTheme(): void {
 	const current = get(themePreference);
-	const next =
-		current === 'light' ? 'dark' : current === 'dark' ? 'system' : 'light';
+	const next = current === 'light' ? 'dark' : current === 'dark' ? 'system' : 'light';
 	themePreference.set(next);
 }
 

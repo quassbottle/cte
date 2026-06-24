@@ -6,6 +6,12 @@
 	export { className as class };
 </script>
 
-<Button variant="outline" size="icon" class={cn('rounded-full', className)} {...$$restProps} on:click>
+<Button
+	variant="outline"
+	size="icon"
+	class={cn('rounded-full', className)}
+	{...$$restProps}
+	on:click
+>
 	<slot></slot>
 </Button>

@@ -7,5 +7,5 @@
  */
 
 export type UserControllerGetByLookupParams = {
-query: string;
+	query: string;
 };

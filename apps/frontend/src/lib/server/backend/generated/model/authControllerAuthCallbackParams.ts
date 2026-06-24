@@ -7,9 +7,9 @@
  */
 
 export type AuthControllerAuthCallbackParams = {
-/**
- * Authorization code from osu! OAuth2
- * @minLength 1
- */
-code: string;
+	/**
+	 * Authorization code from osu! OAuth2
+	 * @minLength 1
+	 */
+	code: string;
 };

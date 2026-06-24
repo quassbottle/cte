@@ -10,13 +10,11 @@ describe('generated backend API', () => {
 
 	it('documents typed authentication responses', () => {
 		const callbackResponse =
-			openApi.paths['/api/auth/auth-callback'].get.responses['200'].content[
-				'application/json'
-			].schema;
+			openApi.paths['/api/auth/auth-callback'].get.responses['200'].content['application/json']
+				.schema;
 		const initLoginResponse =
-			openApi.paths['/api/auth/init-login'].post.responses['200'].content[
-				'application/json'
-			].schema;
+			openApi.paths['/api/auth/init-login'].post.responses['200'].content['application/json']
+				.schema;
 
 		expect(callbackResponse).toEqual({
 			$ref: '#/components/schemas/AuthTokenDto'

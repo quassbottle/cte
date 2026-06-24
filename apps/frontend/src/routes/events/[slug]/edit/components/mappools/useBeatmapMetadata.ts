@@ -1,7 +1,4 @@
-import {
-	osuBeatmapMetadataSchema,
-	type OsuBeatmapMetadata
-} from '$lib/schemas/osu.schema';
+import { osuBeatmapMetadataSchema, type OsuBeatmapMetadata } from '$lib/schemas/osu.schema';
 import { writable } from 'svelte/store';
 
 type BeatmapMetadataState =

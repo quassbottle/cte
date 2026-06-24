@@ -7,6 +7,6 @@
  */
 
 export interface AuthTokenDto {
-  /** @minLength 1 */
-  token: string;
+	/** @minLength 1 */
+	token: string;
 }

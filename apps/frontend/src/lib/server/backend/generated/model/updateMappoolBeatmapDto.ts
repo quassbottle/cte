@@ -7,21 +7,21 @@
  */
 
 export interface UpdateMappoolBeatmapDto {
-  /** @minLength 1 */
-  mod?: string;
-  /**
-     * @maximum 9007199254740991
-     * @exclusiveMinimum 0
-     */
-  index?: number;
-  /**
-     * @maximum 9007199254740991
-     * @exclusiveMinimum 0
-     */
-  beatmapsetId?: number;
-  /**
-     * @maximum 9007199254740991
-     * @exclusiveMinimum 0
-     */
-  beatmapId?: number;
+	/** @minLength 1 */
+	mod?: string;
+	/**
+	 * @maximum 9007199254740991
+	 * @exclusiveMinimum 0
+	 */
+	index?: number;
+	/**
+	 * @maximum 9007199254740991
+	 * @exclusiveMinimum 0
+	 */
+	beatmapsetId?: number;
+	/**
+	 * @maximum 9007199254740991
+	 * @exclusiveMinimum 0
+	 */
+	beatmapId?: number;
 }

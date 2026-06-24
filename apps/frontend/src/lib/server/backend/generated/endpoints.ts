@@ -6,1109 +6,931 @@
  * OpenAPI spec version: 1.0
  */
 import type {
-  AddMappoolBeatmapDto,
-  AuthControllerAuthCallbackParams,
-  AuthTokenDto,
-  AuthUrlDto,
-  CreateMappoolDto,
-  CreateStageDto,
-  CreateTournamentDto,
-  MappoolBeatmapDtoOutput,
-  MappoolControllerFindManyParams,
-  MappoolDtoOutput,
-  MappoolWithBeatmapsDtoOutput,
-  OsuBeatmapMetadataDtoOutput,
-  RegisterTournamentDto,
-  StageDtoOutput,
-  TournamentControllerFindManyParams,
-  TournamentControllerGetParticipantsParams,
-  TournamentDtoOutput,
-  TournamentParticipantDtoOutput,
-  TournamentTeamDtoOutput,
-  UpdateMappoolBeatmapDto,
-  UpdateMappoolDto,
-  UpdateStageDto,
-  UpdateTournamentDto,
-  UserControllerGetByLookupParams,
-  UserDto
+	AddMappoolBeatmapDto,
+	AuthControllerAuthCallbackParams,
+	AuthTokenDto,
+	AuthUrlDto,
+	CreateMappoolDto,
+	CreateStageDto,
+	CreateTournamentDto,
+	MappoolBeatmapDtoOutput,
+	MappoolControllerFindManyParams,
+	MappoolDtoOutput,
+	MappoolWithBeatmapsDtoOutput,
+	OsuBeatmapMetadataDtoOutput,
+	RegisterTournamentDto,
+	StageDtoOutput,
+	TournamentControllerFindManyParams,
+	TournamentControllerGetParticipantsParams,
+	TournamentDtoOutput,
+	TournamentParticipantDtoOutput,
+	TournamentTeamDtoOutput,
+	UpdateMappoolBeatmapDto,
+	UpdateMappoolDto,
+	UpdateStageDto,
+	UpdateTournamentDto,
+	UserControllerGetByLookupParams,
+	UserDto
 } from './model';
 
 import { backendFetch } from '../fetcher';
 
 export type authControllerAuthCallbackResponse200 = {
-  data: AuthTokenDto
-  status: 200
-}
-
-export type authControllerAuthCallbackResponseSuccess = (authControllerAuthCallbackResponse200) & {
-  headers: Headers;
+	data: AuthTokenDto;
+	status: 200;
 };
-;
 
-export type authControllerAuthCallbackResponse = (authControllerAuthCallbackResponseSuccess)
+export type authControllerAuthCallbackResponseSuccess = authControllerAuthCallbackResponse200 & {
+	headers: Headers;
+};
+export type authControllerAuthCallbackResponse = authControllerAuthCallbackResponseSuccess;
 
-export const getAuthControllerAuthCallbackUrl = (params: AuthControllerAuthCallbackParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getAuthControllerAuthCallbackUrl = (params: AuthControllerAuthCallbackParams) => {
+	const normalizedParams = new URLSearchParams();
 
-  Object.entries(params || {}).forEach(([key, value]) => {
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? 'null' : String(value));
+		}
+	});
 
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : String(value))
-    }
-  });
+	const stringifiedParams = normalizedParams.toString();
 
-  const stringifiedParams = normalizedParams.toString();
+	return stringifiedParams.length > 0
+		? `/api/auth/auth-callback?${stringifiedParams}`
+		: `/api/auth/auth-callback`;
+};
 
-  return stringifiedParams.length > 0 ? `/api/auth/auth-callback?${stringifiedParams}` : `/api/auth/auth-callback`
-}
-
-export const authControllerAuthCallback = async (params: AuthControllerAuthCallbackParams, options?: RequestInit): Promise<authControllerAuthCallbackResponse> => {
-
-  return backendFetch<authControllerAuthCallbackResponse>(getAuthControllerAuthCallbackUrl(params),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const authControllerAuthCallback = async (
+	params: AuthControllerAuthCallbackParams,
+	options?: RequestInit
+): Promise<authControllerAuthCallbackResponse> => {
+	return backendFetch<authControllerAuthCallbackResponse>(
+		getAuthControllerAuthCallbackUrl(params),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type authControllerInitLoginResponse200 = {
-  data: AuthUrlDto
-  status: 200
-}
-
-export type authControllerInitLoginResponseSuccess = (authControllerInitLoginResponse200) & {
-  headers: Headers;
+	data: AuthUrlDto;
+	status: 200;
 };
-;
 
-export type authControllerInitLoginResponse = (authControllerInitLoginResponseSuccess)
+export type authControllerInitLoginResponseSuccess = authControllerInitLoginResponse200 & {
+	headers: Headers;
+};
+export type authControllerInitLoginResponse = authControllerInitLoginResponseSuccess;
 
 export const getAuthControllerInitLoginUrl = () => {
+	return `/api/auth/init-login`;
+};
 
-
-
-
-  return `/api/auth/init-login`
-}
-
-export const authControllerInitLogin = async ( options?: RequestInit): Promise<authControllerInitLoginResponse> => {
-
-  return backendFetch<authControllerInitLoginResponse>(getAuthControllerInitLoginUrl(),
-  {
-    ...options,
-    method: 'POST'
-
-
-  }
-);}
-
-
+export const authControllerInitLogin = async (
+	options?: RequestInit
+): Promise<authControllerInitLoginResponse> => {
+	return backendFetch<authControllerInitLoginResponse>(getAuthControllerInitLoginUrl(), {
+		...options,
+		method: 'POST'
+	});
+};
 
 export type userControllerGetMeResponse200 = {
-  data: UserDto
-  status: 200
-}
-
-export type userControllerGetMeResponseSuccess = (userControllerGetMeResponse200) & {
-  headers: Headers;
+	data: UserDto;
+	status: 200;
 };
-;
 
-export type userControllerGetMeResponse = (userControllerGetMeResponseSuccess)
+export type userControllerGetMeResponseSuccess = userControllerGetMeResponse200 & {
+	headers: Headers;
+};
+export type userControllerGetMeResponse = userControllerGetMeResponseSuccess;
 
 export const getUserControllerGetMeUrl = () => {
+	return `/api/users/me`;
+};
 
-
-
-
-  return `/api/users/me`
-}
-
-export const userControllerGetMe = async ( options?: RequestInit): Promise<userControllerGetMeResponse> => {
-
-  return backendFetch<userControllerGetMeResponse>(getUserControllerGetMeUrl(),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const userControllerGetMe = async (
+	options?: RequestInit
+): Promise<userControllerGetMeResponse> => {
+	return backendFetch<userControllerGetMeResponse>(getUserControllerGetMeUrl(), {
+		...options,
+		method: 'GET'
+	});
+};
 
 export type userControllerGetByLookupResponse200 = {
-  data: UserDto
-  status: 200
-}
-
-export type userControllerGetByLookupResponseSuccess = (userControllerGetByLookupResponse200) & {
-  headers: Headers;
+	data: UserDto;
+	status: 200;
 };
-;
 
-export type userControllerGetByLookupResponse = (userControllerGetByLookupResponseSuccess)
+export type userControllerGetByLookupResponseSuccess = userControllerGetByLookupResponse200 & {
+	headers: Headers;
+};
+export type userControllerGetByLookupResponse = userControllerGetByLookupResponseSuccess;
 
-export const getUserControllerGetByLookupUrl = (params: UserControllerGetByLookupParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getUserControllerGetByLookupUrl = (params: UserControllerGetByLookupParams) => {
+	const normalizedParams = new URLSearchParams();
 
-  Object.entries(params || {}).forEach(([key, value]) => {
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? 'null' : String(value));
+		}
+	});
 
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : String(value))
-    }
-  });
+	const stringifiedParams = normalizedParams.toString();
 
-  const stringifiedParams = normalizedParams.toString();
+	return stringifiedParams.length > 0
+		? `/api/users/lookup?${stringifiedParams}`
+		: `/api/users/lookup`;
+};
 
-  return stringifiedParams.length > 0 ? `/api/users/lookup?${stringifiedParams}` : `/api/users/lookup`
-}
-
-export const userControllerGetByLookup = async (params: UserControllerGetByLookupParams, options?: RequestInit): Promise<userControllerGetByLookupResponse> => {
-
-  return backendFetch<userControllerGetByLookupResponse>(getUserControllerGetByLookupUrl(params),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const userControllerGetByLookup = async (
+	params: UserControllerGetByLookupParams,
+	options?: RequestInit
+): Promise<userControllerGetByLookupResponse> => {
+	return backendFetch<userControllerGetByLookupResponse>(getUserControllerGetByLookupUrl(params), {
+		...options,
+		method: 'GET'
+	});
+};
 
 export type userControllerGetByIdResponse200 = {
-  data: UserDto
-  status: 200
-}
-
-export type userControllerGetByIdResponseSuccess = (userControllerGetByIdResponse200) & {
-  headers: Headers;
+	data: UserDto;
+	status: 200;
 };
-;
 
-export type userControllerGetByIdResponse = (userControllerGetByIdResponseSuccess)
+export type userControllerGetByIdResponseSuccess = userControllerGetByIdResponse200 & {
+	headers: Headers;
+};
+export type userControllerGetByIdResponse = userControllerGetByIdResponseSuccess;
 
-export const getUserControllerGetByIdUrl = (id: string,) => {
+export const getUserControllerGetByIdUrl = (id: string) => {
+	return `/api/users/${id}`;
+};
 
-
-
-
-  return `/api/users/${id}`
-}
-
-export const userControllerGetById = async (id: string, options?: RequestInit): Promise<userControllerGetByIdResponse> => {
-
-  return backendFetch<userControllerGetByIdResponse>(getUserControllerGetByIdUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const userControllerGetById = async (
+	id: string,
+	options?: RequestInit
+): Promise<userControllerGetByIdResponse> => {
+	return backendFetch<userControllerGetByIdResponse>(getUserControllerGetByIdUrl(id), {
+		...options,
+		method: 'GET'
+	});
+};
 
 export type osuControllerGetBeatmapMetadataResponse200 = {
-  data: OsuBeatmapMetadataDtoOutput
-  status: 200
-}
-
-export type osuControllerGetBeatmapMetadataResponseSuccess = (osuControllerGetBeatmapMetadataResponse200) & {
-  headers: Headers;
+	data: OsuBeatmapMetadataDtoOutput;
+	status: 200;
 };
-;
 
-export type osuControllerGetBeatmapMetadataResponse = (osuControllerGetBeatmapMetadataResponseSuccess)
+export type osuControllerGetBeatmapMetadataResponseSuccess =
+	osuControllerGetBeatmapMetadataResponse200 & {
+		headers: Headers;
+	};
+export type osuControllerGetBeatmapMetadataResponse =
+	osuControllerGetBeatmapMetadataResponseSuccess;
 
-export const getOsuControllerGetBeatmapMetadataUrl = (beatmapId: number,) => {
+export const getOsuControllerGetBeatmapMetadataUrl = (beatmapId: number) => {
+	return `/api/osu/beatmaps/${beatmapId}`;
+};
 
-
-
-
-  return `/api/osu/beatmaps/${beatmapId}`
-}
-
-export const osuControllerGetBeatmapMetadata = async (beatmapId: number, options?: RequestInit): Promise<osuControllerGetBeatmapMetadataResponse> => {
-
-  return backendFetch<osuControllerGetBeatmapMetadataResponse>(getOsuControllerGetBeatmapMetadataUrl(beatmapId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const osuControllerGetBeatmapMetadata = async (
+	beatmapId: number,
+	options?: RequestInit
+): Promise<osuControllerGetBeatmapMetadataResponse> => {
+	return backendFetch<osuControllerGetBeatmapMetadataResponse>(
+		getOsuControllerGetBeatmapMetadataUrl(beatmapId),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type tournamentControllerFindManyResponse200 = {
-  data: TournamentDtoOutput[]
-  status: 200
-}
-
-export type tournamentControllerFindManyResponseSuccess = (tournamentControllerFindManyResponse200) & {
-  headers: Headers;
+	data: TournamentDtoOutput[];
+	status: 200;
 };
-;
 
-export type tournamentControllerFindManyResponse = (tournamentControllerFindManyResponseSuccess)
+export type tournamentControllerFindManyResponseSuccess =
+	tournamentControllerFindManyResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerFindManyResponse = tournamentControllerFindManyResponseSuccess;
 
-export const getTournamentControllerFindManyUrl = (params?: TournamentControllerFindManyParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getTournamentControllerFindManyUrl = (params?: TournamentControllerFindManyParams) => {
+	const normalizedParams = new URLSearchParams();
 
-  Object.entries(params || {}).forEach(([key, value]) => {
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? 'null' : String(value));
+		}
+	});
 
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : String(value))
-    }
-  });
+	const stringifiedParams = normalizedParams.toString();
 
-  const stringifiedParams = normalizedParams.toString();
+	return stringifiedParams.length > 0
+		? `/api/tournaments?${stringifiedParams}`
+		: `/api/tournaments`;
+};
 
-  return stringifiedParams.length > 0 ? `/api/tournaments?${stringifiedParams}` : `/api/tournaments`
-}
-
-export const tournamentControllerFindMany = async (params?: TournamentControllerFindManyParams, options?: RequestInit): Promise<tournamentControllerFindManyResponse> => {
-
-  return backendFetch<tournamentControllerFindManyResponse>(getTournamentControllerFindManyUrl(params),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const tournamentControllerFindMany = async (
+	params?: TournamentControllerFindManyParams,
+	options?: RequestInit
+): Promise<tournamentControllerFindManyResponse> => {
+	return backendFetch<tournamentControllerFindManyResponse>(
+		getTournamentControllerFindManyUrl(params),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type tournamentControllerCreateResponse201 = {
-  data: TournamentDtoOutput
-  status: 201
-}
-
-export type tournamentControllerCreateResponseSuccess = (tournamentControllerCreateResponse201) & {
-  headers: Headers;
+	data: TournamentDtoOutput;
+	status: 201;
 };
-;
 
-export type tournamentControllerCreateResponse = (tournamentControllerCreateResponseSuccess)
+export type tournamentControllerCreateResponseSuccess = tournamentControllerCreateResponse201 & {
+	headers: Headers;
+};
+export type tournamentControllerCreateResponse = tournamentControllerCreateResponseSuccess;
 
 export const getTournamentControllerCreateUrl = () => {
+	return `/api/tournaments`;
+};
 
-
-
-
-  return `/api/tournaments`
-}
-
-export const tournamentControllerCreate = async (createTournamentDto: CreateTournamentDto, options?: RequestInit): Promise<tournamentControllerCreateResponse> => {
-
-  return backendFetch<tournamentControllerCreateResponse>(getTournamentControllerCreateUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(createTournamentDto)
-  }
-);}
-
-
+export const tournamentControllerCreate = async (
+	createTournamentDto: CreateTournamentDto,
+	options?: RequestInit
+): Promise<tournamentControllerCreateResponse> => {
+	return backendFetch<tournamentControllerCreateResponse>(getTournamentControllerCreateUrl(), {
+		...options,
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(createTournamentDto)
+	});
+};
 
 export type tournamentControllerGetByIdResponse200 = {
-  data: TournamentDtoOutput
-  status: 200
-}
-
-export type tournamentControllerGetByIdResponseSuccess = (tournamentControllerGetByIdResponse200) & {
-  headers: Headers;
+	data: TournamentDtoOutput;
+	status: 200;
 };
-;
 
-export type tournamentControllerGetByIdResponse = (tournamentControllerGetByIdResponseSuccess)
+export type tournamentControllerGetByIdResponseSuccess = tournamentControllerGetByIdResponse200 & {
+	headers: Headers;
+};
+export type tournamentControllerGetByIdResponse = tournamentControllerGetByIdResponseSuccess;
 
-export const getTournamentControllerGetByIdUrl = (id: string,) => {
+export const getTournamentControllerGetByIdUrl = (id: string) => {
+	return `/api/tournaments/${id}`;
+};
 
-
-
-
-  return `/api/tournaments/${id}`
-}
-
-export const tournamentControllerGetById = async (id: string, options?: RequestInit): Promise<tournamentControllerGetByIdResponse> => {
-
-  return backendFetch<tournamentControllerGetByIdResponse>(getTournamentControllerGetByIdUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const tournamentControllerGetById = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerGetByIdResponse> => {
+	return backendFetch<tournamentControllerGetByIdResponse>(getTournamentControllerGetByIdUrl(id), {
+		...options,
+		method: 'GET'
+	});
+};
 
 export type tournamentControllerPatchResponse200 = {
-  data: TournamentDtoOutput
-  status: 200
-}
-
-export type tournamentControllerPatchResponseSuccess = (tournamentControllerPatchResponse200) & {
-  headers: Headers;
+	data: TournamentDtoOutput;
+	status: 200;
 };
-;
 
-export type tournamentControllerPatchResponse = (tournamentControllerPatchResponseSuccess)
+export type tournamentControllerPatchResponseSuccess = tournamentControllerPatchResponse200 & {
+	headers: Headers;
+};
+export type tournamentControllerPatchResponse = tournamentControllerPatchResponseSuccess;
 
-export const getTournamentControllerPatchUrl = (id: string,) => {
+export const getTournamentControllerPatchUrl = (id: string) => {
+	return `/api/tournaments/${id}`;
+};
 
-
-
-
-  return `/api/tournaments/${id}`
-}
-
-export const tournamentControllerPatch = async (id: string,
-    updateTournamentDto: UpdateTournamentDto, options?: RequestInit): Promise<tournamentControllerPatchResponse> => {
-
-  return backendFetch<tournamentControllerPatchResponse>(getTournamentControllerPatchUrl(id),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateTournamentDto)
-  }
-);}
-
-
+export const tournamentControllerPatch = async (
+	id: string,
+	updateTournamentDto: UpdateTournamentDto,
+	options?: RequestInit
+): Promise<tournamentControllerPatchResponse> => {
+	return backendFetch<tournamentControllerPatchResponse>(getTournamentControllerPatchUrl(id), {
+		...options,
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(updateTournamentDto)
+	});
+};
 
 export type tournamentControllerSoftDeleteResponse200 = {
-  data: TournamentDtoOutput
-  status: 200
-}
-
-export type tournamentControllerSoftDeleteResponseSuccess = (tournamentControllerSoftDeleteResponse200) & {
-  headers: Headers;
+	data: TournamentDtoOutput;
+	status: 200;
 };
-;
 
-export type tournamentControllerSoftDeleteResponse = (tournamentControllerSoftDeleteResponseSuccess)
+export type tournamentControllerSoftDeleteResponseSuccess =
+	tournamentControllerSoftDeleteResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerSoftDeleteResponse = tournamentControllerSoftDeleteResponseSuccess;
 
-export const getTournamentControllerSoftDeleteUrl = (id: string,) => {
+export const getTournamentControllerSoftDeleteUrl = (id: string) => {
+	return `/api/tournaments/${id}`;
+};
 
-
-
-
-  return `/api/tournaments/${id}`
-}
-
-export const tournamentControllerSoftDelete = async (id: string, options?: RequestInit): Promise<tournamentControllerSoftDeleteResponse> => {
-
-  return backendFetch<tournamentControllerSoftDeleteResponse>(getTournamentControllerSoftDeleteUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
+export const tournamentControllerSoftDelete = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerSoftDeleteResponse> => {
+	return backendFetch<tournamentControllerSoftDeleteResponse>(
+		getTournamentControllerSoftDeleteUrl(id),
+		{
+			...options,
+			method: 'DELETE'
+		}
+	);
+};
 
 export type tournamentControllerGetParticipantsResponse200 = {
-  data: TournamentParticipantDtoOutput[]
-  status: 200
-}
-
-export type tournamentControllerGetParticipantsResponseSuccess = (tournamentControllerGetParticipantsResponse200) & {
-  headers: Headers;
+	data: TournamentParticipantDtoOutput[];
+	status: 200;
 };
-;
 
-export type tournamentControllerGetParticipantsResponse = (tournamentControllerGetParticipantsResponseSuccess)
+export type tournamentControllerGetParticipantsResponseSuccess =
+	tournamentControllerGetParticipantsResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerGetParticipantsResponse =
+	tournamentControllerGetParticipantsResponseSuccess;
 
-export const getTournamentControllerGetParticipantsUrl = (id: string,
-    params?: TournamentControllerGetParticipantsParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getTournamentControllerGetParticipantsUrl = (
+	id: string,
+	params?: TournamentControllerGetParticipantsParams
+) => {
+	const normalizedParams = new URLSearchParams();
 
-  Object.entries(params || {}).forEach(([key, value]) => {
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? 'null' : String(value));
+		}
+	});
 
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : String(value))
-    }
-  });
+	const stringifiedParams = normalizedParams.toString();
 
-  const stringifiedParams = normalizedParams.toString();
+	return stringifiedParams.length > 0
+		? `/api/tournaments/${id}/participants?${stringifiedParams}`
+		: `/api/tournaments/${id}/participants`;
+};
 
-  return stringifiedParams.length > 0 ? `/api/tournaments/${id}/participants?${stringifiedParams}` : `/api/tournaments/${id}/participants`
-}
-
-export const tournamentControllerGetParticipants = async (id: string,
-    params?: TournamentControllerGetParticipantsParams, options?: RequestInit): Promise<tournamentControllerGetParticipantsResponse> => {
-
-  return backendFetch<tournamentControllerGetParticipantsResponse>(getTournamentControllerGetParticipantsUrl(id,params),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const tournamentControllerGetParticipants = async (
+	id: string,
+	params?: TournamentControllerGetParticipantsParams,
+	options?: RequestInit
+): Promise<tournamentControllerGetParticipantsResponse> => {
+	return backendFetch<tournamentControllerGetParticipantsResponse>(
+		getTournamentControllerGetParticipantsUrl(id, params),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type tournamentControllerGetTeamsResponse200 = {
-  data: TournamentTeamDtoOutput[]
-  status: 200
-}
-
-export type tournamentControllerGetTeamsResponseSuccess = (tournamentControllerGetTeamsResponse200) & {
-  headers: Headers;
+	data: TournamentTeamDtoOutput[];
+	status: 200;
 };
-;
 
-export type tournamentControllerGetTeamsResponse = (tournamentControllerGetTeamsResponseSuccess)
+export type tournamentControllerGetTeamsResponseSuccess =
+	tournamentControllerGetTeamsResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerGetTeamsResponse = tournamentControllerGetTeamsResponseSuccess;
 
-export const getTournamentControllerGetTeamsUrl = (id: string,) => {
+export const getTournamentControllerGetTeamsUrl = (id: string) => {
+	return `/api/tournaments/${id}/teams`;
+};
 
-
-
-
-  return `/api/tournaments/${id}/teams`
-}
-
-export const tournamentControllerGetTeams = async (id: string, options?: RequestInit): Promise<tournamentControllerGetTeamsResponse> => {
-
-  return backendFetch<tournamentControllerGetTeamsResponse>(getTournamentControllerGetTeamsUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const tournamentControllerGetTeams = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerGetTeamsResponse> => {
+	return backendFetch<tournamentControllerGetTeamsResponse>(
+		getTournamentControllerGetTeamsUrl(id),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type tournamentControllerRegisterResponse201 = {
-  data: void
-  status: 201
-}
-
-export type tournamentControllerRegisterResponseSuccess = (tournamentControllerRegisterResponse201) & {
-  headers: Headers;
+	data: void;
+	status: 201;
 };
-;
 
-export type tournamentControllerRegisterResponse = (tournamentControllerRegisterResponseSuccess)
+export type tournamentControllerRegisterResponseSuccess =
+	tournamentControllerRegisterResponse201 & {
+		headers: Headers;
+	};
+export type tournamentControllerRegisterResponse = tournamentControllerRegisterResponseSuccess;
 
-export const getTournamentControllerRegisterUrl = (id: string,) => {
+export const getTournamentControllerRegisterUrl = (id: string) => {
+	return `/api/tournaments/${id}/register`;
+};
 
-
-
-
-  return `/api/tournaments/${id}/register`
-}
-
-export const tournamentControllerRegister = async (id: string,
-    registerTournamentDto: RegisterTournamentDto, options?: RequestInit): Promise<tournamentControllerRegisterResponse> => {
-
-  return backendFetch<tournamentControllerRegisterResponse>(getTournamentControllerRegisterUrl(id),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(registerTournamentDto)
-  }
-);}
-
-
+export const tournamentControllerRegister = async (
+	id: string,
+	registerTournamentDto: RegisterTournamentDto,
+	options?: RequestInit
+): Promise<tournamentControllerRegisterResponse> => {
+	return backendFetch<tournamentControllerRegisterResponse>(
+		getTournamentControllerRegisterUrl(id),
+		{
+			...options,
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(registerTournamentDto)
+		}
+	);
+};
 
 export type tournamentControllerUnregisterResponse200 = {
-  data: void
-  status: 200
-}
-
-export type tournamentControllerUnregisterResponseSuccess = (tournamentControllerUnregisterResponse200) & {
-  headers: Headers;
+	data: void;
+	status: 200;
 };
-;
 
-export type tournamentControllerUnregisterResponse = (tournamentControllerUnregisterResponseSuccess)
+export type tournamentControllerUnregisterResponseSuccess =
+	tournamentControllerUnregisterResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerUnregisterResponse = tournamentControllerUnregisterResponseSuccess;
 
-export const getTournamentControllerUnregisterUrl = (id: string,) => {
+export const getTournamentControllerUnregisterUrl = (id: string) => {
+	return `/api/tournaments/${id}/register`;
+};
 
-
-
-
-  return `/api/tournaments/${id}/register`
-}
-
-export const tournamentControllerUnregister = async (id: string, options?: RequestInit): Promise<tournamentControllerUnregisterResponse> => {
-
-  return backendFetch<tournamentControllerUnregisterResponse>(getTournamentControllerUnregisterUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
+export const tournamentControllerUnregister = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerUnregisterResponse> => {
+	return backendFetch<tournamentControllerUnregisterResponse>(
+		getTournamentControllerUnregisterUrl(id),
+		{
+			...options,
+			method: 'DELETE'
+		}
+	);
+};
 
 export type stageControllerFindManyResponse200 = {
-  data: StageDtoOutput[]
-  status: 200
-}
-
-export type stageControllerFindManyResponseSuccess = (stageControllerFindManyResponse200) & {
-  headers: Headers;
+	data: StageDtoOutput[];
+	status: 200;
 };
-;
 
-export type stageControllerFindManyResponse = (stageControllerFindManyResponseSuccess)
+export type stageControllerFindManyResponseSuccess = stageControllerFindManyResponse200 & {
+	headers: Headers;
+};
+export type stageControllerFindManyResponse = stageControllerFindManyResponseSuccess;
 
-export const getStageControllerFindManyUrl = (tournamentId: string,) => {
+export const getStageControllerFindManyUrl = (tournamentId: string) => {
+	return `/api/tournaments/${tournamentId}/stages`;
+};
 
-
-
-
-  return `/api/tournaments/${tournamentId}/stages`
-}
-
-export const stageControllerFindMany = async (tournamentId: string, options?: RequestInit): Promise<stageControllerFindManyResponse> => {
-
-  return backendFetch<stageControllerFindManyResponse>(getStageControllerFindManyUrl(tournamentId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const stageControllerFindMany = async (
+	tournamentId: string,
+	options?: RequestInit
+): Promise<stageControllerFindManyResponse> => {
+	return backendFetch<stageControllerFindManyResponse>(
+		getStageControllerFindManyUrl(tournamentId),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type stageControllerCreateResponse201 = {
-  data: StageDtoOutput
-  status: 201
-}
-
-export type stageControllerCreateResponseSuccess = (stageControllerCreateResponse201) & {
-  headers: Headers;
+	data: StageDtoOutput;
+	status: 201;
 };
-;
 
-export type stageControllerCreateResponse = (stageControllerCreateResponseSuccess)
+export type stageControllerCreateResponseSuccess = stageControllerCreateResponse201 & {
+	headers: Headers;
+};
+export type stageControllerCreateResponse = stageControllerCreateResponseSuccess;
 
-export const getStageControllerCreateUrl = (tournamentId: string,) => {
+export const getStageControllerCreateUrl = (tournamentId: string) => {
+	return `/api/tournaments/${tournamentId}/stages`;
+};
 
-
-
-
-  return `/api/tournaments/${tournamentId}/stages`
-}
-
-export const stageControllerCreate = async (tournamentId: string,
-    createStageDto: CreateStageDto, options?: RequestInit): Promise<stageControllerCreateResponse> => {
-
-  return backendFetch<stageControllerCreateResponse>(getStageControllerCreateUrl(tournamentId),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(createStageDto)
-  }
-);}
-
-
+export const stageControllerCreate = async (
+	tournamentId: string,
+	createStageDto: CreateStageDto,
+	options?: RequestInit
+): Promise<stageControllerCreateResponse> => {
+	return backendFetch<stageControllerCreateResponse>(getStageControllerCreateUrl(tournamentId), {
+		...options,
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(createStageDto)
+	});
+};
 
 export type stageControllerGetByIdResponse200 = {
-  data: StageDtoOutput
-  status: 200
-}
-
-export type stageControllerGetByIdResponseSuccess = (stageControllerGetByIdResponse200) & {
-  headers: Headers;
+	data: StageDtoOutput;
+	status: 200;
 };
-;
 
-export type stageControllerGetByIdResponse = (stageControllerGetByIdResponseSuccess)
+export type stageControllerGetByIdResponseSuccess = stageControllerGetByIdResponse200 & {
+	headers: Headers;
+};
+export type stageControllerGetByIdResponse = stageControllerGetByIdResponseSuccess;
 
-export const getStageControllerGetByIdUrl = (tournamentId: string,
-    id: string,) => {
+export const getStageControllerGetByIdUrl = (tournamentId: string, id: string) => {
+	return `/api/tournaments/${tournamentId}/stages/${id}`;
+};
 
-
-
-
-  return `/api/tournaments/${tournamentId}/stages/${id}`
-}
-
-export const stageControllerGetById = async (tournamentId: string,
-    id: string, options?: RequestInit): Promise<stageControllerGetByIdResponse> => {
-
-  return backendFetch<stageControllerGetByIdResponse>(getStageControllerGetByIdUrl(tournamentId,id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const stageControllerGetById = async (
+	tournamentId: string,
+	id: string,
+	options?: RequestInit
+): Promise<stageControllerGetByIdResponse> => {
+	return backendFetch<stageControllerGetByIdResponse>(
+		getStageControllerGetByIdUrl(tournamentId, id),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type stageControllerPatchResponse200 = {
-  data: StageDtoOutput
-  status: 200
-}
-
-export type stageControllerPatchResponseSuccess = (stageControllerPatchResponse200) & {
-  headers: Headers;
+	data: StageDtoOutput;
+	status: 200;
 };
-;
 
-export type stageControllerPatchResponse = (stageControllerPatchResponseSuccess)
+export type stageControllerPatchResponseSuccess = stageControllerPatchResponse200 & {
+	headers: Headers;
+};
+export type stageControllerPatchResponse = stageControllerPatchResponseSuccess;
 
-export const getStageControllerPatchUrl = (tournamentId: string,
-    id: string,) => {
+export const getStageControllerPatchUrl = (tournamentId: string, id: string) => {
+	return `/api/tournaments/${tournamentId}/stages/${id}`;
+};
 
-
-
-
-  return `/api/tournaments/${tournamentId}/stages/${id}`
-}
-
-export const stageControllerPatch = async (tournamentId: string,
-    id: string,
-    updateStageDto: UpdateStageDto, options?: RequestInit): Promise<stageControllerPatchResponse> => {
-
-  return backendFetch<stageControllerPatchResponse>(getStageControllerPatchUrl(tournamentId,id),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateStageDto)
-  }
-);}
-
-
+export const stageControllerPatch = async (
+	tournamentId: string,
+	id: string,
+	updateStageDto: UpdateStageDto,
+	options?: RequestInit
+): Promise<stageControllerPatchResponse> => {
+	return backendFetch<stageControllerPatchResponse>(getStageControllerPatchUrl(tournamentId, id), {
+		...options,
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(updateStageDto)
+	});
+};
 
 export type stageControllerSoftDeleteResponse200 = {
-  data: StageDtoOutput
-  status: 200
-}
-
-export type stageControllerSoftDeleteResponseSuccess = (stageControllerSoftDeleteResponse200) & {
-  headers: Headers;
+	data: StageDtoOutput;
+	status: 200;
 };
-;
 
-export type stageControllerSoftDeleteResponse = (stageControllerSoftDeleteResponseSuccess)
+export type stageControllerSoftDeleteResponseSuccess = stageControllerSoftDeleteResponse200 & {
+	headers: Headers;
+};
+export type stageControllerSoftDeleteResponse = stageControllerSoftDeleteResponseSuccess;
 
-export const getStageControllerSoftDeleteUrl = (tournamentId: string,
-    id: string,) => {
+export const getStageControllerSoftDeleteUrl = (tournamentId: string, id: string) => {
+	return `/api/tournaments/${tournamentId}/stages/${id}`;
+};
 
-
-
-
-  return `/api/tournaments/${tournamentId}/stages/${id}`
-}
-
-export const stageControllerSoftDelete = async (tournamentId: string,
-    id: string, options?: RequestInit): Promise<stageControllerSoftDeleteResponse> => {
-
-  return backendFetch<stageControllerSoftDeleteResponse>(getStageControllerSoftDeleteUrl(tournamentId,id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
+export const stageControllerSoftDelete = async (
+	tournamentId: string,
+	id: string,
+	options?: RequestInit
+): Promise<stageControllerSoftDeleteResponse> => {
+	return backendFetch<stageControllerSoftDeleteResponse>(
+		getStageControllerSoftDeleteUrl(tournamentId, id),
+		{
+			...options,
+			method: 'DELETE'
+		}
+	);
+};
 
 export type mappoolControllerFindManyResponse200 = {
-  data: MappoolDtoOutput[]
-  status: 200
-}
-
-export type mappoolControllerFindManyResponseSuccess = (mappoolControllerFindManyResponse200) & {
-  headers: Headers;
+	data: MappoolDtoOutput[];
+	status: 200;
 };
-;
 
-export type mappoolControllerFindManyResponse = (mappoolControllerFindManyResponseSuccess)
+export type mappoolControllerFindManyResponseSuccess = mappoolControllerFindManyResponse200 & {
+	headers: Headers;
+};
+export type mappoolControllerFindManyResponse = mappoolControllerFindManyResponseSuccess;
 
-export const getMappoolControllerFindManyUrl = (params?: MappoolControllerFindManyParams,) => {
-  const normalizedParams = new URLSearchParams();
+export const getMappoolControllerFindManyUrl = (params?: MappoolControllerFindManyParams) => {
+	const normalizedParams = new URLSearchParams();
 
-  Object.entries(params || {}).forEach(([key, value]) => {
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? 'null' : String(value));
+		}
+	});
 
-    if (value !== undefined) {
-      normalizedParams.append(key, value === null ? 'null' : String(value))
-    }
-  });
+	const stringifiedParams = normalizedParams.toString();
 
-  const stringifiedParams = normalizedParams.toString();
+	return stringifiedParams.length > 0 ? `/api/mappools?${stringifiedParams}` : `/api/mappools`;
+};
 
-  return stringifiedParams.length > 0 ? `/api/mappools?${stringifiedParams}` : `/api/mappools`
-}
-
-export const mappoolControllerFindMany = async (params?: MappoolControllerFindManyParams, options?: RequestInit): Promise<mappoolControllerFindManyResponse> => {
-
-  return backendFetch<mappoolControllerFindManyResponse>(getMappoolControllerFindManyUrl(params),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const mappoolControllerFindMany = async (
+	params?: MappoolControllerFindManyParams,
+	options?: RequestInit
+): Promise<mappoolControllerFindManyResponse> => {
+	return backendFetch<mappoolControllerFindManyResponse>(getMappoolControllerFindManyUrl(params), {
+		...options,
+		method: 'GET'
+	});
+};
 
 export type mappoolControllerCreateResponse201 = {
-  data: MappoolDtoOutput
-  status: 201
-}
-
-export type mappoolControllerCreateResponseSuccess = (mappoolControllerCreateResponse201) & {
-  headers: Headers;
+	data: MappoolDtoOutput;
+	status: 201;
 };
-;
 
-export type mappoolControllerCreateResponse = (mappoolControllerCreateResponseSuccess)
+export type mappoolControllerCreateResponseSuccess = mappoolControllerCreateResponse201 & {
+	headers: Headers;
+};
+export type mappoolControllerCreateResponse = mappoolControllerCreateResponseSuccess;
 
 export const getMappoolControllerCreateUrl = () => {
+	return `/api/mappools`;
+};
 
-
-
-
-  return `/api/mappools`
-}
-
-export const mappoolControllerCreate = async (createMappoolDto: CreateMappoolDto, options?: RequestInit): Promise<mappoolControllerCreateResponse> => {
-
-  return backendFetch<mappoolControllerCreateResponse>(getMappoolControllerCreateUrl(),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(createMappoolDto)
-  }
-);}
-
-
+export const mappoolControllerCreate = async (
+	createMappoolDto: CreateMappoolDto,
+	options?: RequestInit
+): Promise<mappoolControllerCreateResponse> => {
+	return backendFetch<mappoolControllerCreateResponse>(getMappoolControllerCreateUrl(), {
+		...options,
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(createMappoolDto)
+	});
+};
 
 export type mappoolControllerGetByIdResponse200 = {
-  data: MappoolDtoOutput
-  status: 200
-}
-
-export type mappoolControllerGetByIdResponseSuccess = (mappoolControllerGetByIdResponse200) & {
-  headers: Headers;
+	data: MappoolDtoOutput;
+	status: 200;
 };
-;
 
-export type mappoolControllerGetByIdResponse = (mappoolControllerGetByIdResponseSuccess)
+export type mappoolControllerGetByIdResponseSuccess = mappoolControllerGetByIdResponse200 & {
+	headers: Headers;
+};
+export type mappoolControllerGetByIdResponse = mappoolControllerGetByIdResponseSuccess;
 
-export const getMappoolControllerGetByIdUrl = (id: string,) => {
+export const getMappoolControllerGetByIdUrl = (id: string) => {
+	return `/api/mappools/${id}`;
+};
 
-
-
-
-  return `/api/mappools/${id}`
-}
-
-export const mappoolControllerGetById = async (id: string, options?: RequestInit): Promise<mappoolControllerGetByIdResponse> => {
-
-  return backendFetch<mappoolControllerGetByIdResponse>(getMappoolControllerGetByIdUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const mappoolControllerGetById = async (
+	id: string,
+	options?: RequestInit
+): Promise<mappoolControllerGetByIdResponse> => {
+	return backendFetch<mappoolControllerGetByIdResponse>(getMappoolControllerGetByIdUrl(id), {
+		...options,
+		method: 'GET'
+	});
+};
 
 export type mappoolControllerPatchResponse200 = {
-  data: MappoolDtoOutput
-  status: 200
-}
-
-export type mappoolControllerPatchResponseSuccess = (mappoolControllerPatchResponse200) & {
-  headers: Headers;
+	data: MappoolDtoOutput;
+	status: 200;
 };
-;
 
-export type mappoolControllerPatchResponse = (mappoolControllerPatchResponseSuccess)
+export type mappoolControllerPatchResponseSuccess = mappoolControllerPatchResponse200 & {
+	headers: Headers;
+};
+export type mappoolControllerPatchResponse = mappoolControllerPatchResponseSuccess;
 
-export const getMappoolControllerPatchUrl = (id: string,) => {
+export const getMappoolControllerPatchUrl = (id: string) => {
+	return `/api/mappools/${id}`;
+};
 
-
-
-
-  return `/api/mappools/${id}`
-}
-
-export const mappoolControllerPatch = async (id: string,
-    updateMappoolDto: UpdateMappoolDto, options?: RequestInit): Promise<mappoolControllerPatchResponse> => {
-
-  return backendFetch<mappoolControllerPatchResponse>(getMappoolControllerPatchUrl(id),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateMappoolDto)
-  }
-);}
-
-
+export const mappoolControllerPatch = async (
+	id: string,
+	updateMappoolDto: UpdateMappoolDto,
+	options?: RequestInit
+): Promise<mappoolControllerPatchResponse> => {
+	return backendFetch<mappoolControllerPatchResponse>(getMappoolControllerPatchUrl(id), {
+		...options,
+		method: 'PATCH',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(updateMappoolDto)
+	});
+};
 
 export type mappoolControllerDeleteResponse200 = {
-  data: MappoolDtoOutput
-  status: 200
-}
-
-export type mappoolControllerDeleteResponseSuccess = (mappoolControllerDeleteResponse200) & {
-  headers: Headers;
+	data: MappoolDtoOutput;
+	status: 200;
 };
-;
 
-export type mappoolControllerDeleteResponse = (mappoolControllerDeleteResponseSuccess)
+export type mappoolControllerDeleteResponseSuccess = mappoolControllerDeleteResponse200 & {
+	headers: Headers;
+};
+export type mappoolControllerDeleteResponse = mappoolControllerDeleteResponseSuccess;
 
-export const getMappoolControllerDeleteUrl = (id: string,) => {
+export const getMappoolControllerDeleteUrl = (id: string) => {
+	return `/api/mappools/${id}`;
+};
 
-
-
-
-  return `/api/mappools/${id}`
-}
-
-export const mappoolControllerDelete = async (id: string, options?: RequestInit): Promise<mappoolControllerDeleteResponse> => {
-
-  return backendFetch<mappoolControllerDeleteResponse>(getMappoolControllerDeleteUrl(id),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
+export const mappoolControllerDelete = async (
+	id: string,
+	options?: RequestInit
+): Promise<mappoolControllerDeleteResponse> => {
+	return backendFetch<mappoolControllerDeleteResponse>(getMappoolControllerDeleteUrl(id), {
+		...options,
+		method: 'DELETE'
+	});
+};
 
 export type mappoolControllerFindBeatmapsResponse200 = {
-  data: MappoolBeatmapDtoOutput[]
-  status: 200
-}
-
-export type mappoolControllerFindBeatmapsResponseSuccess = (mappoolControllerFindBeatmapsResponse200) & {
-  headers: Headers;
+	data: MappoolBeatmapDtoOutput[];
+	status: 200;
 };
-;
 
-export type mappoolControllerFindBeatmapsResponse = (mappoolControllerFindBeatmapsResponseSuccess)
+export type mappoolControllerFindBeatmapsResponseSuccess =
+	mappoolControllerFindBeatmapsResponse200 & {
+		headers: Headers;
+	};
+export type mappoolControllerFindBeatmapsResponse = mappoolControllerFindBeatmapsResponseSuccess;
 
-export const getMappoolControllerFindBeatmapsUrl = (id: string,) => {
+export const getMappoolControllerFindBeatmapsUrl = (id: string) => {
+	return `/api/mappools/${id}/beatmaps`;
+};
 
-
-
-
-  return `/api/mappools/${id}/beatmaps`
-}
-
-export const mappoolControllerFindBeatmaps = async (id: string, options?: RequestInit): Promise<mappoolControllerFindBeatmapsResponse> => {
-
-  return backendFetch<mappoolControllerFindBeatmapsResponse>(getMappoolControllerFindBeatmapsUrl(id),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const mappoolControllerFindBeatmaps = async (
+	id: string,
+	options?: RequestInit
+): Promise<mappoolControllerFindBeatmapsResponse> => {
+	return backendFetch<mappoolControllerFindBeatmapsResponse>(
+		getMappoolControllerFindBeatmapsUrl(id),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type mappoolControllerAddBeatmapResponse201 = {
-  data: MappoolBeatmapDtoOutput
-  status: 201
-}
-
-export type mappoolControllerAddBeatmapResponseSuccess = (mappoolControllerAddBeatmapResponse201) & {
-  headers: Headers;
+	data: MappoolBeatmapDtoOutput;
+	status: 201;
 };
-;
 
-export type mappoolControllerAddBeatmapResponse = (mappoolControllerAddBeatmapResponseSuccess)
+export type mappoolControllerAddBeatmapResponseSuccess = mappoolControllerAddBeatmapResponse201 & {
+	headers: Headers;
+};
+export type mappoolControllerAddBeatmapResponse = mappoolControllerAddBeatmapResponseSuccess;
 
-export const getMappoolControllerAddBeatmapUrl = (id: string,) => {
+export const getMappoolControllerAddBeatmapUrl = (id: string) => {
+	return `/api/mappools/${id}/beatmaps`;
+};
 
-
-
-
-  return `/api/mappools/${id}/beatmaps`
-}
-
-export const mappoolControllerAddBeatmap = async (id: string,
-    addMappoolBeatmapDto: AddMappoolBeatmapDto, options?: RequestInit): Promise<mappoolControllerAddBeatmapResponse> => {
-
-  return backendFetch<mappoolControllerAddBeatmapResponse>(getMappoolControllerAddBeatmapUrl(id),
-  {
-    ...options,
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(addMappoolBeatmapDto)
-  }
-);}
-
-
+export const mappoolControllerAddBeatmap = async (
+	id: string,
+	addMappoolBeatmapDto: AddMappoolBeatmapDto,
+	options?: RequestInit
+): Promise<mappoolControllerAddBeatmapResponse> => {
+	return backendFetch<mappoolControllerAddBeatmapResponse>(getMappoolControllerAddBeatmapUrl(id), {
+		...options,
+		method: 'POST',
+		headers: { 'Content-Type': 'application/json', ...options?.headers },
+		body: JSON.stringify(addMappoolBeatmapDto)
+	});
+};
 
 export type mappoolControllerUpdateBeatmapResponse200 = {
-  data: MappoolBeatmapDtoOutput
-  status: 200
-}
-
-export type mappoolControllerUpdateBeatmapResponseSuccess = (mappoolControllerUpdateBeatmapResponse200) & {
-  headers: Headers;
+	data: MappoolBeatmapDtoOutput;
+	status: 200;
 };
-;
 
-export type mappoolControllerUpdateBeatmapResponse = (mappoolControllerUpdateBeatmapResponseSuccess)
+export type mappoolControllerUpdateBeatmapResponseSuccess =
+	mappoolControllerUpdateBeatmapResponse200 & {
+		headers: Headers;
+	};
+export type mappoolControllerUpdateBeatmapResponse = mappoolControllerUpdateBeatmapResponseSuccess;
 
-export const getMappoolControllerUpdateBeatmapUrl = (id: string,
-    osuBeatmapId: number,) => {
+export const getMappoolControllerUpdateBeatmapUrl = (id: string, osuBeatmapId: number) => {
+	return `/api/mappools/${id}/beatmaps/${osuBeatmapId}`;
+};
 
-
-
-
-  return `/api/mappools/${id}/beatmaps/${osuBeatmapId}`
-}
-
-export const mappoolControllerUpdateBeatmap = async (id: string,
-    osuBeatmapId: number,
-    updateMappoolBeatmapDto: UpdateMappoolBeatmapDto, options?: RequestInit): Promise<mappoolControllerUpdateBeatmapResponse> => {
-
-  return backendFetch<mappoolControllerUpdateBeatmapResponse>(getMappoolControllerUpdateBeatmapUrl(id,osuBeatmapId),
-  {
-    ...options,
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json', ...options?.headers },
-    body: JSON.stringify(updateMappoolBeatmapDto)
-  }
-);}
-
-
+export const mappoolControllerUpdateBeatmap = async (
+	id: string,
+	osuBeatmapId: number,
+	updateMappoolBeatmapDto: UpdateMappoolBeatmapDto,
+	options?: RequestInit
+): Promise<mappoolControllerUpdateBeatmapResponse> => {
+	return backendFetch<mappoolControllerUpdateBeatmapResponse>(
+		getMappoolControllerUpdateBeatmapUrl(id, osuBeatmapId),
+		{
+			...options,
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(updateMappoolBeatmapDto)
+		}
+	);
+};
 
 export type mappoolControllerDeleteBeatmapResponse200 = {
-  data: MappoolBeatmapDtoOutput
-  status: 200
-}
-
-export type mappoolControllerDeleteBeatmapResponseSuccess = (mappoolControllerDeleteBeatmapResponse200) & {
-  headers: Headers;
+	data: MappoolBeatmapDtoOutput;
+	status: 200;
 };
-;
 
-export type mappoolControllerDeleteBeatmapResponse = (mappoolControllerDeleteBeatmapResponseSuccess)
+export type mappoolControllerDeleteBeatmapResponseSuccess =
+	mappoolControllerDeleteBeatmapResponse200 & {
+		headers: Headers;
+	};
+export type mappoolControllerDeleteBeatmapResponse = mappoolControllerDeleteBeatmapResponseSuccess;
 
-export const getMappoolControllerDeleteBeatmapUrl = (id: string,
-    osuBeatmapId: number,) => {
+export const getMappoolControllerDeleteBeatmapUrl = (id: string, osuBeatmapId: number) => {
+	return `/api/mappools/${id}/beatmaps/${osuBeatmapId}`;
+};
 
-
-
-
-  return `/api/mappools/${id}/beatmaps/${osuBeatmapId}`
-}
-
-export const mappoolControllerDeleteBeatmap = async (id: string,
-    osuBeatmapId: number, options?: RequestInit): Promise<mappoolControllerDeleteBeatmapResponse> => {
-
-  return backendFetch<mappoolControllerDeleteBeatmapResponse>(getMappoolControllerDeleteBeatmapUrl(id,osuBeatmapId),
-  {
-    ...options,
-    method: 'DELETE'
-
-
-  }
-);}
-
-
+export const mappoolControllerDeleteBeatmap = async (
+	id: string,
+	osuBeatmapId: number,
+	options?: RequestInit
+): Promise<mappoolControllerDeleteBeatmapResponse> => {
+	return backendFetch<mappoolControllerDeleteBeatmapResponse>(
+		getMappoolControllerDeleteBeatmapUrl(id, osuBeatmapId),
+		{
+			...options,
+			method: 'DELETE'
+		}
+	);
+};
 
 export type tournamentMappoolControllerFindByTournamentResponse200 = {
-  data: MappoolWithBeatmapsDtoOutput[]
-  status: 200
-}
-
-export type tournamentMappoolControllerFindByTournamentResponseSuccess = (tournamentMappoolControllerFindByTournamentResponse200) & {
-  headers: Headers;
+	data: MappoolWithBeatmapsDtoOutput[];
+	status: 200;
 };
-;
 
-export type tournamentMappoolControllerFindByTournamentResponse = (tournamentMappoolControllerFindByTournamentResponseSuccess)
+export type tournamentMappoolControllerFindByTournamentResponseSuccess =
+	tournamentMappoolControllerFindByTournamentResponse200 & {
+		headers: Headers;
+	};
+export type tournamentMappoolControllerFindByTournamentResponse =
+	tournamentMappoolControllerFindByTournamentResponseSuccess;
 
-export const getTournamentMappoolControllerFindByTournamentUrl = (tournamentId: string,) => {
+export const getTournamentMappoolControllerFindByTournamentUrl = (tournamentId: string) => {
+	return `/api/tournaments/${tournamentId}/mappools`;
+};
 
-
-
-
-  return `/api/tournaments/${tournamentId}/mappools`
-}
-
-export const tournamentMappoolControllerFindByTournament = async (tournamentId: string, options?: RequestInit): Promise<tournamentMappoolControllerFindByTournamentResponse> => {
-
-  return backendFetch<tournamentMappoolControllerFindByTournamentResponse>(getTournamentMappoolControllerFindByTournamentUrl(tournamentId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
+export const tournamentMappoolControllerFindByTournament = async (
+	tournamentId: string,
+	options?: RequestInit
+): Promise<tournamentMappoolControllerFindByTournamentResponse> => {
+	return backendFetch<tournamentMappoolControllerFindByTournamentResponse>(
+		getTournamentMappoolControllerFindByTournamentUrl(tournamentId),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
 
 export type tournamentMappoolControllerFindByTournamentForManagementResponse200 = {
-  data: MappoolWithBeatmapsDtoOutput[]
-  status: 200
-}
-
-export type tournamentMappoolControllerFindByTournamentForManagementResponseSuccess = (tournamentMappoolControllerFindByTournamentForManagementResponse200) & {
-  headers: Headers;
+	data: MappoolWithBeatmapsDtoOutput[];
+	status: 200;
 };
-;
 
-export type tournamentMappoolControllerFindByTournamentForManagementResponse = (tournamentMappoolControllerFindByTournamentForManagementResponseSuccess)
+export type tournamentMappoolControllerFindByTournamentForManagementResponseSuccess =
+	tournamentMappoolControllerFindByTournamentForManagementResponse200 & {
+		headers: Headers;
+	};
+export type tournamentMappoolControllerFindByTournamentForManagementResponse =
+	tournamentMappoolControllerFindByTournamentForManagementResponseSuccess;
 
-export const getTournamentMappoolControllerFindByTournamentForManagementUrl = (tournamentId: string,) => {
+export const getTournamentMappoolControllerFindByTournamentForManagementUrl = (
+	tournamentId: string
+) => {
+	return `/api/tournaments/${tournamentId}/mappools/manage`;
+};
 
-
-
-
-  return `/api/tournaments/${tournamentId}/mappools/manage`
-}
-
-export const tournamentMappoolControllerFindByTournamentForManagement = async (tournamentId: string, options?: RequestInit): Promise<tournamentMappoolControllerFindByTournamentForManagementResponse> => {
-
-  return backendFetch<tournamentMappoolControllerFindByTournamentForManagementResponse>(getTournamentMappoolControllerFindByTournamentForManagementUrl(tournamentId),
-  {
-    ...options,
-    method: 'GET'
-
-
-  }
-);}
-
-
-
+export const tournamentMappoolControllerFindByTournamentForManagement = async (
+	tournamentId: string,
+	options?: RequestInit
+): Promise<tournamentMappoolControllerFindByTournamentForManagementResponse> => {
+	return backendFetch<tournamentMappoolControllerFindByTournamentForManagementResponse>(
+		getTournamentMappoolControllerFindByTournamentForManagementUrl(tournamentId),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};

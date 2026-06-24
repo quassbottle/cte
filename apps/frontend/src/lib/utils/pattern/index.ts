@@ -15,10 +15,5 @@
 export { createRng, hashString } from './rng';
 export { createPalette, hsl } from './palette';
 export type { Palette } from './palette';
-export {
-	generatePattern,
-	type PatternOp,
-	type PatternResult,
-	type ShapeKind
-} from './pattern';
+export { generatePattern, type PatternOp, type PatternResult, type ShapeKind } from './pattern';
 export { patternToSVG, patternToDataURL } from './svg';

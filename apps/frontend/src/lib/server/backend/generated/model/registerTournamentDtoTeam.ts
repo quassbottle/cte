@@ -7,11 +7,11 @@
  */
 
 export type RegisterTournamentDtoTeam = {
-  /** @minLength 1 */
-  name: string;
-  /**
-     * @minItems 1
-     * @items.pattern ^[0-9a-z]+$
-     */
-  participants: string[];
+	/** @minLength 1 */
+	name: string;
+	/**
+	 * @minItems 1
+	 * @items.pattern ^[0-9a-z]+$
+	 */
+	participants: string[];
 };

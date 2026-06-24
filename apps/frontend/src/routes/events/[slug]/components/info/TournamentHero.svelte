@@ -20,11 +20,7 @@
 </script>
 
 <div class="relative">
-	<TournamentBanner
-		class="relative h-[260px] text-white"
-		let:Content
-		seed={tournament.id}
-	>
+	<TournamentBanner class="relative h-[260px] text-white" let:Content seed={tournament.id}>
 		<Content class="absolute bottom-0 left-0 flex w-[60%] flex-col p-6">
 			<p class="text-[32px] font-semibold">{tournament.name}</p>
 			<BreadcrumbList let:Item>

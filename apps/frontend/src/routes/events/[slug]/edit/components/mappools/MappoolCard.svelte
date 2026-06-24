@@ -16,7 +16,7 @@
 			: undefined;
 </script>
 
-<div class="border-border rounded-md border px-3 py-3">
+<div class="rounded-md border border-border px-3 py-3">
 	<div class="flex items-center justify-between gap-2">
 		<p class="text-xs text-muted-foreground">Visibility: {mappool.hidden ? 'Hidden' : 'Visible'}</p>
 		<form method="post" action="?/updateMappoolVisibility" use:enhance>

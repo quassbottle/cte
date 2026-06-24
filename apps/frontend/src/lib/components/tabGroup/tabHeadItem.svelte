@@ -14,7 +14,6 @@
 	export let value: string | undefined = undefined;
 	const fallbackId = getNewTabId();
 	$: id = value ?? fallbackId;
-
 </script>
 
 <li class={cn('mr-2', className)} role="presentation">

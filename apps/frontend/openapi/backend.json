@@ -1,2093 +1,1952 @@
 {
-  "openapi": "3.0.0",
-  "paths": {
-    "/api/auth/auth-callback": {
-      "get": {
-        "operationId": "AuthController_authCallback",
-        "parameters": [
-          {
-            "name": "code",
-            "required": true,
-            "in": "query",
-            "description": "Authorization code from osu! OAuth2",
-            "schema": {
-              "minLength": 1,
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns the application session token.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthTokenDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Auth"
-        ]
-      }
-    },
-    "/api/auth/init-login": {
-      "post": {
-        "operationId": "AuthController_initLogin",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Returns the osu! OAuth authorization URL.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AuthUrlDto"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Auth"
-        ]
-      }
-    },
-    "/api/users/me": {
-      "get": {
-        "operationId": "UserController_getMe",
-        "parameters": [],
-        "responses": {
-          "200": {
-            "description": "Returns the current user.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/api/users/lookup": {
-      "get": {
-        "operationId": "UserController_getByLookup",
-        "parameters": [
-          {
-            "name": "query",
-            "required": true,
-            "in": "query",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns the user by internal ID, osu! ID, or osu! username.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/api/users/{id}": {
-      "get": {
-        "operationId": "UserController_getById",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns the user by ID.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/UserDto"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "User"
-        ]
-      }
-    },
-    "/api/osu/beatmaps/{beatmapId}": {
-      "get": {
-        "operationId": "OsuController_getBeatmapMetadata",
-        "parameters": [
-          {
-            "name": "beatmapId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns beatmap metadata from osu API with local sync.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/OsuBeatmapMetadataDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "tags": [
-          "Osu"
-        ]
-      }
-    },
-    "/api/tournaments": {
-      "get": {
-        "operationId": "TournamentController_findMany",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "maximum": 9007199254740991,
-              "default": 0,
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns tournaments list.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TournamentDto_Output"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      },
-      "post": {
-        "operationId": "TournamentController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateTournamentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Creates a tournament.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TournamentDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      }
-    },
-    "/api/tournaments/{id}": {
-      "get": {
-        "operationId": "TournamentController_getById",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns tournament by id.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TournamentDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      },
-      "patch": {
-        "operationId": "TournamentController_patch",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateTournamentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Updates a tournament.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TournamentDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      },
-      "delete": {
-        "operationId": "TournamentController_softDelete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Soft deletes a tournament.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/TournamentDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      }
-    },
-    "/api/tournaments/{id}/participants": {
-      "get": {
-        "operationId": "TournamentController_getParticipants",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "maximum": 9007199254740991,
-              "default": 0,
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns the participants of the tournament.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TournamentParticipantDto_Output"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      }
-    },
-    "/api/tournaments/{id}/teams": {
-      "get": {
-        "operationId": "TournamentController_getTeams",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns teams of the tournament with participants.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/TournamentTeamDto_Output"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      }
-    },
-    "/api/tournaments/{id}/register": {
-      "post": {
-        "operationId": "TournamentController_register",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/RegisterTournamentDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Registers current user to tournament."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      },
-      "delete": {
-        "operationId": "TournamentController_unregister",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Unregisters current user or captain team from tournament."
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      }
-    },
-    "/api/tournaments/{tournamentId}/stages": {
-      "get": {
-        "operationId": "StageController_findMany",
-        "parameters": [
-          {
-            "name": "tournamentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns stages list for tournament.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/StageDto_Output"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Stage"
-        ]
-      },
-      "post": {
-        "operationId": "StageController_create",
-        "parameters": [
-          {
-            "name": "tournamentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateStageDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Creates a stage.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StageDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Stage"
-        ]
-      }
-    },
-    "/api/tournaments/{tournamentId}/stages/{id}": {
-      "get": {
-        "operationId": "StageController_getById",
-        "parameters": [
-          {
-            "name": "tournamentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns stage by id.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StageDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Stage"
-        ]
-      },
-      "patch": {
-        "operationId": "StageController_patch",
-        "parameters": [
-          {
-            "name": "tournamentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateStageDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Updates a stage.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StageDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Stage"
-        ]
-      },
-      "delete": {
-        "operationId": "StageController_softDelete",
-        "parameters": [
-          {
-            "name": "tournamentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Soft deletes a stage.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/StageDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Stage"
-        ]
-      }
-    },
-    "/api/mappools": {
-      "get": {
-        "operationId": "MappoolController_findMany",
-        "parameters": [
-          {
-            "name": "limit",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 1,
-              "maximum": 100,
-              "default": 20,
-              "type": "integer"
-            }
-          },
-          {
-            "name": "offset",
-            "required": false,
-            "in": "query",
-            "schema": {
-              "minimum": 0,
-              "maximum": 9007199254740991,
-              "default": 0,
-              "type": "integer"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns mappools list.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MappoolDto_Output"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      },
-      "post": {
-        "operationId": "MappoolController_create",
-        "parameters": [],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/CreateMappoolDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Creates a mappool.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MappoolDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      }
-    },
-    "/api/mappools/{id}": {
-      "get": {
-        "operationId": "MappoolController_getById",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns mappool by id.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MappoolDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      },
-      "patch": {
-        "operationId": "MappoolController_patch",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateMappoolDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Updates a mappool.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MappoolDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      },
-      "delete": {
-        "operationId": "MappoolController_delete",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Deletes a mappool.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MappoolDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      }
-    },
-    "/api/mappools/{id}/beatmaps": {
-      "get": {
-        "operationId": "MappoolController_findBeatmaps",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns beatmaps in mappool.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MappoolBeatmapDto_Output"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      },
-      "post": {
-        "operationId": "MappoolController_addBeatmap",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/AddMappoolBeatmapDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "201": {
-            "description": "Adds beatmap to mappool.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MappoolBeatmapDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      }
-    },
-    "/api/mappools/{id}/beatmaps/{osuBeatmapId}": {
-      "patch": {
-        "operationId": "MappoolController_updateBeatmap",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "osuBeatmapId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "requestBody": {
-          "required": true,
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/UpdateMappoolBeatmapDto"
-              }
-            }
-          }
-        },
-        "responses": {
-          "200": {
-            "description": "Updates mappool beatmap mod/index or replaces beatmap.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MappoolBeatmapDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      },
-      "delete": {
-        "operationId": "MappoolController_deleteBeatmap",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "name": "osuBeatmapId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "number"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Deletes beatmap from mappool.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/MappoolBeatmapDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Mappool"
-        ]
-      }
-    },
-    "/api/tournaments/{tournamentId}/mappools": {
-      "get": {
-        "operationId": "TournamentMappoolController_findByTournament",
-        "parameters": [
-          {
-            "name": "tournamentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns visible tournament mappools with beatmaps.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MappoolWithBeatmapsDto_Output"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "TournamentMappool"
-        ]
-      }
-    },
-    "/api/tournaments/{tournamentId}/mappools/manage": {
-      "get": {
-        "operationId": "TournamentMappoolController_findByTournamentForManagement",
-        "parameters": [
-          {
-            "name": "tournamentId",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "Returns all tournament mappools with beatmaps for tournament creator.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/components/schemas/MappoolWithBeatmapsDto_Output"
-                  }
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "TournamentMappool"
-        ]
-      }
-    }
-  },
-  "info": {
-    "title": "User Service",
-    "description": "Auth and user management API",
-    "version": "1.0",
-    "contact": {}
-  },
-  "tags": [],
-  "servers": [],
-  "components": {
-    "securitySchemes": {
-      "bearer": {
-        "scheme": "bearer",
-        "bearerFormat": "JWT",
-        "type": "http",
-        "description": "Paste JWT access token"
-      }
-    },
-    "schemas": {
-      "AuthTokenDto": {
-        "type": "object",
-        "properties": {
-          "token": {
-            "type": "string",
-            "minLength": 1
-          }
-        },
-        "required": [
-          "token"
-        ]
-      },
-      "AuthUrlDto": {
-        "type": "object",
-        "properties": {
-          "url": {
-            "type": "string",
-            "format": "uri"
-          }
-        },
-        "required": [
-          "url"
-        ]
-      },
-      "UserDto": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "osuId": {
-            "description": "The osu! user ID",
-            "type": "number"
-          },
-          "osuUsername": {
-            "description": "The osu! username",
-            "type": "string"
-          },
-          "role": {
-            "description": "The user role",
-            "type": "string",
-            "enum": [
-              "default",
-              "admin"
-            ]
-          },
-          "createdAt": {
-            "description": "The user creation date",
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "updatedAt": {
-            "description": "The user last update date",
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        },
-        "required": [
-          "id",
-          "osuId",
-          "osuUsername",
-          "role",
-          "createdAt",
-          "updatedAt"
-        ]
-      },
-      "OsuBeatmapMetadataDto_Output": {
-        "type": "object",
-        "properties": {
-          "osuBeatmapsetId": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          },
-          "osuBeatmapId": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          },
-          "artist": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "difficultyName": {
-            "type": "string"
-          },
-          "difficulty": {
-            "type": "number"
-          },
-          "version": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "deleted": {
-            "type": "boolean"
-          }
-        },
-        "required": [
-          "osuBeatmapsetId",
-          "osuBeatmapId",
-          "artist",
-          "title",
-          "difficultyName",
-          "difficulty",
-          "version",
-          "deleted"
-        ],
-        "additionalProperties": false
-      },
-      "TournamentDto_Output": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "name": {
-            "type": "string"
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "rules": {
-            "type": "string",
-            "nullable": true
-          },
-          "mode": {
-            "type": "string",
-            "enum": [
-              "osu",
-              "taiko",
-              "fruits",
-              "mania"
-            ]
-          },
-          "isTeam": {
-            "type": "boolean"
-          },
-          "participantsCount": {
-            "type": "integer",
-            "minimum": 0,
-            "maximum": 9007199254740991
-          },
-          "registrationOpen": {
-            "type": "boolean"
-          },
-          "creatorId": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "deletedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "description",
-          "rules",
-          "mode",
-          "isTeam",
-          "participantsCount",
-          "registrationOpen",
-          "creatorId",
-          "startsAt",
-          "endsAt",
-          "deletedAt",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "TournamentParticipantDto_Output": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "osuId": {
-            "type": "number"
-          },
-          "osuUsername": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "osuId",
-          "osuUsername"
-        ],
-        "additionalProperties": false
-      },
-      "TournamentTeamDto_Output": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "name": {
-            "type": "string"
-          },
-          "captainId": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "participants": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "id": {
-                  "type": "string",
-                  "format": "cuid2",
-                  "pattern": "^[0-9a-z]+$"
-                },
-                "osuId": {
-                  "type": "number"
-                },
-                "osuUsername": {
-                  "type": "string"
-                }
-              },
-              "required": [
-                "id",
-                "osuId",
-                "osuUsername"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "captainId",
-          "participants"
-        ],
-        "additionalProperties": false
-      },
-      "CreateTournamentDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "rules": {
-            "type": "string",
-            "nullable": true
-          },
-          "mode": {
-            "default": "osu",
-            "type": "string",
-            "enum": [
-              "osu",
-              "taiko",
-              "fruits",
-              "mania"
-            ]
-          },
-          "isTeam": {
-            "default": false,
-            "type": "boolean"
-          },
-          "registrationOpen": {
-            "default": true,
-            "type": "boolean"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        },
-        "required": [
-          "name",
-          "startsAt",
-          "endsAt"
-        ]
-      },
-      "UpdateTournamentDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "description": {
-            "type": "string",
-            "nullable": true
-          },
-          "rules": {
-            "type": "string",
-            "nullable": true
-          },
-          "mode": {
-            "type": "string",
-            "enum": [
-              "osu",
-              "taiko",
-              "fruits",
-              "mania"
-            ]
-          },
-          "isTeam": {
-            "type": "boolean"
-          },
-          "registrationOpen": {
-            "type": "boolean"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        }
-      },
-      "RegisterTournamentDto": {
-        "type": "object",
-        "properties": {
-          "team": {
-            "type": "object",
-            "properties": {
-              "name": {
-                "type": "string",
-                "minLength": 1
-              },
-              "participants": {
-                "minItems": 1,
-                "type": "array",
-                "items": {
-                  "type": "string",
-                  "format": "cuid2",
-                  "pattern": "^[0-9a-z]+$"
-                }
-              }
-            },
-            "required": [
-              "name",
-              "participants"
-            ]
-          }
-        }
-      },
-      "StageDto_Output": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "name": {
-            "type": "string"
-          },
-          "tournamentId": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "deletedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
-            "nullable": true
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        },
-        "required": [
-          "id",
-          "name",
-          "tournamentId",
-          "startsAt",
-          "endsAt",
-          "deletedAt",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "CreateStageDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        },
-        "required": [
-          "name",
-          "startsAt",
-          "endsAt"
-        ]
-      },
-      "UpdateStageDto": {
-        "type": "object",
-        "properties": {
-          "name": {
-            "type": "string",
-            "minLength": 1
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        }
-      },
-      "MappoolDto_Output": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "stageId": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "hidden": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        },
-        "required": [
-          "id",
-          "stageId",
-          "startsAt",
-          "endsAt",
-          "hidden",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "MappoolBeatmapDto_Output": {
-        "type": "object",
-        "properties": {
-          "beatmapId": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "mod": {
-            "type": "string"
-          },
-          "index": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          },
-          "osuBeatmapsetId": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          },
-          "osuBeatmapId": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          },
-          "artist": {
-            "type": "string"
-          },
-          "title": {
-            "type": "string"
-          },
-          "mode": {
-            "type": "string",
-            "enum": [
-              "osu",
-              "taiko",
-              "fruits",
-              "mania"
-            ]
-          },
-          "difficultyName": {
-            "type": "string"
-          },
-          "difficulty": {
-            "type": "number"
-          },
-          "version": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991
-          },
-          "deleted": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        },
-        "required": [
-          "beatmapId",
-          "mod",
-          "index",
-          "osuBeatmapsetId",
-          "osuBeatmapId",
-          "artist",
-          "title",
-          "mode",
-          "difficultyName",
-          "difficulty",
-          "version",
-          "deleted",
-          "createdAt",
-          "updatedAt"
-        ],
-        "additionalProperties": false
-      },
-      "CreateMappoolDto": {
-        "type": "object",
-        "properties": {
-          "stageId": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          }
-        },
-        "required": [
-          "stageId",
-          "startsAt",
-          "endsAt"
-        ]
-      },
-      "AddMappoolBeatmapDto": {
-        "type": "object",
-        "properties": {
-          "mod": {
-            "type": "string",
-            "minLength": 1
-          },
-          "beatmapsetId": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          },
-          "beatmapId": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          }
-        },
-        "required": [
-          "mod",
-          "beatmapsetId",
-          "beatmapId"
-        ]
-      },
-      "UpdateMappoolBeatmapDto": {
-        "type": "object",
-        "properties": {
-          "mod": {
-            "type": "string",
-            "minLength": 1
-          },
-          "index": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          },
-          "beatmapsetId": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          },
-          "beatmapId": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "minimum": 0
-          }
-        }
-      },
-      "UpdateMappoolDto": {
-        "type": "object",
-        "properties": {
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "hidden": {
-            "type": "boolean"
-          }
-        }
-      },
-      "MappoolWithBeatmapsDto_Output": {
-        "type": "object",
-        "properties": {
-          "id": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "stageId": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "startsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "endsAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "hidden": {
-            "type": "boolean"
-          },
-          "createdAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "updatedAt": {
-            "type": "string",
-            "format": "date-time",
-            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-          },
-          "beatmaps": {
-            "type": "array",
-            "items": {
-              "type": "object",
-              "properties": {
-                "beatmapId": {
-                  "type": "string",
-                  "format": "cuid2",
-                  "pattern": "^[0-9a-z]+$"
-                },
-                "mod": {
-                  "type": "string"
-                },
-                "index": {
-                  "type": "integer",
-                  "exclusiveMinimum": true,
-                  "maximum": 9007199254740991,
-                  "minimum": 0
-                },
-                "osuBeatmapsetId": {
-                  "type": "integer",
-                  "exclusiveMinimum": true,
-                  "maximum": 9007199254740991,
-                  "minimum": 0
-                },
-                "osuBeatmapId": {
-                  "type": "integer",
-                  "exclusiveMinimum": true,
-                  "maximum": 9007199254740991,
-                  "minimum": 0
-                },
-                "artist": {
-                  "type": "string"
-                },
-                "title": {
-                  "type": "string"
-                },
-                "mode": {
-                  "type": "string",
-                  "enum": [
-                    "osu",
-                    "taiko",
-                    "fruits",
-                    "mania"
-                  ]
-                },
-                "difficultyName": {
-                  "type": "string"
-                },
-                "difficulty": {
-                  "type": "number"
-                },
-                "version": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991
-                },
-                "deleted": {
-                  "type": "boolean"
-                },
-                "createdAt": {
-                  "type": "string",
-                  "format": "date-time",
-                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-                },
-                "updatedAt": {
-                  "type": "string",
-                  "format": "date-time",
-                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
-                }
-              },
-              "required": [
-                "beatmapId",
-                "mod",
-                "index",
-                "osuBeatmapsetId",
-                "osuBeatmapId",
-                "artist",
-                "title",
-                "mode",
-                "difficultyName",
-                "difficulty",
-                "version",
-                "deleted",
-                "createdAt",
-                "updatedAt"
-              ],
-              "additionalProperties": false
-            }
-          }
-        },
-        "required": [
-          "id",
-          "stageId",
-          "startsAt",
-          "endsAt",
-          "hidden",
-          "createdAt",
-          "updatedAt",
-          "beatmaps"
-        ],
-        "additionalProperties": false
-      }
-    }
-  }
+	"openapi": "3.0.0",
+	"paths": {
+		"/api/auth/auth-callback": {
+			"get": {
+				"operationId": "AuthController_authCallback",
+				"parameters": [
+					{
+						"name": "code",
+						"required": true,
+						"in": "query",
+						"description": "Authorization code from osu! OAuth2",
+						"schema": {
+							"minLength": 1,
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns the application session token.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthTokenDto"
+								}
+							}
+						}
+					}
+				},
+				"tags": ["Auth"]
+			}
+		},
+		"/api/auth/init-login": {
+			"post": {
+				"operationId": "AuthController_initLogin",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Returns the osu! OAuth authorization URL.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/AuthUrlDto"
+								}
+							}
+						}
+					}
+				},
+				"tags": ["Auth"]
+			}
+		},
+		"/api/users/me": {
+			"get": {
+				"operationId": "UserController_getMe",
+				"parameters": [],
+				"responses": {
+					"200": {
+						"description": "Returns the current user.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserDto"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["User"]
+			}
+		},
+		"/api/users/lookup": {
+			"get": {
+				"operationId": "UserController_getByLookup",
+				"parameters": [
+					{
+						"name": "query",
+						"required": true,
+						"in": "query",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns the user by internal ID, osu! ID, or osu! username.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserDto"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["User"]
+			}
+		},
+		"/api/users/{id}": {
+			"get": {
+				"operationId": "UserController_getById",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns the user by ID.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/UserDto"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["User"]
+			}
+		},
+		"/api/osu/beatmaps/{beatmapId}": {
+			"get": {
+				"operationId": "OsuController_getBeatmapMetadata",
+				"parameters": [
+					{
+						"name": "beatmapId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "number"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns beatmap metadata from osu API with local sync.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/OsuBeatmapMetadataDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"tags": ["Osu"]
+			}
+		},
+		"/api/tournaments": {
+			"get": {
+				"operationId": "TournamentController_findMany",
+				"parameters": [
+					{
+						"name": "limit",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20,
+							"type": "integer"
+						}
+					},
+					{
+						"name": "offset",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"minimum": 0,
+							"maximum": 9007199254740991,
+							"default": 0,
+							"type": "integer"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns tournaments list.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/TournamentDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			},
+			"post": {
+				"operationId": "TournamentController_create",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateTournamentDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Creates a tournament.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TournamentDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			}
+		},
+		"/api/tournaments/{id}": {
+			"get": {
+				"operationId": "TournamentController_getById",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns tournament by id.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TournamentDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			},
+			"patch": {
+				"operationId": "TournamentController_patch",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateTournamentDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Updates a tournament.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TournamentDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			},
+			"delete": {
+				"operationId": "TournamentController_softDelete",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Soft deletes a tournament.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TournamentDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			}
+		},
+		"/api/tournaments/{id}/participants": {
+			"get": {
+				"operationId": "TournamentController_getParticipants",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "limit",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20,
+							"type": "integer"
+						}
+					},
+					{
+						"name": "offset",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"minimum": 0,
+							"maximum": 9007199254740991,
+							"default": 0,
+							"type": "integer"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns the participants of the tournament.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/TournamentParticipantDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			}
+		},
+		"/api/tournaments/{id}/teams": {
+			"get": {
+				"operationId": "TournamentController_getTeams",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns teams of the tournament with participants.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/TournamentTeamDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			}
+		},
+		"/api/tournaments/{id}/register": {
+			"post": {
+				"operationId": "TournamentController_register",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/RegisterTournamentDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Registers current user to tournament."
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			},
+			"delete": {
+				"operationId": "TournamentController_unregister",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Unregisters current user or captain team from tournament."
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			}
+		},
+		"/api/tournaments/{tournamentId}/stages": {
+			"get": {
+				"operationId": "StageController_findMany",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns stages list for tournament.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/StageDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Stage"]
+			},
+			"post": {
+				"operationId": "StageController_create",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateStageDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Creates a stage.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StageDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Stage"]
+			}
+		},
+		"/api/tournaments/{tournamentId}/stages/{id}": {
+			"get": {
+				"operationId": "StageController_getById",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns stage by id.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StageDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Stage"]
+			},
+			"patch": {
+				"operationId": "StageController_patch",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateStageDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Updates a stage.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StageDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Stage"]
+			},
+			"delete": {
+				"operationId": "StageController_softDelete",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Soft deletes a stage.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/StageDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Stage"]
+			}
+		},
+		"/api/mappools": {
+			"get": {
+				"operationId": "MappoolController_findMany",
+				"parameters": [
+					{
+						"name": "limit",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"minimum": 1,
+							"maximum": 100,
+							"default": 20,
+							"type": "integer"
+						}
+					},
+					{
+						"name": "offset",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"minimum": 0,
+							"maximum": 9007199254740991,
+							"default": 0,
+							"type": "integer"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns mappools list.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/MappoolDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			},
+			"post": {
+				"operationId": "MappoolController_create",
+				"parameters": [],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/CreateMappoolDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Creates a mappool.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MappoolDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			}
+		},
+		"/api/mappools/{id}": {
+			"get": {
+				"operationId": "MappoolController_getById",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns mappool by id.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MappoolDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			},
+			"patch": {
+				"operationId": "MappoolController_patch",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateMappoolDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Updates a mappool.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MappoolDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			},
+			"delete": {
+				"operationId": "MappoolController_delete",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Deletes a mappool.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MappoolDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			}
+		},
+		"/api/mappools/{id}/beatmaps": {
+			"get": {
+				"operationId": "MappoolController_findBeatmaps",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns beatmaps in mappool.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/MappoolBeatmapDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			},
+			"post": {
+				"operationId": "MappoolController_addBeatmap",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/AddMappoolBeatmapDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Adds beatmap to mappool.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MappoolBeatmapDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			}
+		},
+		"/api/mappools/{id}/beatmaps/{osuBeatmapId}": {
+			"patch": {
+				"operationId": "MappoolController_updateBeatmap",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "osuBeatmapId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "number"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/UpdateMappoolBeatmapDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Updates mappool beatmap mod/index or replaces beatmap.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MappoolBeatmapDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			},
+			"delete": {
+				"operationId": "MappoolController_deleteBeatmap",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "osuBeatmapId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "number"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Deletes beatmap from mappool.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MappoolBeatmapDto_Output"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Mappool"]
+			}
+		},
+		"/api/tournaments/{tournamentId}/mappools": {
+			"get": {
+				"operationId": "TournamentMappoolController_findByTournament",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns visible tournament mappools with beatmaps.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/MappoolWithBeatmapsDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["TournamentMappool"]
+			}
+		},
+		"/api/tournaments/{tournamentId}/mappools/manage": {
+			"get": {
+				"operationId": "TournamentMappoolController_findByTournamentForManagement",
+				"parameters": [
+					{
+						"name": "tournamentId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns all tournament mappools with beatmaps for tournament creator.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/MappoolWithBeatmapsDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["TournamentMappool"]
+			}
+		}
+	},
+	"info": {
+		"title": "User Service",
+		"description": "Auth and user management API",
+		"version": "1.0",
+		"contact": {}
+	},
+	"tags": [],
+	"servers": [],
+	"components": {
+		"securitySchemes": {
+			"bearer": {
+				"scheme": "bearer",
+				"bearerFormat": "JWT",
+				"type": "http",
+				"description": "Paste JWT access token"
+			}
+		},
+		"schemas": {
+			"AuthTokenDto": {
+				"type": "object",
+				"properties": {
+					"token": {
+						"type": "string",
+						"minLength": 1
+					}
+				},
+				"required": ["token"]
+			},
+			"AuthUrlDto": {
+				"type": "object",
+				"properties": {
+					"url": {
+						"type": "string",
+						"format": "uri"
+					}
+				},
+				"required": ["url"]
+			},
+			"UserDto": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"osuId": {
+						"description": "The osu! user ID",
+						"type": "number"
+					},
+					"osuUsername": {
+						"description": "The osu! username",
+						"type": "string"
+					},
+					"role": {
+						"description": "The user role",
+						"type": "string",
+						"enum": ["default", "admin"]
+					},
+					"createdAt": {
+						"description": "The user creation date",
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"updatedAt": {
+						"description": "The user last update date",
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": ["id", "osuId", "osuUsername", "role", "createdAt", "updatedAt"]
+			},
+			"OsuBeatmapMetadataDto_Output": {
+				"type": "object",
+				"properties": {
+					"osuBeatmapsetId": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					},
+					"osuBeatmapId": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					},
+					"artist": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"difficultyName": {
+						"type": "string"
+					},
+					"difficulty": {
+						"type": "number"
+					},
+					"version": {
+						"type": "integer",
+						"minimum": -9007199254740991,
+						"maximum": 9007199254740991
+					},
+					"deleted": {
+						"type": "boolean"
+					}
+				},
+				"required": [
+					"osuBeatmapsetId",
+					"osuBeatmapId",
+					"artist",
+					"title",
+					"difficultyName",
+					"difficulty",
+					"version",
+					"deleted"
+				],
+				"additionalProperties": false
+			},
+			"TournamentDto_Output": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"name": {
+						"type": "string"
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"rules": {
+						"type": "string",
+						"nullable": true
+					},
+					"mode": {
+						"type": "string",
+						"enum": ["osu", "taiko", "fruits", "mania"]
+					},
+					"isTeam": {
+						"type": "boolean"
+					},
+					"participantsCount": {
+						"type": "integer",
+						"minimum": 0,
+						"maximum": 9007199254740991
+					},
+					"registrationOpen": {
+						"type": "boolean"
+					},
+					"creatorId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"deletedAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"description",
+					"rules",
+					"mode",
+					"isTeam",
+					"participantsCount",
+					"registrationOpen",
+					"creatorId",
+					"startsAt",
+					"endsAt",
+					"deletedAt",
+					"createdAt",
+					"updatedAt"
+				],
+				"additionalProperties": false
+			},
+			"TournamentParticipantDto_Output": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"osuId": {
+						"type": "number"
+					},
+					"osuUsername": {
+						"type": "string"
+					}
+				},
+				"required": ["id", "osuId", "osuUsername"],
+				"additionalProperties": false
+			},
+			"TournamentTeamDto_Output": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"name": {
+						"type": "string"
+					},
+					"captainId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"participants": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"format": "cuid2",
+									"pattern": "^[0-9a-z]+$"
+								},
+								"osuId": {
+									"type": "number"
+								},
+								"osuUsername": {
+									"type": "string"
+								}
+							},
+							"required": ["id", "osuId", "osuUsername"],
+							"additionalProperties": false
+						}
+					}
+				},
+				"required": ["id", "name", "captainId", "participants"],
+				"additionalProperties": false
+			},
+			"CreateTournamentDto": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"rules": {
+						"type": "string",
+						"nullable": true
+					},
+					"mode": {
+						"default": "osu",
+						"type": "string",
+						"enum": ["osu", "taiko", "fruits", "mania"]
+					},
+					"isTeam": {
+						"default": false,
+						"type": "boolean"
+					},
+					"registrationOpen": {
+						"default": true,
+						"type": "boolean"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": ["name", "startsAt", "endsAt"]
+			},
+			"UpdateTournamentDto": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"description": {
+						"type": "string",
+						"nullable": true
+					},
+					"rules": {
+						"type": "string",
+						"nullable": true
+					},
+					"mode": {
+						"type": "string",
+						"enum": ["osu", "taiko", "fruits", "mania"]
+					},
+					"isTeam": {
+						"type": "boolean"
+					},
+					"registrationOpen": {
+						"type": "boolean"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				}
+			},
+			"RegisterTournamentDto": {
+				"type": "object",
+				"properties": {
+					"team": {
+						"type": "object",
+						"properties": {
+							"name": {
+								"type": "string",
+								"minLength": 1
+							},
+							"participants": {
+								"minItems": 1,
+								"type": "array",
+								"items": {
+									"type": "string",
+									"format": "cuid2",
+									"pattern": "^[0-9a-z]+$"
+								}
+							}
+						},
+						"required": ["name", "participants"]
+					}
+				}
+			},
+			"StageDto_Output": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"name": {
+						"type": "string"
+					},
+					"tournamentId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"deletedAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"tournamentId",
+					"startsAt",
+					"endsAt",
+					"deletedAt",
+					"createdAt",
+					"updatedAt"
+				],
+				"additionalProperties": false
+			},
+			"CreateStageDto": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": ["name", "startsAt", "endsAt"]
+			},
+			"UpdateStageDto": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				}
+			},
+			"MappoolDto_Output": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"stageId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"hidden": {
+						"type": "boolean"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": ["id", "stageId", "startsAt", "endsAt", "hidden", "createdAt", "updatedAt"],
+				"additionalProperties": false
+			},
+			"MappoolBeatmapDto_Output": {
+				"type": "object",
+				"properties": {
+					"beatmapId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"mod": {
+						"type": "string"
+					},
+					"index": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					},
+					"osuBeatmapsetId": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					},
+					"osuBeatmapId": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					},
+					"artist": {
+						"type": "string"
+					},
+					"title": {
+						"type": "string"
+					},
+					"mode": {
+						"type": "string",
+						"enum": ["osu", "taiko", "fruits", "mania"]
+					},
+					"difficultyName": {
+						"type": "string"
+					},
+					"difficulty": {
+						"type": "number"
+					},
+					"version": {
+						"type": "integer",
+						"minimum": -9007199254740991,
+						"maximum": 9007199254740991
+					},
+					"deleted": {
+						"type": "boolean"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": [
+					"beatmapId",
+					"mod",
+					"index",
+					"osuBeatmapsetId",
+					"osuBeatmapId",
+					"artist",
+					"title",
+					"mode",
+					"difficultyName",
+					"difficulty",
+					"version",
+					"deleted",
+					"createdAt",
+					"updatedAt"
+				],
+				"additionalProperties": false
+			},
+			"CreateMappoolDto": {
+				"type": "object",
+				"properties": {
+					"stageId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": ["stageId", "startsAt", "endsAt"]
+			},
+			"AddMappoolBeatmapDto": {
+				"type": "object",
+				"properties": {
+					"mod": {
+						"type": "string",
+						"minLength": 1
+					},
+					"beatmapsetId": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					},
+					"beatmapId": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					}
+				},
+				"required": ["mod", "beatmapsetId", "beatmapId"]
+			},
+			"UpdateMappoolBeatmapDto": {
+				"type": "object",
+				"properties": {
+					"mod": {
+						"type": "string",
+						"minLength": 1
+					},
+					"index": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					},
+					"beatmapsetId": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					},
+					"beatmapId": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"minimum": 0
+					}
+				}
+			},
+			"UpdateMappoolDto": {
+				"type": "object",
+				"properties": {
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"hidden": {
+						"type": "boolean"
+					}
+				}
+			},
+			"MappoolWithBeatmapsDto_Output": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"stageId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"hidden": {
+						"type": "boolean"
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"beatmaps": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"beatmapId": {
+									"type": "string",
+									"format": "cuid2",
+									"pattern": "^[0-9a-z]+$"
+								},
+								"mod": {
+									"type": "string"
+								},
+								"index": {
+									"type": "integer",
+									"exclusiveMinimum": true,
+									"maximum": 9007199254740991,
+									"minimum": 0
+								},
+								"osuBeatmapsetId": {
+									"type": "integer",
+									"exclusiveMinimum": true,
+									"maximum": 9007199254740991,
+									"minimum": 0
+								},
+								"osuBeatmapId": {
+									"type": "integer",
+									"exclusiveMinimum": true,
+									"maximum": 9007199254740991,
+									"minimum": 0
+								},
+								"artist": {
+									"type": "string"
+								},
+								"title": {
+									"type": "string"
+								},
+								"mode": {
+									"type": "string",
+									"enum": ["osu", "taiko", "fruits", "mania"]
+								},
+								"difficultyName": {
+									"type": "string"
+								},
+								"difficulty": {
+									"type": "number"
+								},
+								"version": {
+									"type": "integer",
+									"minimum": -9007199254740991,
+									"maximum": 9007199254740991
+								},
+								"deleted": {
+									"type": "boolean"
+								},
+								"createdAt": {
+									"type": "string",
+									"format": "date-time",
+									"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+								},
+								"updatedAt": {
+									"type": "string",
+									"format": "date-time",
+									"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+								}
+							},
+							"required": [
+								"beatmapId",
+								"mod",
+								"index",
+								"osuBeatmapsetId",
+								"osuBeatmapId",
+								"artist",
+								"title",
+								"mode",
+								"difficultyName",
+								"difficulty",
+								"version",
+								"deleted",
+								"createdAt",
+								"updatedAt"
+							],
+							"additionalProperties": false
+						}
+					}
+				},
+				"required": [
+					"id",
+					"stageId",
+					"startsAt",
+					"endsAt",
+					"hidden",
+					"createdAt",
+					"updatedAt",
+					"beatmaps"
+				],
+				"additionalProperties": false
+			}
+		}
+	}
 }

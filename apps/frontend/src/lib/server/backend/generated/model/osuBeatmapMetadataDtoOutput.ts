@@ -7,24 +7,24 @@
  */
 
 export interface OsuBeatmapMetadataDtoOutput {
-  /**
-     * @maximum 9007199254740991
-     * @exclusiveMinimum 0
-     */
-  osuBeatmapsetId: number;
-  /**
-     * @maximum 9007199254740991
-     * @exclusiveMinimum 0
-     */
-  osuBeatmapId: number;
-  artist: string;
-  title: string;
-  difficultyName: string;
-  difficulty: number;
-  /**
-     * @minimum -9007199254740991
-     * @maximum 9007199254740991
-     */
-  version: number;
-  deleted: boolean;
+	/**
+	 * @maximum 9007199254740991
+	 * @exclusiveMinimum 0
+	 */
+	osuBeatmapsetId: number;
+	/**
+	 * @maximum 9007199254740991
+	 * @exclusiveMinimum 0
+	 */
+	osuBeatmapId: number;
+	artist: string;
+	title: string;
+	difficultyName: string;
+	difficulty: number;
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 */
+	version: number;
+	deleted: boolean;
 }

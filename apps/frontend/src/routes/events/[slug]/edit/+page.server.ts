@@ -113,8 +113,13 @@ export const load: PageServerLoad = async (event) => {
 export const actions: Actions = {
 	updateTournament: (event) =>
 		withFormValues(event, (values) =>
-			submitForm(event, 'updateTournament', tournamentEditFormSchema, values, {}, (backend, input) =>
-				commands.updateTournament(backend, event.params.slug, input)
+			submitForm(
+				event,
+				'updateTournament',
+				tournamentEditFormSchema,
+				values,
+				{},
+				(backend, input) => commands.updateTournament(backend, event.params.slug, input)
 			)
 		),
 	createStage: (event) =>

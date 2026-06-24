@@ -59,13 +59,7 @@ function shapeSVG(op: Extract<PatternOp, { kind: ShapeKind }>, clipId: number): 
 	}
 }
 
-function triangleSVG(
-	px: number,
-	py: number,
-	s: number,
-	color: string,
-	deg: number
-): string {
+function triangleSVG(px: number, py: number, s: number, color: string, deg: number): string {
 	const half = s / 2;
 	return `<g transform="translate(${px + half} ${py + half}) rotate(${deg})" fill="${color}"><polygon points="${-half},${half} ${half},${half} 0,${-half}"/></g>`;
 }
@@ -80,13 +74,7 @@ function squareSVG(px: number, py: number, s: number, color: string): string {
 	return `<rect x="${px + p}" y="${py + p}" width="${s - p * 2}" height="${s - p * 2}" fill="${color}"/>`;
 }
 
-function plusSVG(
-	px: number,
-	py: number,
-	s: number,
-	color: string,
-	deg: number
-): string {
+function plusSVG(px: number, py: number, s: number, color: string, deg: number): string {
 	const w = s * 0.16;
 	const l = s * 0.68;
 	return `<g transform="translate(${px + s / 2} ${py + s / 2}) rotate(${deg + 45})" fill="${color}"><rect x="${-w / 2}" y="${-l / 2}" width="${w}" height="${l}"/><rect x="${-l / 2}" y="${-w / 2}" width="${l}" height="${w}"/></g>`;
@@ -98,9 +86,7 @@ function dotsSVG(px: number, py: number, s: number, color: string): string {
 	const parts: string[] = [];
 	for (let iy = 1; iy <= 3; iy++) {
 		for (let ix = 1; ix <= 3; ix++) {
-			parts.push(
-				`<circle cx="${px + ix * gap}" cy="${py + iy * gap}" r="${r}" fill="${color}"/>`
-			);
+			parts.push(`<circle cx="${px + ix * gap}" cy="${py + iy * gap}" r="${r}" fill="${color}"/>`);
 		}
 	}
 	return parts.join('');
@@ -129,18 +115,11 @@ function stripesSVG(
 
 const dataURLCache = new Map<string, string>();
 
-const BANNER_RENDER_WIDTH = 1200;
-const BANNER_RENDER_HEIGHT = 260;
-
 /**
  * Renders a {@link PatternResult} to a `data:image/svg+xml,...` URL string.
  * Deterministic and SSR-safe (no DOM access). Cached per `seed:width:height`.
  */
-export function patternToDataURL(
-	pattern: PatternResult,
-	width: number = BANNER_RENDER_WIDTH,
-	height: number = BANNER_RENDER_HEIGHT
-): string {
+export function patternToDataURL(pattern: PatternResult): string {
 	const cacheKey = `${pattern.seed}:${pattern.width}x${pattern.height}`;
 	const cached = dataURLCache.get(cacheKey);
 	if (cached) return cached;

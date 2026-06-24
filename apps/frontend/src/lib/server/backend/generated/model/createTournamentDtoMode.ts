@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0
  */
 
-export type CreateTournamentDtoMode = typeof CreateTournamentDtoMode[keyof typeof CreateTournamentDtoMode];
-
+export type CreateTournamentDtoMode =
+	(typeof CreateTournamentDtoMode)[keyof typeof CreateTournamentDtoMode];
 
 export const CreateTournamentDtoMode = {
-  osu: 'osu',
-  taiko: 'taiko',
-  fruits: 'fruits',
-  mania: 'mania',
+	osu: 'osu',
+	taiko: 'taiko',
+	fruits: 'fruits',
+	mania: 'mania'
 } as const;

@@ -24,8 +24,12 @@
 </script>
 
 {#if isNavigating}
-	<div class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/50">
-		<div class="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm text-card-foreground shadow-lg">
+	<div
+		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/50"
+	>
+		<div
+			class="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm text-card-foreground shadow-lg"
+		>
 			<div class="h-5 w-5 animate-spin rounded-full border-2 border-muted border-t-primary"></div>
 			<span>Loading...</span>
 		</div>

@@ -11,7 +11,6 @@
 	export let value: string | undefined = undefined;
 	const fallbackId = getNewContentId();
 	$: id = value ?? fallbackId;
-
 </script>
 
 {#if $activeTab === id}

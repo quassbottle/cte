@@ -12,7 +12,11 @@ import type {
 } from '$lib/schemas/tournament-edit.schema';
 import type { BackendClient } from '$lib/server/backend/client';
 
-export function updateTournament(backend: BackendClient, tournamentId: string, input: TournamentEditForm) {
+export function updateTournament(
+	backend: BackendClient,
+	tournamentId: string,
+	input: TournamentEditForm
+) {
 	return backend.tournaments.update(tournamentId, input);
 }
 

@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Banner from '../banner/banner.svelte';
-	import { generatePattern, patternToDataURL } from '$lib/pattern';
+	import { generatePattern, patternToDataURL } from '$lib/utils/pattern';
 
 	let bannerSeed: string;
 	export { bannerSeed as seed };

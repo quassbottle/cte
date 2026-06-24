@@ -7,14 +7,14 @@
  */
 
 export type MappoolControllerFindManyParams = {
-/**
- * @minimum 1
- * @maximum 100
- */
-limit?: number;
-/**
- * @minimum 0
- * @maximum 9007199254740991
- */
-offset?: number;
+	/**
+	 * @minimum 1
+	 * @maximum 100
+	 */
+	limit?: number;
+	/**
+	 * @minimum 0
+	 * @maximum 9007199254740991
+	 */
+	offset?: number;
 };

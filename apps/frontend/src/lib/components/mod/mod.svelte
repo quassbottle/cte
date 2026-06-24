@@ -1,8 +1,11 @@
 <script lang="ts">
 	import { cn } from '$lib/utils';
 
-	const { mod, index = null, class: className }: { mod: string; index?: number | null; class?: string } =
-		$props();
+	const {
+		mod,
+		index = null,
+		class: className
+	}: { mod: string; index?: number | null; class?: string } = $props();
 	const getNormalizedMod = () => mod.trim().toUpperCase();
 
 	const variants: {
@@ -19,7 +22,7 @@
 
 <span
 	class={cn(
-		'w-16 rounded-xl text-center font-semibold text-neutral-800 dark:text-neutral-100 select-none',
+		'w-16 select-none rounded-xl text-center font-semibold text-neutral-800 dark:text-neutral-100',
 		variants[getNormalizedMod()] ?? 'bg-zinc-300',
 		className
 	)}>{getNormalizedMod()}{index !== null ? index : ''}</span

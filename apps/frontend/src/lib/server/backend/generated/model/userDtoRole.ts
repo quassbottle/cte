@@ -9,10 +9,9 @@
 /**
  * The user role
  */
-export type UserDtoRole = typeof UserDtoRole[keyof typeof UserDtoRole];
-
+export type UserDtoRole = (typeof UserDtoRole)[keyof typeof UserDtoRole];
 
 export const UserDtoRole = {
-  default: 'default',
-  admin: 'admin',
+	default: 'default',
+	admin: 'admin'
 } as const;

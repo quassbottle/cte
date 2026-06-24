@@ -123,11 +123,8 @@ export function createBackendClient(input?: BackendClientInput) {
 				mappoolControllerPatch(mappoolId, input, options),
 			addBeatmap: (mappoolId: string, input: AddMappoolBeatmapDto) =>
 				mappoolControllerAddBeatmap(mappoolId, input, options),
-			updateBeatmap: (
-				mappoolId: string,
-				osuBeatmapId: number,
-				input: UpdateMappoolBeatmapDto
-			) => mappoolControllerUpdateBeatmap(mappoolId, osuBeatmapId, input, options),
+			updateBeatmap: (mappoolId: string, osuBeatmapId: number, input: UpdateMappoolBeatmapDto) =>
+				mappoolControllerUpdateBeatmap(mappoolId, osuBeatmapId, input, options),
 			deleteBeatmap: (mappoolId: string, osuBeatmapId: number) =>
 				mappoolControllerDeleteBeatmap(mappoolId, osuBeatmapId, options)
 		},

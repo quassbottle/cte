@@ -14,16 +14,26 @@ export default defineConfig(
 	includeIgnoreFile(gitignorePath),
 	js.configs.recommended,
 	...ts.configs.recommended,
-	...svelte.configs.recommended,
+	...svelte.configs['flat/recommended'],
 	prettier,
-	...svelte.configs.prettier,
+	...svelte.configs['flat/prettier'],
 	{
 		languageOptions: { globals: { ...globals.browser, ...globals.node } },
 
 		rules: {
 			// typescript-eslint strongly recommend that you do not use the no-undef lint rule on TypeScript projects.
 			// see: https://typescript-eslint.io/troubleshooting/faqs/eslint/#i-get-errors-from-the-no-undef-rule-about-global-variables-not-being-defined-even-though-there-are-no-typescript-errors
-			'no-undef': 'off'
+			'no-undef': 'off',
+			'@typescript-eslint/no-unused-vars': [
+				'error',
+				{
+					argsIgnorePattern: '^_',
+					varsIgnorePattern: '^(\\$\\$|className$|_)',
+					caughtErrorsIgnorePattern: '^_',
+					destructuredArrayIgnorePattern: '^_',
+					ignoreRestSiblings: true
+				}
+			]
 		}
 	},
 	{

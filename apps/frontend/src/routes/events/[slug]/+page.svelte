@@ -60,7 +60,11 @@
 	</ContentItem>
 
 	<ContentItem value="participants">
-		<ParticipantsTab tournament={data.tournament} participants={data.participants} teams={data.teams} />
+		<ParticipantsTab
+			tournament={data.tournament}
+			participants={data.participants}
+			teams={data.teams}
+		/>
 	</ContentItem>
 
 	<ContentItem value="schedule">

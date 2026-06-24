@@ -7,5 +7,5 @@
  */
 
 export interface AuthUrlDto {
-  url: string;
+	url: string;
 }

@@ -44,7 +44,12 @@
 	};
 </script>
 
-<form method="post" action="?/addMappoolBeatmap" class="flex flex-col gap-3" use:enhance={enhanceAddBeatmap}>
+<form
+	method="post"
+	action="?/addMappoolBeatmap"
+	class="flex flex-col gap-3"
+	use:enhance={enhanceAddBeatmap}
+>
 	<p class="text-sm font-medium">Add map to mappool</p>
 	<input type="hidden" name="mappoolId" value={mappool.id} />
 	{#if $metadataState.status === 'loaded'}

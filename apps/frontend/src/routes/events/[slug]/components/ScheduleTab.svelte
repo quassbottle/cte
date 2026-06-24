@@ -10,7 +10,7 @@
 
 <div class="flex flex-col gap-3">
 	{#each sortedStages as stage}
-		<div class="border-border rounded-md border px-3 py-2">
+		<div class="rounded-md border border-border px-3 py-2">
 			<p class="text-sm font-medium">{stage.name}</p>
 			<p class="text-xs text-muted-foreground">
 				{new Date(stage.startsAt).toLocaleString()} - {new Date(stage.endsAt).toLocaleString()}

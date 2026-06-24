@@ -77,7 +77,7 @@
 			{:else}
 				<div class="flex flex-col gap-2">
 					{#each sortedStages as stage (stage.id)}
-						<div class="border-border rounded-md border px-3 py-3">
+						<div class="rounded-md border border-border px-3 py-3">
 							<form method="post" action="?/updateStage" use:enhance>
 								<input type="hidden" name="stageId" value={stage.id} />
 								<div class="grid grid-cols-1 gap-3 md:grid-cols-[1fr_auto_auto]">

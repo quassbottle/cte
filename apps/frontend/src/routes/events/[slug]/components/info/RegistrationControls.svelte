@@ -13,7 +13,9 @@
 	export let form: TournamentRegistrationForm;
 
 	$: isLoggedIn = Boolean(user?.id);
-	$: isRegistered = Boolean(user?.id && participants.some((participant) => participant.id === user?.id));
+	$: isRegistered = Boolean(
+		user?.id && participants.some((participant) => participant.id === user?.id)
+	);
 	$: canShowRegistrationForm = tournament.registrationOpen;
 	$: registerButtonText = isRegistered
 		? tournament.isTeam
@@ -55,10 +57,7 @@
 			</div>
 
 			{#if isRegistrationModalOpen}
-				<TeamRegistrationDialog
-					{form}
-					onClose={() => (isRegistrationModalOpen = false)}
-				/>
+				<TeamRegistrationDialog {form} onClose={() => (isRegistrationModalOpen = false)} />
 			{/if}
 		{:else}
 			<div class="mt-2 flex flex-col gap-2">

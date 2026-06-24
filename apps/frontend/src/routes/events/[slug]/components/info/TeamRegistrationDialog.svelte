@@ -66,7 +66,9 @@
 		if (event.key === 'Escape') onClose();
 	}}
 >
-	<div class="w-full max-w-2xl rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl">
+	<div
+		class="w-full max-w-2xl rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl"
+	>
 		<div class="mb-4 flex items-start justify-between gap-4">
 			<div>
 				<p class="text-xl font-semibold">Register Team</p>
@@ -81,7 +83,11 @@
 
 		<form method="post" action="?/register" use:enhance class="flex flex-col gap-4">
 			<input type="hidden" name="isTeamTournament" value="true" />
-			<input type="hidden" name="teamParticipantIds" value={selectedUsers.map((user) => user.id).join(',')} />
+			<input
+				type="hidden"
+				name="teamParticipantIds"
+				value={selectedUsers.map((user) => user.id).join(',')}
+			/>
 
 			<div class="flex w-full flex-col gap-1">
 				<label for="team-name-modal" class="text-[12px] font-medium">Team name</label>
@@ -90,7 +96,7 @@
 					name="teamName"
 					required
 					bind:value={teamName}
-					class="border-input bg-background ring-offset-background focus-visible:ring-ring h-9 rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+					class="h-9 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					placeholder="My Awesome Team"
 				/>
 			</div>
@@ -100,7 +106,7 @@
 				<div class="flex flex-col gap-2 sm:flex-row">
 					<input
 						name="teamParticipantLookup"
-						class="border-input bg-background ring-offset-background focus-visible:ring-ring h-9 flex-1 rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+						class="h-9 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 						placeholder="osu id / osu username"
 						bind:value={teammateQuery}
 						on:keydown={(event) => {
@@ -167,7 +173,9 @@
 				<Button class="w-[140px] bg-accept text-[12px]" variant="accept" type="submit">
 					Register team
 				</Button>
-				<Button type="button" variant="outline" class="text-[12px]" on:click={onClose}>Cancel</Button>
+				<Button type="button" variant="outline" class="text-[12px]" on:click={onClose}
+					>Cancel</Button
+				>
 			</div>
 		</form>
 	</div>

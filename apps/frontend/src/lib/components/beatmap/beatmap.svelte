@@ -102,7 +102,7 @@
 			{/if}
 		</BreadcrumbList>
 
-		<Mod mod={mod} index={index} />
+		<Mod {mod} {index} />
 
 		<div class="flex flex-wrap gap-2">
 			<a

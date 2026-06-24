@@ -21,7 +21,7 @@
 
 <div
 	class={cn(
-		'relative flex h-[208px] flex-col justify-center gap-2 overflow-hidden rounded-2xl bg-zinc-800 dark:bg-zinc-900 p-4',
+		'relative flex h-[208px] flex-col justify-center gap-2 overflow-hidden rounded-2xl bg-zinc-800 p-4 dark:bg-zinc-900',
 		className
 	)}
 >

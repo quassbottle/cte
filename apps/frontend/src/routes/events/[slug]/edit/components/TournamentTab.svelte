@@ -28,11 +28,7 @@
 
 <div class="flex flex-col gap-8">
 	<div class="relative">
-		<TournamentBanner
-			class="relative h-[260px] text-white"
-			let:Content
-			seed={tournament.id}
-		>
+		<TournamentBanner class="relative h-[260px] text-white" let:Content seed={tournament.id}>
 			<Content class="absolute bottom-0 left-0 flex w-[60%] flex-col p-6">
 				<p class="text-[32px] font-semibold">Edit: {tournament.name}</p>
 				<BreadcrumbList let:Item>
@@ -63,18 +59,24 @@
 		<Title>Manage tournament</Title>
 		<Content>
 			<form
-			method="post"
-			action="?/updateTournament"
-			class="flex flex-col gap-4 p-1"
-			use:enhance={() => {
-				return async ({ update }) => {
-					update({ reset: false });
-				};
-			}}
-		>
+				method="post"
+				action="?/updateTournament"
+				class="flex flex-col gap-4 p-1"
+				use:enhance={() => {
+					return async ({ update }) => {
+						update({ reset: false });
+					};
+				}}
+			>
 				<div class="flex w-full max-w-2xl flex-col gap-1.5">
 					<Label for="name">Name</Label>
-					<Input id="name" name="name" placeholder="Tournament name" required value={tournament.name} />
+					<Input
+						id="name"
+						name="name"
+						placeholder="Tournament name"
+						required
+						value={tournament.name}
+					/>
 				</div>
 
 				<div class="flex w-full max-w-2xl flex-col gap-1.5">
@@ -83,9 +85,9 @@
 						id="description"
 						name="description"
 						rows={5}
-						class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring min-h-[128px] rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-						placeholder="Tournament description"
-					>{tournament.description ?? ''}</textarea>
+						class="min-h-[128px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						placeholder="Tournament description">{tournament.description ?? ''}</textarea
+					>
 				</div>
 
 				<div class="flex w-full max-w-2xl flex-col gap-1.5">
@@ -93,7 +95,7 @@
 					<select
 						id="mode"
 						name="mode"
-						class="border-input bg-background ring-offset-background focus-visible:ring-ring h-10 rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
+						class="h-10 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 					>
 						{#each gamemodes as gamemode}
 							<option value={gamemode.value} selected={gamemode.value === tournament.mode}>
@@ -109,9 +111,9 @@
 						id="rules"
 						name="rules"
 						rows={8}
-						class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring min-h-[180px] rounded-md border px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2"
-						placeholder="Tournament rules"
-					>{tournament.rules ?? ''}</textarea>
+						class="min-h-[180px] rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+						placeholder="Tournament rules">{tournament.rules ?? ''}</textarea
+					>
 				</div>
 
 				<div class="flex flex-col gap-4 md:flex-row">

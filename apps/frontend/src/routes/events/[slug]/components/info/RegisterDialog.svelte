@@ -21,7 +21,9 @@
 		if (event.key === 'Escape') onClose();
 	}}
 >
-	<div class="w-full max-w-md rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl">
+	<div
+		class="w-full max-w-md rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl"
+	>
 		<div class="mb-4 flex items-start justify-between gap-4">
 			<div>
 				<p class="text-xl font-semibold">Register</p>

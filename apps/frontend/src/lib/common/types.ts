@@ -1,3 +1,3 @@
 export type ComponentWithClassProps = {
-  class: string;
-}
+	class: string;
+};

@@ -1,4 +1,4 @@
-import { OAUTH_STATE_COOKIE, setOAuthStateCookie } from '$lib/server/auth/cookies';
+import { setOAuthStateCookie } from '$lib/server/auth/cookies';
 import { createBackendClient } from '$lib/server/backend/client';
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';

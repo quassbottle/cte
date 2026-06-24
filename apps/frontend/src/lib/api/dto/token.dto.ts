@@ -1,7 +1,7 @@
 export interface TokenDto {
-  token: string
+	token: string;
 }
 
 export interface TokenPayload {
-  id: string
+	id: string;
 }

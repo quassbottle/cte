@@ -8,5 +8,5 @@
 import type { RegisterTournamentDtoTeam } from './registerTournamentDtoTeam';
 
 export interface RegisterTournamentDto {
-  team?: RegisterTournamentDtoTeam;
+	team?: RegisterTournamentDtoTeam;
 }

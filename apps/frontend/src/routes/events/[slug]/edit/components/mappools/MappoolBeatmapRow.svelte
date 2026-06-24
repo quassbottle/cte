@@ -40,7 +40,12 @@
 	/>
 
 	<div class="mt-2 flex flex-wrap items-end gap-2 px-2 pb-2">
-		<form method="post" action="?/updateMappoolBeatmap" class="flex flex-wrap items-end gap-2" use:enhance>
+		<form
+			method="post"
+			action="?/updateMappoolBeatmap"
+			class="flex flex-wrap items-end gap-2"
+			use:enhance
+		>
 			<input type="hidden" name="mappoolId" value={mappool.id} />
 			<input type="hidden" name="osuBeatmapId" value={beatmap.osuBeatmapId} />
 			<div class="flex w-[140px] flex-col gap-1">
@@ -64,7 +69,12 @@
 			<Button size="sm" variant="outline" type="submit">Update slot</Button>
 		</form>
 
-		<form method="post" action="?/replaceMappoolBeatmap" class="flex flex-wrap items-end gap-2" use:enhance>
+		<form
+			method="post"
+			action="?/replaceMappoolBeatmap"
+			class="flex flex-wrap items-end gap-2"
+			use:enhance
+		>
 			<input type="hidden" name="mappoolId" value={mappool.id} />
 			<input type="hidden" name="osuBeatmapId" value={beatmap.osuBeatmapId} />
 			<div class="flex w-[160px] flex-col gap-1">

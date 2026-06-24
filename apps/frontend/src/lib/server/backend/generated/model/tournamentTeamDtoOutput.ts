@@ -8,10 +8,10 @@
 import type { TournamentTeamDtoOutputParticipantsItem } from './tournamentTeamDtoOutputParticipantsItem';
 
 export interface TournamentTeamDtoOutput {
-  /** @pattern ^[0-9a-z]+$ */
-  id: string;
-  name: string;
-  /** @pattern ^[0-9a-z]+$ */
-  captainId: string;
-  participants: TournamentTeamDtoOutputParticipantsItem[];
+	/** @pattern ^[0-9a-z]+$ */
+	id: string;
+	name: string;
+	/** @pattern ^[0-9a-z]+$ */
+	captainId: string;
+	participants: TournamentTeamDtoOutputParticipantsItem[];
 }

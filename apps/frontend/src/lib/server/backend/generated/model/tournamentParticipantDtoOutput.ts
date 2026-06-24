@@ -7,8 +7,8 @@
  */
 
 export interface TournamentParticipantDtoOutput {
-  /** @pattern ^[0-9a-z]+$ */
-  id: string;
-  osuId: number;
-  osuUsername: string;
+	/** @pattern ^[0-9a-z]+$ */
+	id: string;
+	osuId: number;
+	osuUsername: string;
 }

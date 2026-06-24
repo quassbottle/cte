@@ -6,12 +6,12 @@
  * OpenAPI spec version: 1.0
  */
 
-export type MappoolBeatmapDtoOutputMode = typeof MappoolBeatmapDtoOutputMode[keyof typeof MappoolBeatmapDtoOutputMode];
-
+export type MappoolBeatmapDtoOutputMode =
+	(typeof MappoolBeatmapDtoOutputMode)[keyof typeof MappoolBeatmapDtoOutputMode];
 
 export const MappoolBeatmapDtoOutputMode = {
-  osu: 'osu',
-  taiko: 'taiko',
-  fruits: 'fruits',
-  mania: 'mania',
+	osu: 'osu',
+	taiko: 'taiko',
+	fruits: 'fruits',
+	mania: 'mania'
 } as const;
