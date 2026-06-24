@@ -12,7 +12,7 @@
 </script>
 
 <div
-	class="flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:border-primary hover:bg-secondary hover:shadow-md">
+	class="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:border-primary hover:bg-secondary hover:shadow-md">
 	<TournamentBanner
 		class="relative h-[200px] text-white"
 		seed={id}
