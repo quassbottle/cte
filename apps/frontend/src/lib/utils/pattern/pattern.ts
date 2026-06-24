@@ -6,10 +6,12 @@
  */
 
 import type { Palette } from './palette';
+import type { OsuMode } from '../../api/types';
 import { createPalette } from './palette';
 import { createRng } from './rng';
 
-export type ShapeKind = 'triangle' | 'circle' | 'square' | 'plus' | 'dots' | 'stripes';
+export type RotatedShapeKind = 'triangle' | 'circle' | 'square' | 'plus' | 'dots' | 'stripes';
+export type ShapeKind = RotatedShapeKind | 'modeIcon';
 
 export type PatternOp =
 	| {
@@ -20,23 +22,32 @@ export type PatternOp =
 			readonly color: string;
 	  }
 	| {
-			readonly kind: ShapeKind;
+			readonly kind: RotatedShapeKind;
 			readonly px: number;
 			readonly py: number;
 			readonly cell: number;
 			readonly color: string;
 			readonly rotation: number;
+	  }
+	| {
+			readonly kind: 'modeIcon';
+			readonly px: number;
+			readonly py: number;
+			readonly cell: number;
+			readonly color: string;
+			readonly mode: OsuMode;
 	  };
 
 export type PatternResult = {
 	readonly seed: string;
 	readonly width: number;
 	readonly height: number;
+	readonly mode?: OsuMode;
 	readonly palette: Palette;
 	readonly ops: readonly PatternOp[];
 };
 
-const SHAPE_KINDS: readonly ShapeKind[] = [
+const SHAPE_KINDS: readonly RotatedShapeKind[] = [
 	'triangle',
 	'circle',
 	'square',
@@ -56,8 +67,13 @@ const resultCache = new Map<string, PatternResult>();
  * tournament produces a different (but still deterministic) layout for
  * different banner sizes.
  */
-export function generatePattern(seed: string, width: number, height: number): PatternResult {
-	const cacheKey = `${seed}:${width}x${height}`;
+export function generatePattern(
+	seed: string,
+	width: number,
+	height: number,
+	mode?: OsuMode
+): PatternResult {
+	const cacheKey = `${seed}:${width}x${height}:${mode ?? 'none'}`;
 	const cached = resultCache.get(cacheKey);
 	if (cached) return cached;
 
@@ -74,7 +90,9 @@ export function generatePattern(seed: string, width: number, height: number): Pa
 	const offsetY = Math.round((height - gridH) / 2);
 
 	const colors = [palette.accent, palette.accent2, palette.light, palette.tile, palette.muted];
+	const shapeKinds: readonly ShapeKind[] = mode ? [...SHAPE_KINDS, 'modeIcon'] : SHAPE_KINDS;
 	const ops: PatternOp[] = [];
+	let hasModeIcon = false;
 
 	for (let row = 0; row < rows; row++) {
 		for (let col = 0; col < cols; col++) {
@@ -86,15 +104,33 @@ export function generatePattern(seed: string, width: number, height: number): Pa
 
 			if (rand() < SKIP_PROB) continue;
 
-			const kind = SHAPE_KINDS[Math.floor(rand() * SHAPE_KINDS.length)];
+			const kind = shapeKinds[Math.floor(rand() * shapeKinds.length)];
 			const color = colors[Math.floor(rand() * colors.length)];
-			const rotation = Math.floor(rand() * 4) * (Math.PI / 2);
 
-			ops.push({ kind, px, py, cell, color, rotation });
+			if (kind === 'modeIcon') {
+				if (!mode) continue;
+				hasModeIcon = true;
+				ops.push({ kind, px, py, cell, color, mode });
+			} else {
+				const rotation = Math.floor(rand() * 4) * (Math.PI / 2);
+				ops.push({ kind, px, py, cell, color, rotation });
+			}
 		}
 	}
 
-	const result: PatternResult = { seed, width, height, palette, ops };
+	if (mode && !hasModeIcon) {
+		const fallbackColor = colors[Math.floor(rand() * colors.length)];
+		ops.push({
+			kind: 'modeIcon',
+			px: offsetX + Math.floor(cols / 2) * cell,
+			py: offsetY + Math.floor(rows / 2) * cell,
+			cell,
+			color: fallbackColor,
+			mode
+		});
+	}
+
+	const result: PatternResult = { seed, width, height, mode, palette, ops };
 	resultCache.set(cacheKey, result);
 	return result;
 }

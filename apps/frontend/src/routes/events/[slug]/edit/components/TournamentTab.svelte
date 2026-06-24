@@ -28,7 +28,12 @@
 
 <div class="flex flex-col gap-8">
 	<div class="relative">
-		<TournamentBanner class="relative h-[260px] text-white" let:Content seed={tournament.id}>
+		<TournamentBanner
+			class="relative h-[260px] text-white"
+			let:Content
+			seed={tournament.id}
+			mode={tournament.mode}
+		>
 			<Content class="absolute bottom-0 left-0 flex w-[60%] flex-col p-6">
 				<p class="text-[32px] font-semibold">Edit: {tournament.name}</p>
 				<BreadcrumbList let:Item>

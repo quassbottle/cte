@@ -1,5 +1,5 @@
 import { createBackendClient } from '$lib/server/backend/client';
-import { getTournamentList } from '$lib/server/tournaments/tournament-list.query';
+import { getTournamentList } from '$lib/server/services/tournaments/tournament-list.query';
 import type { PageServerLoad } from '../$types';
 
 export const load: PageServerLoad = async ({ fetch, url }) => {

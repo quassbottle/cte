@@ -1,5 +1,5 @@
 import { createBackendClient } from '$lib/server/backend/client';
-import { getUserProfile } from '$lib/server/users/user-profile.query';
+import { getUserProfile } from '$lib/server/services/users/user-profile.query';
 import { error } from '@sveltejs/kit';
 import type { PageServerLoad } from './$types';
 

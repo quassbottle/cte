@@ -1,6 +1,6 @@
 import { createBackendClient } from '$lib/server/backend/client';
 import { backendErrorMessage, backendErrorStatus } from '$lib/server/backend/errors';
-import { createTournament } from '$lib/server/tournaments/tournament-create.commands';
+import { createTournament } from '$lib/server/services/tournaments/tournament-create.commands';
 import { tournamentCreateFormSchema } from '$lib/schemas/tournament-create.schema';
 import { fail, redirect } from '@sveltejs/kit';
 import type { Actions } from './$types';

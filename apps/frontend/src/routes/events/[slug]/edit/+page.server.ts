@@ -3,8 +3,8 @@ import { backendErrorMessage, backendErrorStatus } from '$lib/server/backend/err
 import {
 	TournamentEditAccessError,
 	getTournamentEditPage
-} from '$lib/server/tournaments/tournament-edit.query';
-import * as commands from '$lib/server/tournaments/tournament-edit.commands';
+} from '$lib/server/services/tournaments/tournament-edit.query';
+import * as commands from '$lib/server/services/tournaments/tournament-edit.commands';
 import {
 	mappoolBeatmapAddFormSchema,
 	mappoolBeatmapDeleteFormSchema,

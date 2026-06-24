@@ -1,7 +1,7 @@
 import { createBackendClient } from '$lib/server/backend/client';
 import { backendErrorMessage, backendErrorStatus } from '$lib/server/backend/errors';
-import * as commands from '$lib/server/tournaments/tournament-page.commands';
-import { getTournamentPage } from '$lib/server/tournaments/tournament-page.query';
+import * as commands from '$lib/server/services/tournaments/tournament-page.commands';
+import { getTournamentPage } from '$lib/server/services/tournaments/tournament-page.query';
 import { tournamentRegisterFormSchema } from '$lib/schemas/tournament-page.schema';
 import type { BackendClient } from '$lib/server/backend/client';
 import type { SelectedUser } from '$lib/schemas/user.schema';
