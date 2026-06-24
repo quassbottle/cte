@@ -18,7 +18,7 @@ import {
 	tournamentEditFormSchema
 } from '$lib/schemas/tournament-edit.schema';
 import type { EditAction, TournamentEditActionResult } from '$lib/types/tournament-edit-action';
-import { error, fail } from '@sveltejs/kit';
+import { error, fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad, RequestEvent } from './$types';
 import type { z } from 'zod';
 
@@ -94,7 +94,7 @@ export const load: PageServerLoad = async (event) => {
 	const backend = createBackendClient(event);
 
 	try {
-		return await getTournamentEditPage(backend, params.slug, session.user.id);
+		return await getTournamentEditPage(backend, params.slug, session.user);
 	} catch (cause) {
 		if (cause instanceof TournamentEditAccessError) {
 			throw error(403, cause.message);
@@ -122,6 +122,23 @@ export const actions: Actions = {
 				(backend, input) => commands.updateTournament(backend, event.params.slug, input)
 			)
 		),
+	archiveTournament: async (event) => {
+		requireSession(event.locals);
+		const backend = createBackendClient(event);
+
+		try {
+			await commands.archiveTournament(backend, event.params.slug);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				action: 'archiveTournament',
+				ok: false,
+				message: backendErrorMessage(cause, 'Request failed'),
+				errors: {}
+			} satisfies TournamentEditActionResult);
+		}
+
+		redirect(303, `/events/${event.params.slug}`);
+	},
 	createStage: (event) =>
 		withFormValues(event, (values) =>
 			submitForm(event, 'createStage', stageCreateFormSchema, values, {}, (backend, input) =>

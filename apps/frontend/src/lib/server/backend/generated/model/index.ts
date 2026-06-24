@@ -27,6 +27,7 @@ export * from './registerTournamentDtoTeam';
 export * from './stageDtoOutput';
 export * from './tournamentControllerFindManyMode';
 export * from './tournamentControllerFindManyParams';
+export * from './tournamentControllerFindManyStatus';
 export * from './tournamentControllerGetParticipantsParams';
 export * from './tournamentDtoOutput';
 export * from './tournamentDtoOutputMode';

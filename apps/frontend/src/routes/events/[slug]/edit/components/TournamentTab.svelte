@@ -9,7 +9,7 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Label } from '$lib/components/ui/label';
 	import { gamemodes } from '$lib/utils/types';
-	import { Calendar, UsersRound } from 'lucide-svelte';
+	import { Calendar, UsersRound, X } from 'lucide-svelte';
 
 	export let tournament: TournamentDto;
 	export let form:
@@ -24,6 +24,8 @@
 		const timezoneOffsetMs = date.getTimezoneOffset() * 60 * 1000;
 		return new Date(date.getTime() - timezoneOffsetMs).toISOString().slice(0, 16);
 	};
+
+	let isArchiveDialogOpen = false;
 </script>
 
 <div class="flex flex-col gap-8">
@@ -163,6 +165,78 @@
 					</Button>
 				</div>
 			</form>
+
+			<div class="mt-6 flex flex-col gap-2 border-t border-border pt-5">
+				{#if tournament.archivedAt}
+					<p class="text-sm text-muted-foreground">
+						Archived on {new Date(tournament.archivedAt).toDateString()}
+					</p>
+				{:else}
+					<Button
+						class="w-[160px] text-[12px]"
+						variant="outline"
+						type="button"
+						on:click={() => (isArchiveDialogOpen = true)}
+					>
+						Archive tournament
+					</Button>
+				{/if}
+
+				{#if form?.action === 'archiveTournament' && form.message}
+					<p class="text-sm text-destructive">{form.message}</p>
+				{/if}
+			</div>
 		</Content>
 	</Group>
 </div>
+
+{#if isArchiveDialogOpen}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+		on:click={(event) => {
+			if (event.target === event.currentTarget) isArchiveDialogOpen = false;
+		}}
+		on:keydown={(event) => {
+			if (event.key === 'Escape') isArchiveDialogOpen = false;
+		}}
+	>
+		<div
+			class="w-full max-w-md rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl"
+		>
+			<div class="mb-4 flex items-start justify-between gap-4">
+				<div>
+					<p class="text-xl font-semibold">Archive tournament</p>
+					<p class="text-sm text-muted-foreground">Are you sure? This action cannot be undone.</p>
+				</div>
+				<Button variant="ghost" size="icon" on:click={() => (isArchiveDialogOpen = false)}>
+					<X class="h-4 w-4" />
+				</Button>
+			</div>
+
+			<div class="flex items-center gap-2">
+				<Button
+					type="button"
+					variant="outline"
+					class="text-[12px]"
+					on:click={() => (isArchiveDialogOpen = false)}>Cancel</Button
+				>
+				<form
+					method="post"
+					action="?/archiveTournament"
+					use:enhance={() => {
+						return async ({ update }) => {
+							update({ reset: false });
+						};
+					}}
+				>
+					<Button class="text-[12px]" variant="destructive" type="submit">
+						Archive tournament
+					</Button>
+				</form>
+			</div>
+		</div>
+	</div>
+{/if}

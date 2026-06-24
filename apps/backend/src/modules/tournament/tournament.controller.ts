@@ -143,6 +143,27 @@ export class TournamentController {
     return tournamentDtoSchema.parse({ ...created, participantsCount: 0 });
   }
 
+  @Patch(':id/archive')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ApiResponse({
+    status: 200,
+    description: 'Archives a tournament.',
+    type: TournamentDto.Output,
+  })
+  public async archive(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+  ): Promise<TournamentDto> {
+    const archived = await this.tournamentService.archive({ id });
+    const participantsCount = await this.tournamentService.getParticipantsCount(
+      { id, isTeam: archived.isTeam },
+    );
+
+    return tournamentDtoSchema.parse({ ...archived, participantsCount });
+  }
+
   @Patch(':id')
   @UseGuards(JwtUserGuard, PoliciesGuard)
   @CheckPolicies((ability, context) =>

@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { and, eq, isNull } from 'drizzle-orm';
 import {
   MappoolException,
@@ -37,26 +37,30 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
   }
 
   public async resolve(request: PolicyRequest): Promise<PolicyContext> {
-    const tournamentCreatorId = await this.resolveTournamentCreatorId(request);
+    const tournament = await this.resolveTournament(request);
+
+    if (tournament.archivedAt) {
+      throw new ForbiddenException('Archived tournaments cannot be changed');
+    }
 
     return {
       subject: 'Mappool',
       subjectData: {
         __type: 'Mappool',
-        tournamentCreatorId,
+        tournamentCreatorId: tournament.creatorId,
       },
     };
   }
 
-  private async resolveTournamentCreatorId(request: PolicyRequest) {
+  private async resolveTournament(request: PolicyRequest) {
     const mappoolId = mappoolParamsSchema.safeParse(request.params).data?.id;
 
     if (mappoolId) {
-      return this.resolveTournamentCreatorIdByMappoolId(mappoolId);
+      return this.resolveTournamentByMappoolId(mappoolId);
     }
 
     if (request.method === 'POST') {
-      return this.resolveTournamentCreatorIdByStageId(
+      return this.resolveTournamentByStageId(
         createMappoolBodySchema.parse(request.body).stageId,
       );
     }
@@ -64,11 +68,14 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
     throw new Error('Mappool id is required');
   }
 
-  private async resolveTournamentCreatorIdByStageId(stageId: unknown) {
+  private async resolveTournamentByStageId(stageId: unknown) {
     const parsedStageId = stageIdSchema.parse(stageId);
 
     const [found] = await this.drizzle
-      .select({ tournamentCreatorId: tournaments.creatorId })
+      .select({
+        creatorId: tournaments.creatorId,
+        archivedAt: tournaments.archivedAt,
+      })
       .from(stages)
       .innerJoin(
         tournaments,
@@ -87,14 +94,17 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
       );
     }
 
-    return found.tournamentCreatorId;
+    return found;
   }
 
-  private async resolveTournamentCreatorIdByMappoolId(mappoolId: unknown) {
+  private async resolveTournamentByMappoolId(mappoolId: unknown) {
     const parsedMappoolId = mappoolIdSchema.parse(mappoolId);
 
     const [found] = await this.drizzle
-      .select({ tournamentCreatorId: tournaments.creatorId })
+      .select({
+        creatorId: tournaments.creatorId,
+        archivedAt: tournaments.archivedAt,
+      })
       .from(mappools)
       .innerJoin(stages, eq(stages.id, mappools.stageId))
       .innerJoin(
@@ -114,6 +124,6 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
       );
     }
 
-    return found.tournamentCreatorId;
+    return found;
   }
 }

@@ -9,6 +9,7 @@ mock.module('$lib/server/backend/client', () => ({
 }));
 
 const { load } = await import('../../../../routes/events/+page.server');
+const { getEventsModeHref } = await import('../../../utils/events-filter');
 
 describe('/events server load', () => {
 	it('uses the mode from the URL when it is valid', async () => {
@@ -42,5 +43,24 @@ describe('/events server load', () => {
 
 		expect(result.selectedMode).toBe('all');
 		expect(result.tournaments[0].input).not.toHaveProperty('mode');
+	});
+
+	it('loads archived tournaments separately from active tournaments', async () => {
+		const result = (await load({
+			fetch,
+			url: new URL('https://example.com/events?status=archived&mode=all'),
+			parent: async () => ({ user: { defaultMode: 'osu' } })
+		} as never)) as {
+			selectedStatus: string;
+			tournaments: { input: { status?: string; mode?: string } }[];
+		};
+
+		expect(result.selectedStatus).toBe('archived');
+		expect(result.tournaments[0].input).toMatchObject({ status: 'archived' });
+		expect(result.tournaments[0].input).not.toHaveProperty('mode');
+	});
+
+	it('keeps the archived status in mode tab links', () => {
+		expect(getEventsModeHref('mania', 'archived')).toBe('/events?status=archived&mode=mania');
 	});
 });

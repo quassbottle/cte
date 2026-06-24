@@ -11,6 +11,9 @@ export class AppAbilityFactory {
     if (user.role === 'admin') {
       can('manage', 'all');
     } else {
+      can(['update', 'delete'], 'Tournament', {
+        creatorId: user.id,
+      });
       can(['create', 'update', 'delete'], 'Stage', {
         tournamentCreatorId: user.id,
       });

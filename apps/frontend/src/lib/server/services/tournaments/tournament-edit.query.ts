@@ -1,21 +1,26 @@
 import type { BackendClient } from '$lib/server/backend/client';
+import type { Viewer } from '$lib/types/viewer';
 
 export class TournamentEditAccessError extends Error {
-	constructor() {
-		super("You aren't allowed to edit this tournament");
+	constructor(message = "You aren't allowed to edit this tournament") {
+		super(message);
 	}
 }
 
 export async function getTournamentEditPage(
 	backend: BackendClient,
 	tournamentId: string,
-	viewerId: string
+	viewer: Pick<Viewer, 'id' | 'role'>
 ) {
 	const tournamentResponse = await backend.tournaments.getById(tournamentId);
 	const tournament = tournamentResponse.data;
 
-	if (tournament.creatorId !== viewerId) {
+	if (tournament.creatorId !== viewer.id && viewer.role !== 'admin') {
 		throw new TournamentEditAccessError();
+	}
+
+	if (tournament.archivedAt) {
+		throw new TournamentEditAccessError("Archived tournaments can't be edited");
 	}
 
 	const [stagesResponse, mappoolsResponse] = await Promise.all([

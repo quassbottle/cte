@@ -2,6 +2,7 @@ export type FieldErrors = Record<string, string[] | undefined>;
 
 export type EditAction =
 	| 'updateTournament'
+	| 'archiveTournament'
 	| 'createStage'
 	| 'updateStage'
 	| 'deleteStage'

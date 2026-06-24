@@ -14,6 +14,7 @@ export interface TournamentDto {
 	creatorId: string;
 	startsAt: string;
 	endsAt: string;
+	archivedAt: string | null;
 	deletedAt: string | null;
 	createdAt: string;
 	updatedAt: string;

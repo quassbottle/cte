@@ -354,6 +354,30 @@ export const tournamentControllerSoftDelete = async (
 	);
 };
 
+export type tournamentControllerArchiveResponse200 = {
+	data: TournamentDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerArchiveResponseSuccess = tournamentControllerArchiveResponse200 & {
+	headers: Headers;
+};
+export type tournamentControllerArchiveResponse = tournamentControllerArchiveResponseSuccess;
+
+export const getTournamentControllerArchiveUrl = (id: string) => {
+	return `/api/tournaments/${id}/archive`;
+};
+
+export const tournamentControllerArchive = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerArchiveResponse> => {
+	return backendFetch<tournamentControllerArchiveResponse>(getTournamentControllerArchiveUrl(id), {
+		...options,
+		method: 'PATCH'
+	});
+};
+
 export type tournamentControllerGetParticipantsResponse200 = {
 	data: TournamentParticipantDtoOutput[];
 	status: 200;

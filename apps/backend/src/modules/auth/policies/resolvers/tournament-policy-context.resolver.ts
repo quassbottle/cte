@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
 import { and, eq, isNull } from 'drizzle-orm';
 import {
   TournamentException,
@@ -51,6 +51,10 @@ export class TournamentPolicyContextResolver implements PolicyContextResolver {
         'Tournament not found',
         TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
       );
+    }
+
+    if (tournament.archivedAt) {
+      throw new ForbiddenException('Archived tournaments cannot be changed');
     }
 
     return {

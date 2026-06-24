@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 import type { TournamentControllerFindManyMode } from './tournamentControllerFindManyMode';
+import type { TournamentControllerFindManyStatus } from './tournamentControllerFindManyStatus';
 
 export type TournamentControllerFindManyParams = {
 	/**
@@ -19,4 +20,5 @@ export type TournamentControllerFindManyParams = {
 	 */
 	offset?: number;
 	mode?: TournamentControllerFindManyMode;
+	status?: TournamentControllerFindManyStatus;
 };

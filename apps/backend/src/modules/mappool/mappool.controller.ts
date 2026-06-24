@@ -77,8 +77,12 @@ export class TournamentMappoolController {
   ): Promise<MappoolWithBeatmapsDto[]> {
     const tournament = await this.tournamentService.getById({ id: tournamentId });
 
-    if (tournament.creatorId !== user.id) {
+    if (tournament.creatorId !== user.id && user.role !== 'admin') {
       throw new ForbiddenException("You aren't allowed to manage this tournament");
+    }
+
+    if (tournament.archivedAt) {
+      throw new ForbiddenException('Archived tournaments cannot be changed');
     }
 
     const mappools = await this.mappoolService.findByTournamentWithBeatmaps({

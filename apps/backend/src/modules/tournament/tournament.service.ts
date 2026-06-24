@@ -1,5 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { and, asc, count, eq, inArray, isNull } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import { teamId } from 'lib/domain/team/team.id';
 import {
@@ -61,20 +61,59 @@ export class TournamentService {
   }
 
   public async findMany(
-    params: PaginationParams & { mode?: TournamentMode },
+    params: PaginationParams & {
+      mode?: TournamentMode;
+      status?: 'active' | 'archived';
+    },
   ): Promise<DbTournament[]> {
-    const { limit, offset, mode } = params;
+    const { limit, offset, mode, status = 'active' } = params;
+    const archiveFilter =
+      status === 'archived'
+        ? isNotNull(tournaments.archivedAt)
+        : isNull(tournaments.archivedAt);
 
     const found = await this.drizzle.query.tournaments.findMany({
       where: mode
-        ? and(isNull(tournaments.deletedAt), eq(tournaments.mode, mode))
-        : isNull(tournaments.deletedAt),
+        ? and(
+            isNull(tournaments.deletedAt),
+            archiveFilter,
+            eq(tournaments.mode, mode),
+          )
+        : and(isNull(tournaments.deletedAt), archiveFilter),
       orderBy: asc(tournaments.startsAt),
       limit,
       offset,
     });
 
     return found;
+  }
+
+  public async archive(params: {
+    id: TournamentId;
+    archivedAt?: Date;
+  }): Promise<DbTournament> {
+    const { id, archivedAt = new Date() } = params;
+
+    const [archived] = await this.drizzle
+      .update(tournaments)
+      .set({ archivedAt })
+      .where(
+        and(
+          eq(tournaments.id, id),
+          isNull(tournaments.archivedAt),
+          isNull(tournaments.deletedAt),
+        ),
+      )
+      .returning();
+
+    if (!archived) {
+      throw new TournamentException(
+        'Tournament not found',
+        TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+      );
+    }
+
+    return archived;
   }
 
   public async getParticipants(
@@ -231,6 +270,7 @@ export class TournamentService {
     } = params;
 
     const current = await this.getById({ id });
+    this.assertMutable(current);
     const nextStartsAt = startsAt ?? current.startsAt;
     const nextEndsAt = endsAt ?? current.endsAt;
 
@@ -245,7 +285,13 @@ export class TournamentService {
         startsAt,
         endsAt,
       })
-      .where(and(eq(tournaments.id, id), isNull(tournaments.deletedAt)))
+      .where(
+        and(
+          eq(tournaments.id, id),
+          isNull(tournaments.archivedAt),
+          isNull(tournaments.deletedAt),
+        ),
+      )
       .returning();
 
     if (!updated) {
@@ -264,7 +310,13 @@ export class TournamentService {
     const [deleted] = await this.drizzle
       .update(tournaments)
       .set({ deletedAt: new Date() })
-      .where(and(eq(tournaments.id, id), isNull(tournaments.deletedAt)))
+      .where(
+        and(
+          eq(tournaments.id, id),
+          isNull(tournaments.archivedAt),
+          isNull(tournaments.deletedAt),
+        ),
+      )
       .returning();
 
     if (!deleted) {
@@ -285,6 +337,7 @@ export class TournamentService {
     const { id, userId, data } = params;
 
     const tournament = await this.getById({ id });
+    this.assertMutable(tournament);
     if (!tournament.registrationOpen) {
       throw new TournamentException(
         'Tournament registration is closed',
@@ -307,6 +360,7 @@ export class TournamentService {
     const { id, userId } = params;
 
     const tournament = await this.getById({ id });
+    this.assertMutable(tournament);
     if (!tournament.registrationOpen) {
       throw new TournamentException(
         'Tournament registration is closed',
@@ -489,6 +543,12 @@ export class TournamentService {
         'User is not registered in this tournament',
         TournamentExceptionCode.TOURNAMENT_REGISTRATION_NOT_FOUND,
       );
+    }
+  }
+
+  private assertMutable(tournament: Pick<DbTournament, 'archivedAt'>): void {
+    if (tournament.archivedAt) {
+      throw new BadRequestException('Archived tournaments cannot be changed');
     }
   }
 }

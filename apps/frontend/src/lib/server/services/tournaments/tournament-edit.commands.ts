@@ -20,6 +20,10 @@ export function updateTournament(
 	return backend.tournaments.update(tournamentId, input);
 }
 
+export function archiveTournament(backend: BackendClient, tournamentId: string) {
+	return backend.tournaments.archive(tournamentId);
+}
+
 export function createStage(backend: BackendClient, tournamentId: string, input: StageCreateForm) {
 	return backend.stages.create(tournamentId, input);
 }

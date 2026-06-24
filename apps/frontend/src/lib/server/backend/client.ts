@@ -25,6 +25,7 @@ import {
 	stageControllerSoftDelete,
 	tournamentControllerCreate,
 	tournamentControllerFindMany,
+	tournamentControllerArchive,
 	tournamentControllerGetById,
 	tournamentControllerGetParticipants,
 	tournamentControllerGetTeams,
@@ -94,6 +95,7 @@ export function createBackendClient(input?: BackendClientInput) {
 			create: (input: CreateTournamentDto) => tournamentControllerCreate(input, options),
 			findMany: (input: TournamentControllerFindManyParams) =>
 				tournamentControllerFindMany(input, options),
+			archive: (id: string) => tournamentControllerArchive(id, options),
 			getById: (id: string) => tournamentControllerGetById(id, options),
 			getParticipants: (id: string) => tournamentControllerGetParticipants(id, undefined, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
