@@ -1,6 +1,7 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import { integer, pgTable, text } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
+import { TournamentMode } from 'lib/domain/tournament/tournament.mode';
 import { UserId } from 'lib/domain/user/user.id';
 import { UserRole } from 'lib/domain/user/user.role';
 
@@ -9,6 +10,10 @@ export const users = pgTable('users', {
 
   osuId: integer('osu_id').notNull().unique(),
   osuUsername: text('osu_username').notNull(),
+  defaultMode: text('default_mode')
+    .$type<TournamentMode>()
+    .notNull()
+    .default('osu'),
   role: text('role').$type<UserRole>().notNull().default('default'),
 
   createdAt,

@@ -1,4 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import {
+  TournamentMode,
+  tournamentModeSchema,
+} from 'lib/domain/tournament/tournament.mode';
 import { DbUser } from 'lib/infrastructure/db';
 import { OsuApiMode, OsuService } from 'lib/infrastructure/osu/osu.service';
 import { OsuStatsService } from 'modules/user/osu-stats.service';
@@ -57,18 +61,32 @@ export class AuthService {
   }
 
   private async ensureDomainUserExists(user: OsuUserProfile): Promise<DbUser> {
+    const defaultMode = this.parseDefaultMode(user.playmode);
     const userExists = await this.userService.existsByOsuId({ osuId: user.id });
 
     if (userExists) {
-      return this.userService.getByOsuId({ osuId: user.id });
+      const current = await this.userService.getByOsuId({ osuId: user.id });
+
+      return this.userService.updateOsuProfile({
+        id: current.id,
+        osuUsername: user.username,
+        defaultMode,
+      });
     }
 
     const newUser = await this.userService.create({
       osuId: user.id,
       osuUsername: user.username,
+      defaultMode,
     });
 
     return newUser;
+  }
+
+  private parseDefaultMode(value: unknown): TournamentMode {
+    const parsed = tournamentModeSchema.safeParse(value);
+
+    return parsed.success ? parsed.data : 'osu';
   }
 
   private async saveStatsByModes(params: {
@@ -105,6 +123,7 @@ export class AuthService {
 type OsuUserProfile = {
   id: number;
   username: string;
+  playmode?: string | null;
   statistics?: {
     pp?: number | null;
     global_rank?: number | null;

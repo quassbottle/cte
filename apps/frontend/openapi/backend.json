@@ -193,6 +193,15 @@
 							"default": 0,
 							"type": "integer"
 						}
+					},
+					{
+						"name": "mode",
+						"required": false,
+						"in": "query",
+						"schema": {
+							"type": "string",
+							"enum": ["osu", "taiko", "fruits", "mania"]
+						}
 					}
 				],
 				"responses": {
@@ -1196,6 +1205,11 @@
 						"description": "The osu! username",
 						"type": "string"
 					},
+					"defaultMode": {
+						"description": "The default osu! game mode",
+						"type": "string",
+						"enum": ["osu", "taiko", "fruits", "mania"]
+					},
 					"role": {
 						"description": "The user role",
 						"type": "string",
@@ -1214,7 +1228,7 @@
 						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
 					}
 				},
-				"required": ["id", "osuId", "osuUsername", "role", "createdAt", "updatedAt"]
+				"required": ["id", "osuId", "osuUsername", "defaultMode", "role", "createdAt", "updatedAt"]
 			},
 			"OsuBeatmapMetadataDto_Output": {
 				"type": "object",

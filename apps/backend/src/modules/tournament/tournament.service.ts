@@ -10,6 +10,7 @@ import {
   TournamentId,
   tournamentId,
 } from 'lib/domain/tournament/tournament.id';
+import { TournamentMode } from 'lib/domain/tournament/tournament.mode';
 import { UserId } from 'lib/domain/user/user.id';
 import {
   DbTournament,
@@ -59,11 +60,16 @@ export class TournamentService {
     return tournament;
   }
 
-  public async findMany(params: PaginationParams): Promise<DbTournament[]> {
-    const { limit, offset } = params;
+  public async findMany(
+    params: PaginationParams & { mode?: TournamentMode },
+  ): Promise<DbTournament[]> {
+    const { limit, offset, mode } = params;
 
     const found = await this.drizzle.query.tournaments.findMany({
-      where: isNull(tournaments.deletedAt),
+      where: mode
+        ? and(isNull(tournaments.deletedAt), eq(tournaments.mode, mode))
+        : isNull(tournaments.deletedAt),
+      orderBy: asc(tournaments.startsAt),
       limit,
       offset,
     });

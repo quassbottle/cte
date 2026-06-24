@@ -5,6 +5,7 @@ import {
   UserExceptionCode,
 } from 'lib/domain/user/user.exception';
 import { userId, UserId } from 'lib/domain/user/user.id';
+import { TournamentMode } from 'lib/domain/tournament/tournament.mode';
 import { DbUser, Schema, users } from 'lib/infrastructure/db';
 
 @Injectable()
@@ -99,6 +100,7 @@ export class UserService {
   public async create(params: {
     osuId: number;
     osuUsername: string;
+    defaultMode: TournamentMode;
   }): Promise<DbUser> {
     const id = userId();
 
@@ -108,5 +110,28 @@ export class UserService {
       .returning();
 
     return created;
+  }
+
+  public async updateOsuProfile(params: {
+    id: UserId;
+    osuUsername: string;
+    defaultMode: TournamentMode;
+  }): Promise<DbUser> {
+    const { id, osuUsername, defaultMode } = params;
+
+    const [updated] = await this.drizzle
+      .update(users)
+      .set({ osuUsername, defaultMode })
+      .where(eq(users.id, id))
+      .returning();
+
+    if (!updated) {
+      throw new UserException(
+        `User not found`,
+        UserExceptionCode.USER_NOT_FOUND,
+      );
+    }
+
+    return updated;
   }
 }

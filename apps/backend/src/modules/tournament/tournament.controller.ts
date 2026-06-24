@@ -20,6 +20,7 @@ import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import {
   CreateTournamentDto,
+  FindTournamentsDto,
   RegisterTournamentDto,
   TournamentDto,
   TournamentParticipantDto,
@@ -43,7 +44,7 @@ export class TournamentController {
     type: [TournamentDto.Output],
   })
   public async findMany(
-    @Query() query: PaginationDto,
+    @Query() query: FindTournamentsDto,
   ): Promise<TournamentDto[]> {
     const tournaments = await this.tournamentService.findMany(query);
     const participantsCountByTournamentId =

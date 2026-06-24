@@ -5,6 +5,7 @@
  * Auth and user management API
  * OpenAPI spec version: 1.0
  */
+import type { UserDtoDefaultMode } from './userDtoDefaultMode';
 import type { UserDtoRole } from './userDtoRole';
 
 export interface UserDto {
@@ -14,6 +15,8 @@ export interface UserDto {
 	osuId: number;
 	/** The osu! username */
 	osuUsername: string;
+	/** The default osu! game mode */
+	defaultMode: UserDtoDefaultMode;
 	/** The user role */
 	role: UserDtoRole;
 	/**

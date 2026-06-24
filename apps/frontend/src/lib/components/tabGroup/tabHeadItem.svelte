@@ -12,19 +12,35 @@
 
 	export let buttonClass = '';
 	export let value: string | undefined = undefined;
+	export let href: string | undefined = undefined;
 	const fallbackId = getNewTabId();
 	$: id = value ?? fallbackId;
 </script>
 
 <li class={cn('mr-2', className)} role="presentation">
-	<button
-		on:click={() => setActiveTab(id)}
-		class={cn(buttonClass)}
-		id="{id}-tabhead"
-		type="button"
-		role="tab"
-		style:opacity={$activeTab === id ? '100%' : '50%'}
-	>
-		<slot />
-	</button>
+	{#if href}
+		<a
+			{href}
+			on:click={() => setActiveTab(id)}
+			class={cn(buttonClass)}
+			id="{id}-tabhead"
+			role="tab"
+			aria-selected={$activeTab === id}
+			style:opacity={$activeTab === id ? '100%' : '50%'}
+		>
+			<slot />
+		</a>
+	{:else}
+		<button
+			on:click={() => setActiveTab(id)}
+			class={cn(buttonClass)}
+			id="{id}-tabhead"
+			type="button"
+			role="tab"
+			aria-selected={$activeTab === id}
+			style:opacity={$activeTab === id ? '100%' : '50%'}
+		>
+			<slot />
+		</button>
+	{/if}
 </li>

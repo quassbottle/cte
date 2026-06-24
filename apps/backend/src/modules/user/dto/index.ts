@@ -1,3 +1,4 @@
+import { tournamentModeSchema } from 'lib/domain/tournament/tournament.mode';
 import { userRoleSchema } from 'lib/domain/user/user.role';
 import { createZodDto } from 'nestjs-zod/dto';
 import z from 'zod';
@@ -12,6 +13,7 @@ export const userDtoSchema = z
     id: z.cuid2(),
     osuId: z.number().describe('The osu! user ID'),
     osuUsername: z.string().describe('The osu! username'),
+    defaultMode: tournamentModeSchema.describe('The default osu! game mode'),
     role: userRoleSchema.describe('The user role'),
     createdAt: userDateSchema.describe('The user creation date'),
     updatedAt: userDateSchema.describe('The user last update date'),
@@ -20,6 +22,7 @@ export const userDtoSchema = z
     id: u.id,
     osuId: u.osuId,
     osuUsername: u.osuUsername,
+    defaultMode: u.defaultMode,
     role: u.role,
     avatarUrl: `https://a.ppy.sh/${u.osuId}`,
     createdAt: u.createdAt,

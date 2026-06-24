@@ -5,6 +5,7 @@
  * Auth and user management API
  * OpenAPI spec version: 1.0
  */
+import type { TournamentControllerFindManyMode } from './tournamentControllerFindManyMode';
 
 export type TournamentControllerFindManyParams = {
 	/**
@@ -17,4 +18,5 @@ export type TournamentControllerFindManyParams = {
 	 * @maximum 9007199254740991
 	 */
 	offset?: number;
+	mode?: TournamentControllerFindManyMode;
 };

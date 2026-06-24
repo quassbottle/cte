@@ -1,15 +1,38 @@
 import { createBackendClient } from '$lib/server/backend/client';
 import { getTournamentList } from '$lib/server/services/tournaments/tournament-list.query';
-import type { PageServerLoad } from '../$types';
+import type { OsuMode } from '$lib/api/types';
+import type { PageServerLoad } from './$types';
 
-export const load: PageServerLoad = async ({ fetch, url }) => {
+const TOURNAMENT_MODES = ['osu', 'taiko', 'fruits', 'mania'] as const;
+type TournamentModeFilter = OsuMode | 'all';
+
+const isTournamentMode = (value: string | null): value is OsuMode =>
+	TOURNAMENT_MODES.some((mode) => mode === value);
+
+const resolveSelectedMode = (value: string | null, defaultMode: OsuMode): TournamentModeFilter => {
+	if (value === 'all') return value;
+	if (isTournamentMode(value)) return value;
+
+	return defaultMode;
+};
+
+export const load: PageServerLoad = async ({ fetch, parent, url }) => {
+	const { user } = await parent();
 	const page = Number(url.searchParams.get('page') ?? 0);
 	const limit = 20;
 	const offset = page * limit;
+	const urlMode = url.searchParams.get('mode');
+	const selectedMode = resolveSelectedMode(urlMode, user?.defaultMode ?? 'osu');
+	const modeFilter = selectedMode === 'all' ? {} : { mode: selectedMode };
 
-	const tournaments = await getTournamentList(createBackendClient({ fetch }), { limit, offset });
+	const tournaments = await getTournamentList(createBackendClient({ fetch }), {
+		limit,
+		offset,
+		...modeFilter
+	});
 
 	return {
-		tournaments: tournaments.data
+		tournaments: tournaments.data,
+		selectedMode
 	};
 };

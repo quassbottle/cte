@@ -85,6 +85,13 @@
       "when": 1771804800000,
       "tag": "0011_tan_hidden_mappools",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "7",
+      "when": 1782302400000,
+      "tag": "0012_add_user_default_mode",
+      "breakpoints": true
     }
   ]
 }
