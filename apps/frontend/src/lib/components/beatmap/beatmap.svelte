@@ -102,18 +102,20 @@
 			{/if}
 		</BreadcrumbList>
 
-		<Mod {mod} {index} />
+		<div class="flex flex-wrap items-center justify-between gap-2">
+			<Mod {mod} {index} />
 
-		<div class="flex flex-wrap gap-2">
-			<a
-				class="rounded-md border border-border bg-background px-3 py-1 text-xs font-medium hover:bg-accent"
-				href={`osu://b/${beatmapId}`}
-			>
-				Direct
-			</a>
-			<CopyButton label="Copy ID" value={String(beatmapId)} />
-			<CopyButton label="Copy MP MAP" value={getMpMapCommand(beatmapId, mod, tournamentMode)} />
-			<CopyButton label="Copy MP MODS" value={getMpModsCommand(mod)} />
+			<div class="flex flex-wrap justify-end gap-2">
+				<a
+					class="rounded-md border border-border bg-background px-3 py-1 text-xs font-medium hover:bg-accent"
+					href={`osu://b/${beatmapId}`}
+				>
+					Direct
+				</a>
+				<CopyButton label="Copy ID" value={String(beatmapId)} />
+				<CopyButton label="Copy MP MAP" value={getMpMapCommand(beatmapId, mod, tournamentMode)} />
+				<CopyButton label="Copy MP MODS" value={getMpModsCommand(mod)} />
+			</div>
 		</div>
 	</div>
 </div>

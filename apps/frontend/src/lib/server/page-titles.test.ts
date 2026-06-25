@@ -12,7 +12,7 @@ describe('page titles', () => {
 			['events/[slug]/+page.svelte', 'CTE - {data.tournament.name}'],
 			['events/[slug]/edit/+page.svelte', 'CTE - Edit {data.tournament.name}'],
 			['events/create/+page.svelte', 'CTE - Create event'],
-			['users/[slug]/+page.svelte', "CTE - {user ? `${user.osuUsername}'s profile` : 'Profile'}"],
+			['users/[slug]/+page.svelte', "CTE - {user ? `${user.osuUsername}'s profile` : 'Profile'}"]
 		] as const;
 
 		for (const [file, title] of pages) {

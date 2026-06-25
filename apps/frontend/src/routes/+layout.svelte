@@ -36,24 +36,26 @@
 	</div>
 {/if}
 
-<WorkInProgress />
-<Header user={data.user} />
-<div class="mx-16 flex flex-row">
-	<SideBar>
-		<div class="flex flex-col gap-4">
-			<Button variant="ghost" href="/">
-				<House class="mr-2 h-4 w-4" />
-				Home
-			</Button>
-			<Button variant="ghost" href="/events">
-				<Calendar class="mr-2 h-4 w-4" />
-				Events
-			</Button>
+<div class="flex min-h-dvh flex-col">
+	<WorkInProgress />
+	<Header user={data.user} />
+	<div class="flex flex-1 px-4 sm:px-8 lg:px-16">
+		<SideBar>
+			<div class="flex flex-col gap-4">
+				<Button variant="ghost" href="/">
+					<House class="mr-2 h-4 w-4" />
+					Home
+				</Button>
+				<Button variant="ghost" href="/events">
+					<Calendar class="mr-2 h-4 w-4" />
+					Events
+				</Button>
+			</div>
+		</SideBar>
+		<div class="min-w-0 flex-1">
+			<MainContainer>
+				<slot></slot>
+			</MainContainer>
 		</div>
-	</SideBar>
-	<div class="w-full">
-		<MainContainer>
-			<slot></slot>
-		</MainContainer>
 	</div>
 </div>
