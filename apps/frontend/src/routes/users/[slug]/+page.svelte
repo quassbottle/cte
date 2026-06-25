@@ -11,6 +11,10 @@
 	$: user = data.user;
 </script>
 
+<svelte:head>
+	<title>CTE - {user ? `${user.osuUsername}'s profile` : 'Profile'}</title>
+</svelte:head>
+
 {#if user}
 	<Group let:Title let:Content>
 		<Title class="text-[24px]">Player info</Title>

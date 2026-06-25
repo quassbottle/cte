@@ -9,6 +9,10 @@
 	let mode: OsuMode = 'osu';
 </script>
 
+<svelte:head>
+	<title>CTE - Create event</title>
+</svelte:head>
+
 <Group let:Title let:Content>
 	<Title>Create a tournament</Title>
 	<Content>

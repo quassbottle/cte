@@ -24,6 +24,10 @@
 	};
 </script>
 
+<svelte:head>
+	<title>CTE - Events</title>
+</svelte:head>
+
 <Group let:Content>
 	<TabGroup value={data.selectedStatus} let:Head>
 		<Head let:Item class="gap-4 text-[24px] font-semibold">

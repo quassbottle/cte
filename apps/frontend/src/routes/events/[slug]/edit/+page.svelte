@@ -18,6 +18,10 @@
 	let activeTab = 'tournament';
 </script>
 
+<svelte:head>
+	<title>CTE - Edit {data.tournament.name}</title>
+</svelte:head>
+
 <div class="flex flex-col gap-8">
 	<TabGroup bind:value={activeTab} let:Head let:ContentItem>
 		<div class="mb-4 flex items-start justify-between">
