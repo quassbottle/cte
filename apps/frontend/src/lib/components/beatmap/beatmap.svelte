@@ -105,7 +105,7 @@
 		<div class="flex flex-wrap items-center justify-between gap-2">
 			<Mod {mod} {index} />
 
-			<div class="flex flex-wrap justify-end gap-2">
+			<div class="hidden flex-wrap justify-end gap-2 sm:flex">
 				<a
 					class="rounded-md border border-border bg-background px-3 py-1 text-xs font-medium hover:bg-accent"
 					href={`osu://b/${beatmapId}`}

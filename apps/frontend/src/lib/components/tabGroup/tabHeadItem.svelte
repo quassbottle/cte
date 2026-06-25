@@ -17,7 +17,7 @@
 	$: id = value ?? fallbackId;
 </script>
 
-<li class={cn('mr-2', className)} role="presentation">
+<li class={cn('mr-2 shrink-0', className)} role="presentation">
 	{#if href}
 		<a
 			{href}

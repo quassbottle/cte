@@ -11,6 +11,15 @@
 
 	export let data: PageData;
 	let isNavigating = false;
+	let isSidebarOpen = false;
+
+	const openSidebar = () => {
+		isSidebarOpen = true;
+	};
+
+	const closeSidebar = () => {
+		isSidebarOpen = false;
+	};
 
 	beforeNavigate(({ to }) => {
 		if (to) {
@@ -20,12 +29,15 @@
 
 	afterNavigate(() => {
 		isNavigating = false;
+		closeSidebar();
 	});
 </script>
 
+<svelte:body class:overflow-hidden={isSidebarOpen} />
+
 {#if isNavigating}
 	<div
-		class="pointer-events-none fixed inset-0 z-50 flex items-center justify-center bg-background/50"
+		class="pointer-events-none fixed inset-0 z-[60] flex items-center justify-center bg-background/50"
 	>
 		<div
 			class="flex items-center gap-3 rounded-lg border bg-card px-4 py-3 text-sm text-card-foreground shadow-lg"
@@ -38,15 +50,24 @@
 
 <div class="flex min-h-dvh flex-col">
 	<WorkInProgress />
-	<Header user={data.user} />
-	<div class="flex flex-1 px-4 sm:px-8 lg:px-16">
-		<SideBar>
+	<Header user={data.user} isMenuOpen={isSidebarOpen} onMenuClick={openSidebar} />
+	<div class="flex flex-1 px-2 sm:px-8 lg:px-16">
+		{#if isSidebarOpen}
+			<button
+				type="button"
+				class="fixed inset-0 z-40 bg-black/40 md:hidden"
+				aria-label="Close navigation"
+				on:click={closeSidebar}
+			></button>
+		{/if}
+
+		<SideBar open={isSidebarOpen}>
 			<div class="flex flex-col gap-4">
-				<Button variant="ghost" href="/">
+				<Button variant="ghost" href="/" on:click={closeSidebar}>
 					<House class="mr-2 h-4 w-4" />
 					Home
 				</Button>
-				<Button variant="ghost" href="/events">
+				<Button variant="ghost" href="/events" on:click={closeSidebar}>
 					<Calendar class="mr-2 h-4 w-4" />
 					Events
 				</Button>

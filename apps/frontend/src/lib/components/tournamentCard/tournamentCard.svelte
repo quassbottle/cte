@@ -16,7 +16,8 @@
 <div
 	class="flex h-full w-full flex-col overflow-hidden rounded-2xl border border-border bg-card shadow-sm transition-all hover:border-primary hover:bg-secondary hover:shadow-md"
 >
-	<TournamentBanner class="relative h-[200px] text-white" seed={id} {mode}></TournamentBanner>
+	<TournamentBanner class="relative h-[140px] text-white sm:h-[200px]" seed={id} {mode}
+	></TournamentBanner>
 
 	<div class="flex flex-col gap-2 p-4">
 		<p class="text-[20px] font-semibold">{name}</p>
