@@ -15,6 +15,8 @@ export interface UserDto {
 	osuId: number;
 	/** The osu! username */
 	osuUsername: string;
+	/** @nullable */
+	countryCode: string | null;
 	/** The default osu! game mode */
 	defaultMode: UserDtoDefaultMode;
 	/** The user role */

@@ -20,6 +20,7 @@ import type {
 	OsuBeatmapMetadataDtoOutput,
 	RegisterTournamentDto,
 	StageDtoOutput,
+	StageScheduleDtoOutput,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
 	TournamentDtoOutput,
@@ -31,7 +32,7 @@ import type {
 	UpdateTournamentDto,
 	UserControllerGetByLookupParams,
 	UserDto
-} from './model';
+} from '../../../api/generated/model';
 
 import { backendFetch } from '../fetcher';
 
@@ -354,30 +355,6 @@ export const tournamentControllerSoftDelete = async (
 	);
 };
 
-export type tournamentControllerArchiveResponse200 = {
-	data: TournamentDtoOutput;
-	status: 200;
-};
-
-export type tournamentControllerArchiveResponseSuccess = tournamentControllerArchiveResponse200 & {
-	headers: Headers;
-};
-export type tournamentControllerArchiveResponse = tournamentControllerArchiveResponseSuccess;
-
-export const getTournamentControllerArchiveUrl = (id: string) => {
-	return `/api/tournaments/${id}/archive`;
-};
-
-export const tournamentControllerArchive = async (
-	id: string,
-	options?: RequestInit
-): Promise<tournamentControllerArchiveResponse> => {
-	return backendFetch<tournamentControllerArchiveResponse>(getTournamentControllerArchiveUrl(id), {
-		...options,
-		method: 'PATCH'
-	});
-};
-
 export type tournamentControllerGetParticipantsResponse200 = {
 	data: TournamentParticipantDtoOutput[];
 	status: 200;
@@ -449,6 +426,59 @@ export const tournamentControllerGetTeams = async (
 			method: 'GET'
 		}
 	);
+};
+
+export type tournamentControllerGetScheduleResponse200 = {
+	data: StageScheduleDtoOutput[];
+	status: 200;
+};
+
+export type tournamentControllerGetScheduleResponseSuccess =
+	tournamentControllerGetScheduleResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerGetScheduleResponse =
+	tournamentControllerGetScheduleResponseSuccess;
+
+export const getTournamentControllerGetScheduleUrl = (id: string) => {
+	return `/api/tournaments/${id}/matches`;
+};
+
+export const tournamentControllerGetSchedule = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerGetScheduleResponse> => {
+	return backendFetch<tournamentControllerGetScheduleResponse>(
+		getTournamentControllerGetScheduleUrl(id),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
+
+export type tournamentControllerArchiveResponse200 = {
+	data: TournamentDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerArchiveResponseSuccess = tournamentControllerArchiveResponse200 & {
+	headers: Headers;
+};
+export type tournamentControllerArchiveResponse = tournamentControllerArchiveResponseSuccess;
+
+export const getTournamentControllerArchiveUrl = (id: string) => {
+	return `/api/tournaments/${id}/archive`;
+};
+
+export const tournamentControllerArchive = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerArchiveResponse> => {
+	return backendFetch<tournamentControllerArchiveResponse>(getTournamentControllerArchiveUrl(id), {
+		...options,
+		method: 'PATCH'
+	});
 };
 
 export type tournamentControllerRegisterResponse201 = {

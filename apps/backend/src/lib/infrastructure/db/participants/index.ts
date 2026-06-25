@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
+import { integer, pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
@@ -18,6 +18,8 @@ export const soloParticipants = pgTable(
       .notNull()
       .$type<UserId>()
       .references(() => users.id, { onDelete: 'cascade' }),
+
+    seed: integer('seed'),
 
     createdAt,
     updatedAt,

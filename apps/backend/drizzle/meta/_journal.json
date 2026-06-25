@@ -99,6 +99,13 @@
       "when": 1782306000000,
       "tag": "0013_add_tournament_archived_at",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "7",
+      "when": 1782392400000,
+      "tag": "0014_add_match_schedule_fields",
+      "breakpoints": true
     }
   ]
 }

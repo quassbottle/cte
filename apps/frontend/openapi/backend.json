@@ -208,8 +208,8 @@
 						"required": false,
 						"in": "query",
 						"schema": {
-							"type": "string",
 							"default": "active",
+							"type": "string",
 							"enum": ["active", "archived"]
 						}
 					}
@@ -374,39 +374,6 @@
 				"tags": ["Tournament"]
 			}
 		},
-		"/api/tournaments/{id}/archive": {
-			"patch": {
-				"operationId": "TournamentController_archive",
-				"parameters": [
-					{
-						"name": "id",
-						"required": true,
-						"in": "path",
-						"schema": {
-							"type": "string"
-						}
-					}
-				],
-				"responses": {
-					"200": {
-						"description": "Archives a tournament.",
-						"content": {
-							"application/json": {
-								"schema": {
-									"$ref": "#/components/schemas/TournamentDto_Output"
-								}
-							}
-						}
-					}
-				},
-				"security": [
-					{
-						"bearer": []
-					}
-				],
-				"tags": ["Tournament"]
-			}
-		},
 		"/api/tournaments/{id}/participants": {
 			"get": {
 				"operationId": "TournamentController_getParticipants",
@@ -488,6 +455,75 @@
 									"items": {
 										"$ref": "#/components/schemas/TournamentTeamDto_Output"
 									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			}
+		},
+		"/api/tournaments/{id}/matches": {
+			"get": {
+				"operationId": "TournamentController_getSchedule",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Returns tournament schedule grouped by stages.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"type": "array",
+									"items": {
+										"$ref": "#/components/schemas/StageScheduleDto_Output"
+									}
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			}
+		},
+		"/api/tournaments/{id}/archive": {
+			"patch": {
+				"operationId": "TournamentController_archive",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Archives a tournament.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/TournamentDto_Output"
 								}
 							}
 						}
@@ -1248,6 +1284,10 @@
 						"description": "The osu! username",
 						"type": "string"
 					},
+					"countryCode": {
+						"type": "string",
+						"nullable": true
+					},
 					"defaultMode": {
 						"description": "The default osu! game mode",
 						"type": "string",
@@ -1271,7 +1311,16 @@
 						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
 					}
 				},
-				"required": ["id", "osuId", "osuUsername", "defaultMode", "role", "createdAt", "updatedAt"]
+				"required": [
+					"id",
+					"osuId",
+					"osuUsername",
+					"countryCode",
+					"defaultMode",
+					"role",
+					"createdAt",
+					"updatedAt"
+				]
 			},
 			"OsuBeatmapMetadataDto_Output": {
 				"type": "object",
@@ -1469,6 +1518,161 @@
 					}
 				},
 				"required": ["id", "name", "captainId", "participants"],
+				"additionalProperties": false
+			},
+			"StageScheduleDto_Output": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"name": {
+						"type": "string"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"matches": {
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"id": {
+									"type": "string",
+									"format": "cuid2",
+									"pattern": "^[0-9a-z]+$"
+								},
+								"name": {
+									"type": "string"
+								},
+								"matchNumber": {
+									"type": "integer",
+									"minimum": -9007199254740991,
+									"maximum": 9007199254740991,
+									"nullable": true
+								},
+								"startsAt": {
+									"type": "string",
+									"format": "date-time",
+									"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+								},
+								"endsAt": {
+									"type": "string",
+									"format": "date-time",
+									"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+								},
+								"mpUrl": {
+									"type": "string",
+									"nullable": true
+								},
+								"vodUrl": {
+									"type": "string",
+									"nullable": true
+								},
+								"players": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"id": {
+												"type": "string",
+												"format": "cuid2",
+												"pattern": "^[0-9a-z]+$"
+											},
+											"osuId": {
+												"type": "integer",
+												"minimum": -9007199254740991,
+												"maximum": 9007199254740991
+											},
+											"osuUsername": {
+												"type": "string"
+											},
+											"countryCode": {
+												"type": "string",
+												"nullable": true
+											},
+											"seed": {
+												"type": "integer",
+												"minimum": -9007199254740991,
+												"maximum": 9007199254740991,
+												"nullable": true
+											},
+											"score": {
+												"type": "integer",
+												"minimum": -9007199254740991,
+												"maximum": 9007199254740991,
+												"nullable": true
+											},
+											"isWinner": {
+												"type": "boolean",
+												"nullable": true
+											}
+										},
+										"required": [
+											"id",
+											"osuId",
+											"osuUsername",
+											"countryCode",
+											"seed",
+											"score",
+											"isWinner"
+										],
+										"additionalProperties": false
+									}
+								},
+								"staff": {
+									"type": "array",
+									"items": {
+										"type": "object",
+										"properties": {
+											"id": {
+												"type": "string",
+												"format": "cuid2",
+												"pattern": "^[0-9a-z]+$"
+											},
+											"osuId": {
+												"type": "integer",
+												"minimum": -9007199254740991,
+												"maximum": 9007199254740991
+											},
+											"osuUsername": {
+												"type": "string"
+											},
+											"role": {
+												"type": "string",
+												"enum": ["referee", "streamer", "commentator"]
+											}
+										},
+										"required": ["id", "osuId", "osuUsername", "role"],
+										"additionalProperties": false
+									}
+								}
+							},
+							"required": [
+								"id",
+								"name",
+								"matchNumber",
+								"startsAt",
+								"endsAt",
+								"mpUrl",
+								"vodUrl",
+								"players",
+								"staff"
+							],
+							"additionalProperties": false
+						}
+					}
+				},
+				"required": ["id", "name", "startsAt", "endsAt", "matches"],
 				"additionalProperties": false
 			},
 			"CreateTournamentDto": {

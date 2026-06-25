@@ -70,6 +70,7 @@ export class AuthService {
       return this.userService.updateOsuProfile({
         id: current.id,
         osuUsername: user.username,
+        countryCode: user.country_code ?? null,
         defaultMode,
       });
     }
@@ -77,6 +78,7 @@ export class AuthService {
     const newUser = await this.userService.create({
       osuId: user.id,
       osuUsername: user.username,
+      countryCode: user.country_code ?? null,
       defaultMode,
     });
 
@@ -123,6 +125,7 @@ export class AuthService {
 type OsuUserProfile = {
   id: number;
   username: string;
+  country_code?: string | null;
   playmode?: string | null;
   statistics?: {
     pp?: number | null;

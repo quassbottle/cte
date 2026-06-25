@@ -18,6 +18,8 @@ import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
+import { StageScheduleDto, stageScheduleDtoSchema } from 'modules/match/dto';
+import { ScheduleService } from 'modules/match/schedule.service';
 import {
   CreateTournamentDto,
   FindTournamentsDto,
@@ -35,7 +37,10 @@ import { TournamentService } from './tournament.service';
 @ApiBearerAuth('bearer')
 @Controller('tournaments')
 export class TournamentController {
-  constructor(private readonly tournamentService: TournamentService) {}
+  constructor(
+    private readonly tournamentService: TournamentService,
+    private readonly scheduleService: ScheduleService,
+  ) {}
 
   @Get()
   @ApiResponse({
@@ -119,6 +124,22 @@ export class TournamentController {
         ),
       }),
     );
+  }
+
+  @Get(':id/matches')
+  @ApiResponse({
+    status: 200,
+    description: 'Returns tournament schedule grouped by stages.',
+    type: [StageScheduleDto.Output],
+  })
+  public async getSchedule(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+  ): Promise<StageScheduleDto[]> {
+    const schedule = await this.scheduleService.findByTournament({
+      tournamentId: id,
+    });
+
+    return schedule.map((stage) => stageScheduleDtoSchema.parse(stage));
   }
 
   @Post()

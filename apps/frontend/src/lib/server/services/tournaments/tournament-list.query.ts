@@ -1,5 +1,5 @@
 import type { BackendClient } from '$lib/server/backend/client';
-import type { TournamentControllerFindManyParams } from '$lib/server/backend/generated/model';
+import type { TournamentControllerFindManyParams } from '$lib/api/generated/model';
 
 export function getTournamentList(
 	backend: BackendClient,

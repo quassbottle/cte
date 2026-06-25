@@ -1,11 +1,11 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { eq, ilike, or } from 'drizzle-orm';
+import { TournamentMode } from 'lib/domain/tournament/tournament.mode';
 import {
   UserException,
   UserExceptionCode,
 } from 'lib/domain/user/user.exception';
 import { userId, UserId } from 'lib/domain/user/user.id';
-import { TournamentMode } from 'lib/domain/tournament/tournament.mode';
 import { DbUser, Schema, users } from 'lib/infrastructure/db';
 
 @Injectable()
@@ -100,6 +100,7 @@ export class UserService {
   public async create(params: {
     osuId: number;
     osuUsername: string;
+    countryCode: string | null;
     defaultMode: TournamentMode;
   }): Promise<DbUser> {
     const id = userId();
@@ -115,13 +116,14 @@ export class UserService {
   public async updateOsuProfile(params: {
     id: UserId;
     osuUsername: string;
+    countryCode: string | null;
     defaultMode: TournamentMode;
   }): Promise<DbUser> {
-    const { id, osuUsername, defaultMode } = params;
+    const { id, osuUsername, countryCode, defaultMode } = params;
 
     const [updated] = await this.drizzle
       .update(users)
-      .set({ osuUsername, defaultMode })
+      .set({ osuUsername, countryCode, defaultMode })
       .where(eq(users.id, id))
       .returning();
 

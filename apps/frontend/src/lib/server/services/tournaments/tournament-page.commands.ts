@@ -1,4 +1,4 @@
-import type { RegisterTournamentDto } from '$lib/server/backend/generated/model';
+import type { RegisterTournamentDto } from '$lib/api/generated/model';
 import type { BackendClient } from '$lib/server/backend/client';
 
 export function registerTournament(

@@ -8,7 +8,7 @@
 </svelte:head>
 
 <div class="flex flex-col gap-16">
-	<Banner class="bg-[#2c2c2c] text-white h-[300px]" let:Title let:Description>
+	<Banner class="h-[300px] bg-[#2c2c2c] text-white" let:Title let:Description>
 		<Title>Welcome to CTE tournaments!</Title>
 		<Description>Sample text xd</Description>
 	</Banner>

@@ -76,7 +76,7 @@
 	};
 </script>
 
-<div class="flex w-full flex-col overflow-hidden rounded-2xl border border-border bg-card">
+<div class="flex w-full flex-col overflow-hidden rounded-2xl border border-border">
 	<Banner
 		class="relative h-[120px] w-full"
 		src={`https://assets.ppy.sh/beatmaps/${beatmapsetId}/covers/cover@2x.jpg`}

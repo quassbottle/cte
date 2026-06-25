@@ -10,6 +10,7 @@ export const users = pgTable('users', {
 
   osuId: integer('osu_id').notNull().unique(),
   osuUsername: text('osu_username').notNull(),
+  countryCode: text('country_code'),
   defaultMode: text('default_mode')
     .$type<TournamentMode>()
     .notNull()

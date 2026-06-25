@@ -3,6 +3,7 @@ export * from './mappools';
 export * from './mappools/beatmaps';
 export * from './matches';
 export * from './matches/participants';
+export * from './matches/staff';
 export * from './osu-stats';
 export * from './participants';
 export * from './stages';

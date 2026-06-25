@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
+import { integer, pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
 import { TeamId } from 'lib/domain/team/team.id';
 import { UserId } from 'lib/domain/user/user.id';
@@ -24,6 +24,8 @@ export const teamParticipants = pgTable(
         onDelete: 'cascade',
         onUpdate: 'cascade',
       }),
+
+    seed: integer('seed'),
 
     createdAt,
     updatedAt,

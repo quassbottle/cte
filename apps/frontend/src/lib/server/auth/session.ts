@@ -1,6 +1,6 @@
 import { createBackendClient } from '$lib/server/backend/client';
 import { backendErrorStatus } from '$lib/server/backend/errors';
-import type { UserDto } from '$lib/server/backend/generated/model';
+import type { UserDto } from '$lib/api/generated/model';
 import type { Viewer } from '$lib/types/viewer';
 
 export type SessionToken = {

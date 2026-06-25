@@ -96,6 +96,30 @@ export class OsuService {
     };
   }
 
+  public async getUserDetails(params: {
+    osuUserId: number;
+  }): Promise<OsuUserDetails> {
+    const { osuUserId } = params;
+
+    await this.ensureGuestAuthorized();
+
+    const result = await v2.users.details({
+      user: osuUserId,
+      mode: OsuApiMode.Osu,
+      key: 'id',
+    });
+
+    if (result.error != null) {
+      throw result.error;
+    }
+
+    return {
+      id: result.id,
+      username: result.username,
+      countryCode: result.country_code ?? null,
+    };
+  }
+
   private createClient(accessToken?: string): OsuUserClient {
     return {
       users: {
@@ -174,4 +198,10 @@ type OsuBeatmapDetails = {
     title: string;
   };
   error?: unknown;
+};
+
+type OsuUserDetails = {
+  id: number;
+  username: string;
+  countryCode: string | null;
 };

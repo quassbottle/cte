@@ -23,6 +23,7 @@
     "migration:push": "drizzle-kit push --config drizzle.config.ts",
     "mappool:import": "ts-node -r tsconfig-paths/register ./scripts/import-mappool-from-entries.ts",
     "players:sort-taiko": "ts-node ./scripts/sort-taiko-players.ts",
+    "seed:schedule-tournaments": "ts-node -r tsconfig-paths/register ./scripts/seed-schedule-tournaments.ts",
     "teams:import": "ts-node -r tsconfig-paths/register ./scripts/import-teams.ts"
   },
   "dependencies": {

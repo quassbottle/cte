@@ -8,7 +8,7 @@ import type {
 	UpdateMappoolDto,
 	UpdateStageDto,
 	UpdateTournamentDto
-} from '$lib/server/backend/generated/model';
+} from '$lib/api/generated/model';
 import {
 	authControllerAuthCallback,
 	authControllerInitLogin,
@@ -36,7 +36,8 @@ import {
 	tournamentMappoolControllerFindByTournamentForManagement,
 	userControllerGetById,
 	userControllerGetByLookup,
-	userControllerGetMe
+	userControllerGetMe,
+	tournamentControllerGetSchedule
 } from '$lib/server/backend/generated/endpoints';
 import type { ServerSession } from '$lib/server/auth/session';
 
@@ -98,6 +99,7 @@ export function createBackendClient(input?: BackendClientInput) {
 			archive: (id: string) => tournamentControllerArchive(id, options),
 			getById: (id: string) => tournamentControllerGetById(id, options),
 			getParticipants: (id: string) => tournamentControllerGetParticipants(id, undefined, options),
+			getSchedule: (id: string) => tournamentControllerGetSchedule(id, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
 			update: (id: string, input: UpdateTournamentDto) =>
 				tournamentControllerPatch(id, input, options),

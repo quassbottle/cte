@@ -8,7 +8,7 @@ export default defineConfig({
 		output: {
 			mode: 'split',
 			target: './src/lib/server/backend/generated/endpoints.ts',
-			schemas: './src/lib/server/backend/generated/model',
+			schemas: './src/lib/api/generated/model',
 			client: 'fetch',
 			clean: true,
 			prettier: true,
