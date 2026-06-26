@@ -2,7 +2,7 @@ import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
 import { mappoolIdSchema } from 'lib/domain/mappool/mappool.id';
 import { stageIdSchema } from 'lib/domain/stage/stage.id';
 import { mappoolBeatmapViewSchema } from 'modules/beatmap/types';
-import { createZodDto } from 'nestjs-zod/dto';
+import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
 export const mappoolDtoSchema = z.object({

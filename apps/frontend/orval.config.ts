@@ -19,5 +19,18 @@ export default defineConfig({
 				}
 			}
 		}
+	},
+	browserApi: {
+		input: {
+			target: './openapi/backend.json'
+		},
+		output: {
+			mode: 'single',
+			target: './src/lib/api/generated/browser-client.ts',
+			schemas: './src/lib/api/generated/model',
+			client: 'fetch',
+			clean: false,
+			prettier: true
+		}
 	}
 });

@@ -3,7 +3,12 @@ import { DbUser } from 'lib/infrastructure/db';
 import { RequestWithAuth } from '../types';
 
 export type AppAction = 'create' | 'read' | 'update' | 'delete' | 'manage';
-export type AppSubjectName = 'Stage' | 'Mappool' | 'Tournament' | 'all';
+export type AppSubjectName =
+  | 'Stage'
+  | 'Mappool'
+  | 'Match'
+  | 'Tournament'
+  | 'all';
 
 export interface StageSubjectData {
   __type: 'Stage';
@@ -20,16 +25,26 @@ export interface MappoolSubjectData {
   tournamentCreatorId: string;
 }
 
+export interface MatchSubjectData {
+  __type: 'Match';
+  tournamentCreatorId: string;
+}
+
 export type AppSubject =
   | AppSubjectName
   | StageSubjectData
   | MappoolSubjectData
+  | MatchSubjectData
   | TournamentSubjectData;
 export type AppAbility = MongoAbility<[AppAction, AppSubject]>;
 
 export interface PolicyContext {
   subject: Exclude<AppSubjectName, 'all'>;
-  subjectData: StageSubjectData | MappoolSubjectData | TournamentSubjectData;
+  subjectData:
+    | StageSubjectData
+    | MappoolSubjectData
+    | MatchSubjectData
+    | TournamentSubjectData;
 }
 
 export type PolicyHandler = (

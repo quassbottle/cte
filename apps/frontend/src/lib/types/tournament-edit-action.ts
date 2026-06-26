@@ -6,6 +6,9 @@ export type EditAction =
 	| 'createStage'
 	| 'updateStage'
 	| 'deleteStage'
+	| 'createScheduleMatch'
+	| 'updateScheduleMatch'
+	| 'deleteScheduleMatch'
 	| 'createMappool'
 	| 'updateMappoolVisibility'
 	| 'addMappoolBeatmap'
@@ -15,6 +18,7 @@ export type EditAction =
 
 type ActionContext = {
 	stageId?: string;
+	matchId?: string;
 	mappoolId?: string;
 	beatmapId?: string;
 };

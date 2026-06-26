@@ -5,6 +5,10 @@ import {
   MappoolExceptionCode,
 } from 'lib/domain/mappool/mappool.exception';
 import {
+  MatchException,
+  MatchExceptionCode,
+} from 'lib/domain/match/match.exception';
+import {
   StageException,
   StageExceptionCode,
 } from 'lib/domain/stage/stage.exception';
@@ -15,6 +19,7 @@ import {
 import { AppAbilityFactory } from './ability.factory';
 import { CHECK_POLICIES_KEY } from './check-policies.decorator';
 import { MappoolPolicyContextResolver } from './resolvers/mappool-policy-context.resolver';
+import { MatchPolicyContextResolver } from './resolvers/match-policy-context.resolver';
 import { StagePolicyContextResolver } from './resolvers/stage-policy-context.resolver';
 import { TournamentPolicyContextResolver } from './resolvers/tournament-policy-context.resolver';
 import { PolicyContext, PolicyHandler, PolicyRequest } from './types';
@@ -24,6 +29,7 @@ export class PoliciesGuard implements CanActivate {
   constructor(
     private readonly reflector: Reflector,
     private readonly abilityFactory: AppAbilityFactory,
+    private readonly matchResolver: MatchPolicyContextResolver,
     private readonly mappoolResolver: MappoolPolicyContextResolver,
     private readonly stageResolver: StagePolicyContextResolver,
     private readonly tournamentResolver: TournamentPolicyContextResolver,
@@ -64,6 +70,7 @@ export class PoliciesGuard implements CanActivate {
     request: PolicyRequest,
   ): Promise<PolicyContext> {
     const resolvers = [
+      this.matchResolver,
       this.mappoolResolver,
       this.stageResolver,
       this.tournamentResolver,
@@ -89,6 +96,13 @@ export class PoliciesGuard implements CanActivate {
       throw new StageException(
         'Only tournament creator or admin can manage stages',
         StageExceptionCode.STAGE_ACCESS_DENIED,
+      );
+    }
+
+    if (context.subject === 'Match') {
+      throw new MatchException(
+        'Only tournament creator or admin can manage matches',
+        MatchExceptionCode.MATCH_ACCESS_DENIED,
       );
     }
 

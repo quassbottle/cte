@@ -3,6 +3,7 @@
 	import type { SelectedUser } from '$lib/schemas/user.schema';
 	import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar';
 	import { Button } from '$lib/components/ui/button';
+	import { lookupSelectedUser } from '$lib/utils/user-lookup';
 	import { Plus, X } from 'lucide-svelte';
 	import type { TournamentRegistrationForm } from './types';
 
@@ -41,13 +42,9 @@
 		lookupError = '';
 
 		try {
-			const response = await fetch(`/api/users/lookup?query=${encodeURIComponent(query)}`);
-			if (!response.ok) {
-				lookupError = 'User not found.';
-				return;
-			}
-
-			addSelectedUser(await response.json());
+			addSelectedUser(await lookupSelectedUser(query));
+		} catch (cause) {
+			lookupError = cause instanceof Error ? cause.message : 'User lookup failed.';
 		} finally {
 			isLookupPending = false;
 		}

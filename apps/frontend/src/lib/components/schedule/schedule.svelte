@@ -5,6 +5,7 @@
 	import { toMatchView } from './schedule-view';
 
 	export let matches: StageScheduleDtoOutputMatchesItem[];
+	export let editable = false;
 
 	$: viewMatches = matches.map(toMatchView);
 </script>
@@ -22,19 +23,33 @@
 					<th class="w-56 px-4 py-3 font-semibold">Staff</th>
 					<th class="w-16 px-4 py-3 text-center font-semibold">MP</th>
 					<th class="w-16 px-4 py-3 text-center font-semibold">VOD</th>
+					{#if editable}
+						<th class="w-36 px-4 py-3 text-right font-semibold">Actions</th>
+					{/if}
 				</tr>
 			</thead>
 			<tbody>
-				{#each viewMatches as match}
-					<Match {match} />
+				{#each viewMatches as match, index}
+					<Match {match} {editable}>
+						<svelte:fragment slot="actions">
+							<slot name="actions" match={matches[index]} />
+						</svelte:fragment>
+					</Match>
 				{/each}
 			</tbody>
 		</table>
 	</div>
 
 	<div class="divide-y divide-border md:hidden">
-		{#each viewMatches as match}
-			<MatchCard {match} />
+		{#each viewMatches as match, index}
+			<div>
+				<MatchCard {match} />
+				{#if editable}
+					<div class="border-t border-border p-4">
+						<slot name="actions" match={matches[index]} />
+					</div>
+				{/if}
+			</div>
 		{/each}
 	</div>
 </section>

@@ -10,15 +10,25 @@ import {
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { MatchIdPipe } from 'lib/common/pipes/match-id.pipe';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
 import { PaginationDto } from 'lib/common/utils/zod/pagination';
+import { MatchId } from 'lib/domain/match/match.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { DbUser } from 'lib/infrastructure/db';
 import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
-import { StageScheduleDto, stageScheduleDtoSchema } from 'modules/match/dto';
+import { ZodResponse } from 'nestjs-zod';
+import {
+  MatchDto,
+  type MatchDtoOutput,
+  ScheduleMatchUpsertDto,
+  StageScheduleDto,
+  stageScheduleDtoSchema,
+} from 'modules/match/dto';
+import { MatchService } from 'modules/match/match.service';
 import { ScheduleService } from 'modules/match/schedule.service';
 import {
   CreateTournamentDto,
@@ -39,6 +49,7 @@ import { TournamentService } from './tournament.service';
 export class TournamentController {
   constructor(
     private readonly tournamentService: TournamentService,
+    private readonly matchService: MatchService,
     private readonly scheduleService: ScheduleService,
   ) {}
 
@@ -140,6 +151,69 @@ export class TournamentController {
     });
 
     return schedule.map((stage) => stageScheduleDtoSchema.parse(stage));
+  }
+
+  @Post(':id/matches')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('create', context.subjectData),
+  )
+  @ZodResponse({
+    status: 201,
+    description: 'Creates a schedule match.',
+    type: MatchDto,
+  })
+  public async createMatch(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @RequestUser() user: DbUser,
+    @Body() body: ScheduleMatchUpsertDto,
+  ): Promise<MatchDtoOutput> {
+    return this.matchService.createScheduleMatch({
+      tournamentId: id,
+      data: { ...body, creatorId: user.id },
+    });
+  }
+
+  @Patch(':id/matches/:matchId')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ZodResponse({
+    status: 200,
+    description: 'Updates a schedule match.',
+    type: MatchDto,
+  })
+  public async updateMatch(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Param('matchId', MatchIdPipe) matchId: MatchId,
+    @Body() body: ScheduleMatchUpsertDto,
+  ): Promise<MatchDtoOutput> {
+    return this.matchService.updateScheduleMatch({
+      tournamentId: id,
+      matchId,
+      data: body,
+    });
+  }
+
+  @Delete(':id/matches/:matchId')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('delete', context.subjectData),
+  )
+  @ZodResponse({
+    status: 200,
+    description: 'Deletes a schedule match.',
+    type: MatchDto,
+  })
+  public async deleteMatch(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Param('matchId', MatchIdPipe) matchId: MatchId,
+  ): Promise<MatchDtoOutput> {
+    return this.matchService.deleteScheduleMatch({
+      tournamentId: id,
+      matchId,
+    });
   }
 
   @Post()

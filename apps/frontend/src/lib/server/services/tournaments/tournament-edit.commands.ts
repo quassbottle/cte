@@ -5,6 +5,7 @@ import type {
 	MappoolBeatmapUpdateForm,
 	MappoolCreateForm,
 	MappoolVisibilityForm,
+	ScheduleMatchForm,
 	StageCreateForm,
 	StageDeleteForm,
 	StageUpdateForm,
@@ -34,6 +35,32 @@ export function updateStage(backend: BackendClient, tournamentId: string, input:
 
 export function deleteStage(backend: BackendClient, tournamentId: string, input: StageDeleteForm) {
 	return backend.stages.delete(tournamentId, input.stageId);
+}
+
+export function createScheduleMatch(
+	backend: BackendClient,
+	tournamentId: string,
+	input: ScheduleMatchForm
+) {
+	const { matchId: _matchId, ...payload } = input;
+	return backend.matches.create(tournamentId, payload);
+}
+
+export function updateScheduleMatch(
+	backend: BackendClient,
+	tournamentId: string,
+	input: ScheduleMatchForm
+) {
+	if (!input.matchId) {
+		throw new Error('Match id is required');
+	}
+
+	const { matchId, ...payload } = input;
+	return backend.matches.update(tournamentId, matchId, payload);
+}
+
+export function deleteScheduleMatch(backend: BackendClient, tournamentId: string, matchId: string) {
+	return backend.matches.delete(tournamentId, matchId);
 }
 
 export function createMappool(backend: BackendClient, input: MappoolCreateForm) {

@@ -44,7 +44,7 @@
     "@paralleldrive/cuid2": "^3.0.6",
     "drizzle-orm": "^0.45.1",
     "nats": "^2.29.3",
-    "nestjs-zod": "^5.0.1",
+    "nestjs-zod": "^5.4.0",
     "osu-api-extended": "^3.1.8",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

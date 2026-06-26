@@ -35,7 +35,9 @@ export const matchDtoSchema = z.object({
   updatedAt: isoStringToDate,
 });
 
-export class MatchDto extends createZodDto(matchDtoSchema) {}
+export type MatchDtoOutput = z.output<typeof matchDtoSchema>;
+
+export class MatchDto extends createZodDto(matchDtoSchema, { codec: true }) {}
 
 export const matchWithParticipantsDtoSchema = matchDtoSchema.extend({
   participants: z.array(userDtoSchema),
@@ -90,3 +92,67 @@ export type StageSchedule = z.output<typeof stageScheduleDtoSchema>;
 export type StageScheduleInput = z.input<typeof stageScheduleDtoSchema>;
 
 export class StageScheduleDto extends createZodDto(stageScheduleDtoSchema) {}
+
+const nullableUrl = z
+  .string()
+  .trim()
+  .url()
+  .nullable()
+  .optional()
+  .transform((value) => value ?? null);
+
+const scheduleMatchPlayerInputSchema = z.object({
+  userId: userIdSchema,
+  score: z
+    .number()
+    .int()
+    .nullable()
+    .optional()
+    .transform((value) => value ?? null),
+});
+
+const scheduleMatchStaffInputSchema = z.object({
+  userId: userIdSchema,
+  role: scheduleStaffRoleSchema,
+});
+
+export const scheduleMatchUpsertDtoSchema = z
+  .object({
+    name: z.string().trim().min(1),
+    stageId: stageIdSchema,
+    matchNumber: z.number().int().positive().nullable().optional(),
+    startsAt: isoStringToDate,
+    endsAt: isoStringToDate,
+    mpUrl: nullableUrl,
+    vodUrl: nullableUrl,
+    players: z.array(scheduleMatchPlayerInputSchema).max(2).default([]),
+    staff: z.array(scheduleMatchStaffInputSchema).default([]),
+  })
+  .refine((data) => data.endsAt > data.startsAt, {
+    path: ['endsAt'],
+    message: 'endsAt must be greater than startsAt',
+  })
+  .refine(
+    (data) =>
+      data.staff.filter((staff) => staff.role === 'referee').length <= 1,
+    {
+      path: ['staff'],
+      message: 'Only one referee is allowed',
+    },
+  )
+  .refine(
+    (data) =>
+      data.staff.filter((staff) => staff.role === 'streamer').length <= 1,
+    {
+      path: ['staff'],
+      message: 'Only one streamer is allowed',
+    },
+  );
+
+export class ScheduleMatchUpsertDto extends createZodDto(
+  scheduleMatchUpsertDtoSchema,
+) {}
+
+export type ScheduleMatchUpsertInput = z.output<
+  typeof scheduleMatchUpsertDtoSchema
+>;

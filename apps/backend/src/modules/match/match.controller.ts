@@ -4,7 +4,8 @@ import { MatchIdPipe } from 'lib/common/pipes/match-id.pipe';
 import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { MatchId } from 'lib/domain/match/match.id';
 import { UserDto, userDtoSchema } from 'modules/user/dto';
-import { MatchDto } from './dto';
+import { ZodResponse } from 'nestjs-zod';
+import { MatchDto, type MatchDtoOutput } from './dto';
 import { MatchService } from './match.service';
 
 @Controller('matches')
@@ -12,14 +13,14 @@ export class MatchController {
   constructor(private readonly matchService: MatchService) {}
 
   @Get(':id')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns the match by ID.',
     type: MatchDto,
   })
   public async getById(
     @Param('id', MatchIdPipe) id: MatchId,
-  ): Promise<MatchDto> {
+  ): Promise<MatchDtoOutput> {
     return this.matchService.getById({ id });
   }
 

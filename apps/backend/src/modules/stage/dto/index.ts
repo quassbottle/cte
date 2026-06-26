@@ -1,7 +1,7 @@
 import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
 import { stageIdSchema } from 'lib/domain/stage/stage.id';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
-import { createZodDto } from 'nestjs-zod/dto';
+import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
 export const stageDtoSchema = z.object({

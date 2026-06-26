@@ -12,6 +12,7 @@ import {
 	mappoolBeatmapUpdateFormSchema,
 	mappoolCreateFormSchema,
 	mappoolVisibilityFormSchema,
+	scheduleMatchFormSchema,
 	stageCreateFormSchema,
 	stageDeleteFormSchema,
 	stageUpdateFormSchema,
@@ -32,6 +33,7 @@ const requireSession = (locals: App.Locals) => {
 
 type ActionContext = {
 	stageId?: string;
+	matchId?: string;
 	mappoolId?: string;
 	beatmapId?: string;
 };
@@ -167,6 +169,61 @@ export const actions: Actions = {
 				(backend, input) => commands.deleteStage(backend, event.params.slug, input)
 			)
 		),
+	createScheduleMatch: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'createScheduleMatch',
+				scheduleMatchFormSchema,
+				values,
+				{},
+				(backend, input) => commands.createScheduleMatch(backend, event.params.slug, input)
+			)
+		),
+	updateScheduleMatch: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'updateScheduleMatch',
+				scheduleMatchFormSchema,
+				values,
+				{ matchId: stringValue(values.matchId) },
+				(backend, input) => commands.updateScheduleMatch(backend, event.params.slug, input)
+			)
+		),
+	deleteScheduleMatch: async (event) => {
+		requireSession(event.locals);
+		const values = Object.fromEntries(await event.request.formData());
+		const matchId = stringValue(values.matchId);
+
+		if (!matchId) {
+			return fail(400, {
+				action: 'deleteScheduleMatch',
+				ok: false,
+				message: 'Match id is required',
+				errors: {},
+				matchId
+			} satisfies TournamentEditActionResult);
+		}
+
+		try {
+			await commands.deleteScheduleMatch(createBackendClient(event), event.params.slug, matchId);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				action: 'deleteScheduleMatch',
+				ok: false,
+				message: backendErrorMessage(cause, 'Request failed'),
+				errors: {},
+				matchId
+			} satisfies TournamentEditActionResult);
+		}
+
+		return {
+			action: 'deleteScheduleMatch',
+			ok: true,
+			matchId
+		} satisfies TournamentEditActionResult;
+	},
 	createMappool: (event) =>
 		withFormValues(event, (values) =>
 			submitForm(

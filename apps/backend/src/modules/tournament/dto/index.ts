@@ -3,7 +3,7 @@ import { teamIdSchema } from 'lib/domain/team/team.id';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
 import { tournamentModeSchema } from 'lib/domain/tournament/tournament.mode';
 import { userIdSchema } from 'lib/domain/user/user.id';
-import { createZodDto } from 'nestjs-zod/dto';
+import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
 export const tournamentDtoSchema = z.object({

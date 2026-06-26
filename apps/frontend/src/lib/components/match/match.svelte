@@ -5,6 +5,7 @@
 	import StaffList from './StaffList.svelte';
 
 	export let match: MatchView;
+	export let editable = false;
 </script>
 
 <tr class="border-t border-border">
@@ -37,4 +38,9 @@
 	<td class="px-4 py-4 text-center">
 		<MatchLink href={match.vodUrl} type="vod" />
 	</td>
+	{#if editable}
+		<td class="px-4 py-4 text-right">
+			<slot name="actions" />
+		</td>
+	{/if}
 </tr>

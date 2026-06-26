@@ -6,6 +6,8 @@ import {
   MatchExceptionCode,
 } from 'lib/domain/match/match.exception';
 import { MatchId, matchId } from 'lib/domain/match/match.id';
+import { StageId } from 'lib/domain/stage/stage.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import {
   DbMatch,
@@ -13,10 +15,13 @@ import {
   DbUser,
   matches,
   matchParticipants,
+  matchStaff,
   Schema,
+  stages,
   users,
 } from 'lib/infrastructure/db';
-import { MatchCreateParams } from './types';
+import { ScheduleMatchUpsertInput } from './dto';
+import { MatchCreateParams, ScheduleMatchCreateParams } from './types';
 
 @Injectable()
 export class MatchService {
@@ -31,6 +36,111 @@ export class MatchService {
       .returning();
 
     return match;
+  }
+
+  async createScheduleMatch(params: {
+    tournamentId: TournamentId;
+    data: ScheduleMatchCreateParams;
+  }): Promise<DbMatch> {
+    const { tournamentId, data } = params;
+
+    await this.assertStageBelongsToTournament({
+      stageId: data.stageId,
+      tournamentId,
+    });
+
+    const id = matchId();
+
+    const created = await this.drizzle.transaction(async (tx) => {
+      const [match] = await tx
+        .insert(matches)
+        .values({
+          id,
+          name: data.name,
+          stageId: data.stageId,
+          matchNumber: data.matchNumber ?? null,
+          creatorId: data.creatorId,
+          startsAt: data.startsAt,
+          endsAt: data.endsAt,
+          mpUrl: data.mpUrl,
+          vodUrl: data.vodUrl,
+        })
+        .returning();
+
+      await this.replaceParticipants(tx, id, data.players);
+      await this.replaceStaff(tx, id, data.staff);
+
+      return match;
+    });
+
+    return created;
+  }
+
+  async updateScheduleMatch(params: {
+    tournamentId: TournamentId;
+    matchId: MatchId;
+    data: ScheduleMatchUpsertInput;
+  }): Promise<DbMatch> {
+    const { tournamentId, matchId: id, data } = params;
+
+    await this.assertStageBelongsToTournament({
+      stageId: data.stageId,
+      tournamentId,
+    });
+    await this.assertMatchBelongsToTournament({ matchId: id, tournamentId });
+
+    const updated = await this.drizzle.transaction(async (tx) => {
+      const [match] = await tx
+        .update(matches)
+        .set({
+          name: data.name,
+          stageId: data.stageId,
+          matchNumber: data.matchNumber ?? null,
+          startsAt: data.startsAt,
+          endsAt: data.endsAt,
+          mpUrl: data.mpUrl,
+          vodUrl: data.vodUrl,
+        })
+        .where(eq(matches.id, id))
+        .returning();
+
+      if (!match) {
+        throw new MatchException(
+          `Match not found`,
+          MatchExceptionCode.MATCH_NOT_FOUND,
+        );
+      }
+
+      await this.replaceParticipants(tx, id, data.players);
+      await this.replaceStaff(tx, id, data.staff);
+
+      return match;
+    });
+
+    return updated;
+  }
+
+  async deleteScheduleMatch(params: {
+    tournamentId: TournamentId;
+    matchId: MatchId;
+  }): Promise<DbMatch> {
+    const { tournamentId, matchId: id } = params;
+
+    await this.assertMatchBelongsToTournament({ matchId: id, tournamentId });
+
+    const [deleted] = await this.drizzle
+      .delete(matches)
+      .where(eq(matches.id, id))
+      .returning();
+
+    if (!deleted) {
+      throw new MatchException(
+        `Match not found`,
+        MatchExceptionCode.MATCH_NOT_FOUND,
+      );
+    }
+
+    return deleted;
   }
 
   async getById(params: { id: MatchId }): Promise<DbMatch> {
@@ -194,6 +304,103 @@ export class MatchService {
         MatchExceptionCode.ALREADY_PARTICIPATING,
       );
     }
+  }
+
+  private async assertStageBelongsToTournament(params: {
+    stageId: StageId;
+    tournamentId: TournamentId;
+  }): Promise<void> {
+    const { stageId, tournamentId } = params;
+
+    const stage = await this.drizzle.query.stages.findFirst({
+      where: and(eq(stages.id, stageId), eq(stages.tournamentId, tournamentId)),
+    });
+
+    if (!stage) {
+      throw new MatchException(
+        `Stage not found`,
+        MatchExceptionCode.MATCH_NOT_FOUND,
+      );
+    }
+  }
+
+  private async assertMatchBelongsToTournament(params: {
+    matchId: MatchId;
+    tournamentId: TournamentId;
+  }): Promise<void> {
+    const { matchId, tournamentId } = params;
+
+    const [found] = await this.drizzle
+      .select({ id: matches.id })
+      .from(matches)
+      .innerJoin(stages, eq(stages.id, matches.stageId))
+      .where(
+        and(eq(matches.id, matchId), eq(stages.tournamentId, tournamentId)),
+      )
+      .limit(1);
+
+    if (!found) {
+      throw new MatchException(
+        `Match not found`,
+        MatchExceptionCode.MATCH_NOT_FOUND,
+      );
+    }
+  }
+
+  private async replaceParticipants(
+    tx: Pick<Schema, 'delete' | 'insert'>,
+    matchIdValue: MatchId,
+    players: ScheduleMatchUpsertInput['players'],
+  ): Promise<void> {
+    await tx
+      .delete(matchParticipants)
+      .where(eq(matchParticipants.matchId, matchIdValue));
+
+    if (players.length === 0) return;
+
+    const winnerIds = this.resolveWinnerIds(players);
+
+    await tx.insert(matchParticipants).values(
+      players.map((player) => ({
+        matchId: matchIdValue,
+        userId: player.userId,
+        score: player.score,
+        isWinner: winnerIds ? winnerIds.has(player.userId) : null,
+      })),
+    );
+  }
+
+  private async replaceStaff(
+    tx: Pick<Schema, 'delete' | 'insert'>,
+    matchIdValue: MatchId,
+    staff: ScheduleMatchUpsertInput['staff'],
+  ): Promise<void> {
+    await tx.delete(matchStaff).where(eq(matchStaff.matchId, matchIdValue));
+
+    if (staff.length === 0) return;
+
+    await tx.insert(matchStaff).values(
+      staff.map((staffMember) => ({
+        matchId: matchIdValue,
+        userId: staffMember.userId,
+        role: staffMember.role,
+      })),
+    );
+  }
+
+  private resolveWinnerIds(
+    players: ScheduleMatchUpsertInput['players'],
+  ): Set<string> | null {
+    if (players.length < 2 || players.some((player) => player.score === null)) {
+      return null;
+    }
+
+    const maxScore = Math.max(...players.map((player) => player.score ?? 0));
+    const winners = players.filter((player) => player.score === maxScore);
+
+    if (winners.length !== 1) return null;
+
+    return new Set(winners.map((winner) => winner.userId));
   }
 
   public async getMatchWithParticipants(

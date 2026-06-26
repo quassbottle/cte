@@ -1,6 +1,6 @@
 import { tournamentModeSchema } from 'lib/domain/tournament/tournament.mode';
 import { userRoleSchema } from 'lib/domain/user/user.role';
-import { createZodDto } from 'nestjs-zod/dto';
+import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
 
 const userDateSchema = z.preprocess(
