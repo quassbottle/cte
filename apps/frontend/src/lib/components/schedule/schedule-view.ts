@@ -34,6 +34,7 @@ const toPlayerView = (
 	if (!player) return null;
 
 	return {
+		id: player.id,
 		name: player.osuUsername,
 		osuId: player.osuId,
 		country: player.countryCode,
@@ -53,6 +54,7 @@ export const toMatchView = (
 	player1: toPlayerView(match.players[0]),
 	player2: toPlayerView(match.players[1]),
 	staff: match.staff.map((staff) => ({
+		id: staff.id,
 		name: staff.osuUsername,
 		osuId: staff.osuId,
 		initials: getInitials(staff.osuUsername),

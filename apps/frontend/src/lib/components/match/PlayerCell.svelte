@@ -24,10 +24,16 @@
 		class="flex items-center gap-3"
 	>
 		{#if side === 'left'}
-			<Avatar class={compact ? 'h-10 w-10 rounded-md' : 'h-11 w-11 rounded-md'}>
-				<AvatarImage src={getAvatarUrlByOsuId(player.osuId)} />
-				<AvatarFallback>{getInitials(player.name)}</AvatarFallback>
-			</Avatar>
+			<a class="shrink-0" href="/users/{player.id}" aria-label="Open {player.name} profile">
+				<Avatar
+					class={compact
+						? 'h-10 w-10 cursor-pointer rounded-md'
+						: 'h-11 w-11 cursor-pointer rounded-md'}
+				>
+					<AvatarImage src={getAvatarUrlByOsuId(player.osuId)} />
+					<AvatarFallback>{getInitials(player.name)}</AvatarFallback>
+				</Avatar>
+			</a>
 		{/if}
 
 		<div class="min-w-0">
@@ -49,10 +55,16 @@
 		</div>
 
 		{#if side === 'right'}
-			<Avatar class={compact ? 'h-10 w-10 rounded-md' : 'h-11 w-11 rounded-md'}>
-				<AvatarImage src={getAvatarUrlByOsuId(player.osuId)} />
-				<AvatarFallback>{getInitials(player.name)}</AvatarFallback>
-			</Avatar>
+			<a class="shrink-0" href="/users/{player.id}" aria-label="Open {player.name} profile">
+				<Avatar
+					class={compact
+						? 'h-10 w-10 cursor-pointer rounded-md'
+						: 'h-11 w-11 cursor-pointer rounded-md'}
+				>
+					<AvatarImage src={getAvatarUrlByOsuId(player.osuId)} />
+					<AvatarFallback>{getInitials(player.name)}</AvatarFallback>
+				</Avatar>
+			</a>
 		{/if}
 	</div>
 {:else}

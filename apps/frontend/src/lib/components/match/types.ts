@@ -1,6 +1,7 @@
 import type { StageScheduleDtoOutputMatchesItemStaffItemRole } from '$lib/api/generated/model';
 
 export type MatchPlayerView = {
+	id: string;
 	name: string;
 	osuId: number;
 	country: string | null;
@@ -9,6 +10,7 @@ export type MatchPlayerView = {
 };
 
 export type MatchStaffView = {
+	id: string;
 	name: string;
 	osuId: number;
 	initials: string;
