@@ -16,5 +16,6 @@ export type StageScheduleDtoOutputMatchesItemStaffItem = {
 	 */
 	osuId: number;
 	osuUsername: string;
+	avatarUrl: string;
 	role: StageScheduleDtoOutputMatchesItemStaffItemRole;
 };

@@ -101,6 +101,7 @@ export class UserService {
     osuId: number;
     osuUsername: string;
     countryCode: string | null;
+    osuCoverUrl: string | null;
     defaultMode: TournamentMode;
   }): Promise<DbUser> {
     const id = userId();
@@ -117,13 +118,14 @@ export class UserService {
     id: UserId;
     osuUsername: string;
     countryCode: string | null;
+    osuCoverUrl: string | null;
     defaultMode: TournamentMode;
   }): Promise<DbUser> {
-    const { id, osuUsername, countryCode, defaultMode } = params;
+    const { id, osuUsername, countryCode, osuCoverUrl, defaultMode } = params;
 
     const [updated] = await this.drizzle
       .update(users)
-      .set({ osuUsername, countryCode, defaultMode })
+      .set({ osuUsername, countryCode, osuCoverUrl, defaultMode })
       .where(eq(users.id, id))
       .returning();
 

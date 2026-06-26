@@ -1,6 +1,5 @@
 <script lang="ts">
 	import type { MatchStaffView } from './types';
-	import { getAvatarUrlByOsuId } from '$lib/utils/osu';
 	import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 	import StaffRoleIcon from './StaffRoleIcon.svelte';
 
@@ -14,11 +13,11 @@
 			<span class="flex items-center gap-1 rounded border border-border px-2 py-1">
 				<a href="/users/{staffMember.id}" aria-label="Open {staffMember.name} profile">
 					<Avatar class="h-5 w-5 cursor-pointer rounded-md">
-						<AvatarImage src={getAvatarUrlByOsuId(staffMember.osuId)} />
+						<AvatarImage src={staffMember.avatarUrl} />
 						<AvatarFallback>{staffMember.initials}</AvatarFallback>
 					</Avatar>
 				</a>
-				{staffMember.name}
+				<a href="/users/{staffMember.id}">{staffMember.name}</a>
 				<StaffRoleIcon role={staffMember.role} size={3} />
 			</span>
 		{/each}
@@ -29,11 +28,11 @@
 			<div class="flex items-center gap-2">
 				<a href="/users/{staffMember.id}" aria-label="Open {staffMember.name} profile">
 					<Avatar class="h-6 w-6 cursor-pointer rounded-md">
-						<AvatarImage src={getAvatarUrlByOsuId(staffMember.osuId)} />
+						<AvatarImage src={staffMember.avatarUrl} />
 						<AvatarFallback>{staffMember.initials}</AvatarFallback>
 					</Avatar>
 				</a>
-				<span class="text-xs">{staffMember.name}</span>
+				<a href="/users/{staffMember.id}" class="text-xs">{staffMember.name}</a>
 				<StaffRoleIcon role={staffMember.role} />
 			</div>
 		{/each}

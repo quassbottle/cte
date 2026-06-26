@@ -1,9 +1,8 @@
 import { Controller, Get, Param, Query } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
 import { MatchIdPipe } from 'lib/common/pipes/match-id.pipe';
 import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { MatchId } from 'lib/domain/match/match.id';
-import { UserDto, userDtoSchema } from 'modules/user/dto';
+import { UserDto, type UserDtoOutput } from 'modules/user/dto';
 import { ZodResponse } from 'nestjs-zod';
 import { MatchDto, type MatchDtoOutput } from './dto';
 import { MatchService } from './match.service';
@@ -25,7 +24,7 @@ export class MatchController {
   }
 
   @Get(':id/participants')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns the participants of the match.',
     type: [UserDto],
@@ -33,11 +32,11 @@ export class MatchController {
   public async getParticipants(
     @Param('id', MatchIdPipe) id: MatchId,
     @Query() query: PaginationDto,
-  ): Promise<UserDto[]> {
+  ): Promise<UserDtoOutput[]> {
     const participants = await this.matchService.getParticipants({
       matchId: id,
       ...query,
     });
-    return participants.map((participant) => userDtoSchema.parse(participant));
+    return participants;
   }
 }

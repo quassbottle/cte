@@ -24,6 +24,7 @@ export interface TournamentParticipantDto {
 	id: string;
 	osuId: number;
 	osuUsername: string;
+	avatarUrl: string;
 }
 
 export interface TournamentTeamDto {

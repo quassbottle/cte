@@ -71,6 +71,7 @@ export class AuthService {
         id: current.id,
         osuUsername: user.username,
         countryCode: user.country_code ?? null,
+        osuCoverUrl: user.cover_url ?? null,
         defaultMode,
       });
     }
@@ -79,6 +80,7 @@ export class AuthService {
       osuId: user.id,
       osuUsername: user.username,
       countryCode: user.country_code ?? null,
+      osuCoverUrl: user.cover_url ?? null,
       defaultMode,
     });
 
@@ -126,6 +128,7 @@ type OsuUserProfile = {
   id: number;
   username: string;
   country_code?: string | null;
+  cover_url?: string | null;
   playmode?: string | null;
   statistics?: {
     pp?: number | null;

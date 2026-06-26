@@ -17,8 +17,10 @@ import type {
 	MappoolControllerFindManyParams,
 	MappoolDtoOutput,
 	MappoolWithBeatmapsDtoOutput,
+	MatchDto,
 	OsuBeatmapMetadataDtoOutput,
 	RegisterTournamentDto,
+	ScheduleMatchUpsertDto,
 	StageDtoOutput,
 	StageScheduleDtoOutput,
 	TournamentControllerFindManyParams,
@@ -453,6 +455,101 @@ export const tournamentControllerGetSchedule = async (
 		{
 			...options,
 			method: 'GET'
+		}
+	);
+};
+
+export type tournamentControllerCreateMatchResponse201 = {
+	data: MatchDto;
+	status: 201;
+};
+
+export type tournamentControllerCreateMatchResponseSuccess =
+	tournamentControllerCreateMatchResponse201 & {
+		headers: Headers;
+	};
+export type tournamentControllerCreateMatchResponse =
+	tournamentControllerCreateMatchResponseSuccess;
+
+export const getTournamentControllerCreateMatchUrl = (id: string) => {
+	return `/api/tournaments/${id}/matches`;
+};
+
+export const tournamentControllerCreateMatch = async (
+	id: string,
+	scheduleMatchUpsertDto: ScheduleMatchUpsertDto,
+	options?: RequestInit
+): Promise<tournamentControllerCreateMatchResponse> => {
+	return backendFetch<tournamentControllerCreateMatchResponse>(
+		getTournamentControllerCreateMatchUrl(id),
+		{
+			...options,
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(scheduleMatchUpsertDto)
+		}
+	);
+};
+
+export type tournamentControllerUpdateMatchResponse200 = {
+	data: MatchDto;
+	status: 200;
+};
+
+export type tournamentControllerUpdateMatchResponseSuccess =
+	tournamentControllerUpdateMatchResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerUpdateMatchResponse =
+	tournamentControllerUpdateMatchResponseSuccess;
+
+export const getTournamentControllerUpdateMatchUrl = (id: string, matchId: string) => {
+	return `/api/tournaments/${id}/matches/${matchId}`;
+};
+
+export const tournamentControllerUpdateMatch = async (
+	id: string,
+	matchId: string,
+	scheduleMatchUpsertDto: ScheduleMatchUpsertDto,
+	options?: RequestInit
+): Promise<tournamentControllerUpdateMatchResponse> => {
+	return backendFetch<tournamentControllerUpdateMatchResponse>(
+		getTournamentControllerUpdateMatchUrl(id, matchId),
+		{
+			...options,
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(scheduleMatchUpsertDto)
+		}
+	);
+};
+
+export type tournamentControllerDeleteMatchResponse200 = {
+	data: MatchDto;
+	status: 200;
+};
+
+export type tournamentControllerDeleteMatchResponseSuccess =
+	tournamentControllerDeleteMatchResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerDeleteMatchResponse =
+	tournamentControllerDeleteMatchResponseSuccess;
+
+export const getTournamentControllerDeleteMatchUrl = (id: string, matchId: string) => {
+	return `/api/tournaments/${id}/matches/${matchId}`;
+};
+
+export const tournamentControllerDeleteMatch = async (
+	id: string,
+	matchId: string,
+	options?: RequestInit
+): Promise<tournamentControllerDeleteMatchResponse> => {
+	return backendFetch<tournamentControllerDeleteMatchResponse>(
+		getTournamentControllerDeleteMatchUrl(id, matchId),
+		{
+			...options,
+			method: 'DELETE'
 		}
 	);
 };

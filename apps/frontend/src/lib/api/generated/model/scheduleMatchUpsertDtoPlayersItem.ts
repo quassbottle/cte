@@ -6,10 +6,13 @@
  * OpenAPI spec version: 1.0
  */
 
-export type TournamentTeamDtoOutputParticipantsItem = {
+export type ScheduleMatchUpsertDtoPlayersItem = {
 	/** @pattern ^[0-9a-z]+$ */
-	id: string;
-	osuId: number;
-	osuUsername: string;
-	avatarUrl: string;
+	userId: string;
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
+	score?: number | null;
 };

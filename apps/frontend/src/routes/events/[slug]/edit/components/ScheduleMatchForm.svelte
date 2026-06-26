@@ -6,7 +6,6 @@
 	import { Label } from '$lib/components/ui/label';
 	import type { SelectedUser } from '$lib/schemas/user.schema';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
-	import { getAvatarUrlByOsuId } from '$lib/utils/osu';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import ScheduleUserPicker from './ScheduleUserPicker.svelte';
 
@@ -28,11 +27,12 @@
 		id: string;
 		osuId: number;
 		osuUsername: string;
+		avatarUrl: string;
 	}): SelectedUser => ({
 		id: user.id,
 		osuId: user.osuId,
 		osuUsername: user.osuUsername,
-		avatarUrl: getAvatarUrlByOsuId(user.osuId)
+		avatarUrl: user.avatarUrl
 	});
 
 	const addHours = (value: Date | string, hours: number) =>

@@ -20,7 +20,7 @@
 						{#each team.participants as participant}
 							<a href="/users/{participant.id}">
 								<PlayerCard
-									osuId={participant.osuId}
+									avatarUrl={participant.avatarUrl}
 									username={participant.osuUsername}
 									isCaptain={participant.id === team.captainId}
 								/>
@@ -34,7 +34,7 @@
 		<div class="flex flex-grow flex-wrap gap-3">
 			{#each participants as participant}
 				<a href="/users/{participant.id}">
-					<PlayerCard osuId={participant.osuId} username={participant.osuUsername} />
+					<PlayerCard avatarUrl={participant.avatarUrl} username={participant.osuUsername} />
 				</a>
 			{:else}
 				<p>Be the first one to register ;)</p>

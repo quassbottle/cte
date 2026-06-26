@@ -15,6 +15,7 @@ export type StageScheduleDtoOutputMatchesItemPlayersItem = {
 	 */
 	osuId: number;
 	osuUsername: string;
+	avatarUrl: string;
 	/** @nullable */
 	countryCode: string | null;
 	/**

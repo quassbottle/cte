@@ -44,7 +44,7 @@ const resolveSelectedUsers = async (
 				id: response.data.id,
 				osuId: response.data.osuId,
 				osuUsername: response.data.osuUsername,
-				avatarUrl: `https://a.ppy.sh/${response.data.osuId}`
+				avatarUrl: response.data.avatarUrl
 			});
 		} catch {
 			// Invalid teammate ids are handled by the registration action itself.

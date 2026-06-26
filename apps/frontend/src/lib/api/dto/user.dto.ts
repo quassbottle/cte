@@ -7,6 +7,7 @@ export interface UserDto {
 	id: string;
 	osuUsername: string;
 	osuId: number;
+	osuCoverUrl: string | null;
 	defaultMode: 'osu' | 'taiko' | 'fruits' | 'mania';
 	role: 'default' | 'admin';
 	avatarUrl: string;

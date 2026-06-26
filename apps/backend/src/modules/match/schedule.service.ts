@@ -43,6 +43,7 @@ export class ScheduleService {
                           'id', player_user.id,
                           'osuId', player_user.osu_id,
                           'osuUsername', player_user.osu_username,
+                          'avatarUrl', concat('https://a.ppy.sh/', player_user.osu_id),
                           'countryCode', player_user.country_code,
                           'seed', coalesce(
                             (
@@ -97,6 +98,7 @@ export class ScheduleService {
                           'id', staff_user.id,
                           'osuId', staff_user.osu_id,
                           'osuUsername', staff_user.osu_username,
+                          'avatarUrl', concat('https://a.ppy.sh/', staff_user.osu_id),
                           'role', match_staff_row.role
                         )
                         order by

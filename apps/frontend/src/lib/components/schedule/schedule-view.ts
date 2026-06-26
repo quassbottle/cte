@@ -37,6 +37,7 @@ const toPlayerView = (
 		id: player.id,
 		name: player.osuUsername,
 		osuId: player.osuId,
+		avatarUrl: player.avatarUrl,
 		country: player.countryCode,
 		seed: player.seed,
 		score: player.score
@@ -57,6 +58,7 @@ export const toMatchView = (
 		id: staff.id,
 		name: staff.osuUsername,
 		osuId: staff.osuId,
+		avatarUrl: staff.avatarUrl,
 		initials: getInitials(staff.osuUsername),
 		role: staff.role
 	})),

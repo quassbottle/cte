@@ -1,18 +1,14 @@
-import { JetStreamStream, JetStreamSubject } from '@cte/contracts';
-import { NatsJetStreamModule } from '@initbit/nestjs-jetstream';
 import { DrizzlePGModule } from '@knaadh/nestjs-drizzle-pg';
 import { Module } from '@nestjs/common';
-import { APP_PIPE } from '@nestjs/core';
+import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core';
 import { EnvService } from 'lib/common/env/env.service';
 import { AuthModule } from 'modules/auth/auth.module';
-import { GatewayModule } from 'modules/gateway/gateway.module';
 import { MappoolModule } from 'modules/mappool/mappool.module';
 import { OsuFeatureModule } from 'modules/osu/osu.module';
 import { StageModule } from 'modules/stage/stage.module';
 import { TournamentModule } from 'modules/tournament/tournament.module';
 import { UserModule } from 'modules/user/user.module';
-import { AckPolicy, DeliverPolicy } from 'nats';
-import { ZodValidationPipe } from 'nestjs-zod';
+import { ZodSerializerInterceptor, ZodValidationPipe } from 'nestjs-zod';
 import { EnvModule } from './lib/common/env/env.module';
 import * as schema from './lib/infrastructure/db/schema';
 
@@ -116,6 +112,10 @@ import * as schema from './lib/infrastructure/db/schema';
     {
       provide: APP_PIPE,
       useClass: ZodValidationPipe,
+    },
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: ZodSerializerInterceptor,
     },
   ],
 })

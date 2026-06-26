@@ -1,7 +1,6 @@
 <script lang="ts">
 	import type { MatchPlayerView } from './types';
 	import { Hash } from 'lucide-svelte';
-	import { getAvatarUrlByOsuId } from '$lib/utils/osu';
 	import { Avatar, AvatarFallback, AvatarImage } from '../ui/avatar';
 
 	export let player: MatchPlayerView | null;
@@ -30,14 +29,14 @@
 						? 'h-10 w-10 cursor-pointer rounded-md'
 						: 'h-11 w-11 cursor-pointer rounded-md'}
 				>
-					<AvatarImage src={getAvatarUrlByOsuId(player.osuId)} />
+					<AvatarImage src={player.avatarUrl} />
 					<AvatarFallback>{getInitials(player.name)}</AvatarFallback>
 				</Avatar>
 			</a>
 		{/if}
 
 		<div class="min-w-0">
-			<p class="truncate font-semibold">{player.name}</p>
+			<a class="truncate font-semibold" href="/users/{player.id}">{player.name}</a>
 			<p
 				class:justify-end={side === 'right'}
 				class="flex items-center gap-1 text-xs text-muted-foreground"
@@ -61,7 +60,7 @@
 						? 'h-10 w-10 cursor-pointer rounded-md'
 						: 'h-11 w-11 cursor-pointer rounded-md'}
 				>
-					<AvatarImage src={getAvatarUrlByOsuId(player.osuId)} />
+					<AvatarImage src={player.avatarUrl} />
 					<AvatarFallback>{getInitials(player.name)}</AvatarFallback>
 				</Avatar>
 			</a>

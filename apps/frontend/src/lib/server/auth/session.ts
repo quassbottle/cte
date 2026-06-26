@@ -28,10 +28,7 @@ const getViewerFromBackend: GetViewer = async (token, requestFetch) => {
 	return toViewer(response.data);
 };
 
-const toViewer = (user: UserDto): Viewer => ({
-	...user,
-	avatarUrl: `https://a.ppy.sh/${user.osuId}`
-});
+const toViewer = (user: UserDto): Viewer => user;
 
 export const readSession = (cookies: CookieReader): SessionToken | null => {
 	const token = cookies.get('session');

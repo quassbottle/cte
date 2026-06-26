@@ -502,6 +502,137 @@
 					}
 				],
 				"tags": ["Tournament"]
+			},
+			"post": {
+				"operationId": "TournamentController_createMatch",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ScheduleMatchUpsertDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"201": {
+						"description": "Creates a schedule match.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MatchDto"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			}
+		},
+		"/api/tournaments/{id}/matches/{matchId}": {
+			"patch": {
+				"operationId": "TournamentController_updateMatch",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "matchId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"requestBody": {
+					"required": true,
+					"content": {
+						"application/json": {
+							"schema": {
+								"$ref": "#/components/schemas/ScheduleMatchUpsertDto"
+							}
+						}
+					}
+				},
+				"responses": {
+					"200": {
+						"description": "Updates a schedule match.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MatchDto"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
+			},
+			"delete": {
+				"operationId": "TournamentController_deleteMatch",
+				"parameters": [
+					{
+						"name": "id",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					},
+					{
+						"name": "matchId",
+						"required": true,
+						"in": "path",
+						"schema": {
+							"type": "string"
+						}
+					}
+				],
+				"responses": {
+					"200": {
+						"description": "Deletes a schedule match.",
+						"content": {
+							"application/json": {
+								"schema": {
+									"$ref": "#/components/schemas/MatchDto"
+								}
+							}
+						}
+					}
+				},
+				"security": [
+					{
+						"bearer": []
+					}
+				],
+				"tags": ["Tournament"]
 			}
 		},
 		"/api/tournaments/{id}/archive": {
@@ -1288,6 +1419,12 @@
 						"type": "string",
 						"nullable": true
 					},
+					"osuCoverUrl": {
+						"type": "string",
+						"format": "uri",
+						"description": "The osu! profile cover image URL",
+						"nullable": true
+					},
 					"defaultMode": {
 						"description": "The default osu! game mode",
 						"type": "string",
@@ -1297,6 +1434,11 @@
 						"description": "The user role",
 						"type": "string",
 						"enum": ["default", "admin"]
+					},
+					"avatarUrl": {
+						"description": "The osu! avatar image URL",
+						"type": "string",
+						"format": "uri"
 					},
 					"createdAt": {
 						"description": "The user creation date",
@@ -1316,11 +1458,14 @@
 					"osuId",
 					"osuUsername",
 					"countryCode",
+					"osuCoverUrl",
 					"defaultMode",
 					"role",
+					"avatarUrl",
 					"createdAt",
 					"updatedAt"
-				]
+				],
+				"additionalProperties": false
 			},
 			"OsuBeatmapMetadataDto_Output": {
 				"type": "object",
@@ -1474,9 +1619,13 @@
 					},
 					"osuUsername": {
 						"type": "string"
+					},
+					"avatarUrl": {
+						"type": "string",
+						"format": "uri"
 					}
 				},
-				"required": ["id", "osuId", "osuUsername"],
+				"required": ["id", "osuId", "osuUsername", "avatarUrl"],
 				"additionalProperties": false
 			},
 			"TournamentTeamDto_Output": {
@@ -1510,9 +1659,13 @@
 								},
 								"osuUsername": {
 									"type": "string"
+								},
+								"avatarUrl": {
+									"type": "string",
+									"format": "uri"
 								}
 							},
-							"required": ["id", "osuId", "osuUsername"],
+							"required": ["id", "osuId", "osuUsername", "avatarUrl"],
 							"additionalProperties": false
 						}
 					}
@@ -1596,6 +1749,10 @@
 											"osuUsername": {
 												"type": "string"
 											},
+											"avatarUrl": {
+												"type": "string",
+												"format": "uri"
+											},
 											"countryCode": {
 												"type": "string",
 												"nullable": true
@@ -1621,6 +1778,7 @@
 											"id",
 											"osuId",
 											"osuUsername",
+											"avatarUrl",
 											"countryCode",
 											"seed",
 											"score",
@@ -1647,12 +1805,16 @@
 											"osuUsername": {
 												"type": "string"
 											},
+											"avatarUrl": {
+												"type": "string",
+												"format": "uri"
+											},
 											"role": {
 												"type": "string",
 												"enum": ["referee", "streamer", "commentator"]
 											}
 										},
-										"required": ["id", "osuId", "osuUsername", "role"],
+										"required": ["id", "osuId", "osuUsername", "avatarUrl", "role"],
 										"additionalProperties": false
 									}
 								}
@@ -1674,6 +1836,159 @@
 				},
 				"required": ["id", "name", "startsAt", "endsAt", "matches"],
 				"additionalProperties": false
+			},
+			"ScheduleMatchUpsertDto": {
+				"type": "object",
+				"properties": {
+					"name": {
+						"type": "string",
+						"minLength": 1
+					},
+					"stageId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"matchNumber": {
+						"type": "integer",
+						"exclusiveMinimum": true,
+						"maximum": 9007199254740991,
+						"nullable": true,
+						"minimum": 0
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"mpUrl": {
+						"type": "string",
+						"format": "uri",
+						"nullable": true
+					},
+					"vodUrl": {
+						"type": "string",
+						"format": "uri",
+						"nullable": true
+					},
+					"players": {
+						"maxItems": 2,
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"userId": {
+									"type": "string",
+									"format": "cuid2",
+									"pattern": "^[0-9a-z]+$"
+								},
+								"score": {
+									"type": "integer",
+									"minimum": -9007199254740991,
+									"maximum": 9007199254740991,
+									"nullable": true
+								}
+							},
+							"required": ["userId"]
+						}
+					},
+					"staff": {
+						"default": [],
+						"type": "array",
+						"items": {
+							"type": "object",
+							"properties": {
+								"userId": {
+									"type": "string",
+									"format": "cuid2",
+									"pattern": "^[0-9a-z]+$"
+								},
+								"role": {
+									"type": "string",
+									"enum": ["referee", "streamer", "commentator"]
+								}
+							},
+							"required": ["userId", "role"]
+						}
+					}
+				},
+				"required": ["name", "stageId", "startsAt", "endsAt"]
+			},
+			"MatchDto": {
+				"type": "object",
+				"properties": {
+					"id": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"name": {
+						"type": "string"
+					},
+					"stageId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$",
+						"nullable": true
+					},
+					"matchNumber": {
+						"type": "integer",
+						"minimum": -9007199254740991,
+						"maximum": 9007199254740991,
+						"nullable": true
+					},
+					"creatorId": {
+						"type": "string",
+						"format": "cuid2",
+						"pattern": "^[0-9a-z]+$"
+					},
+					"startsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"endsAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"mpUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"vodUrl": {
+						"type": "string",
+						"nullable": true
+					},
+					"createdAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					},
+					"updatedAt": {
+						"type": "string",
+						"format": "date-time",
+						"pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+					}
+				},
+				"required": [
+					"id",
+					"name",
+					"stageId",
+					"matchNumber",
+					"creatorId",
+					"startsAt",
+					"endsAt",
+					"mpUrl",
+					"vodUrl",
+					"createdAt",
+					"updatedAt"
+				]
 			},
 			"CreateTournamentDto": {
 				"type": "object",

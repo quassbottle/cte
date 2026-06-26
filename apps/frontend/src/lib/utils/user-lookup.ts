@@ -1,6 +1,5 @@
 import { userControllerGetByLookup } from '$lib/api/generated/browser-client';
 import type { SelectedUser } from '$lib/schemas/user.schema';
-import { getAvatarUrlByOsuId } from '$lib/utils/osu';
 
 export async function lookupSelectedUser(query: string): Promise<SelectedUser> {
 	const value = query.trim();
@@ -18,7 +17,7 @@ export async function lookupSelectedUser(query: string): Promise<SelectedUser> {
 			id: response.data.id,
 			osuId: response.data.osuId,
 			osuUsername: response.data.osuUsername,
-			avatarUrl: getAvatarUrlByOsuId(response.data.osuId)
+			avatarUrl: response.data.avatarUrl
 		};
 	} catch {
 		throw new Error('User not found.');

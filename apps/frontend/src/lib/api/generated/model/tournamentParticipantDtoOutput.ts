@@ -11,4 +11,5 @@ export interface TournamentParticipantDtoOutput {
 	id: string;
 	osuId: number;
 	osuUsername: string;
+	avatarUrl: string;
 }

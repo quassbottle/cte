@@ -18,8 +18,10 @@ describe('lookupSelectedUser', () => {
 					osuId: 4504101,
 					osuUsername: 'WhiteCat',
 					countryCode: 'DE',
+					osuCoverUrl: null,
 					defaultMode: 'osu',
 					role: 'user',
+					avatarUrl: 'https://a.ppy.sh/4504101',
 					createdAt: '2026-01-01T00:00:00Z',
 					updatedAt: '2026-01-01T00:00:00Z'
 				}),

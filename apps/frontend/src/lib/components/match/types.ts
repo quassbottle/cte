@@ -4,6 +4,7 @@ export type MatchPlayerView = {
 	id: string;
 	name: string;
 	osuId: number;
+	avatarUrl: string;
 	country: string | null;
 	seed: number | null;
 	score: number | null;
@@ -13,6 +14,7 @@ export type MatchStaffView = {
 	id: string;
 	name: string;
 	osuId: number;
+	avatarUrl: string;
 	initials: string;
 	role: StageScheduleDtoOutputMatchesItemStaffItemRole;
 };

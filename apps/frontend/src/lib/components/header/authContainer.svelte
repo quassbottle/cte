@@ -4,7 +4,6 @@
 	import AvatarFallback from '$lib/components/ui/avatar/avatar-fallback.svelte';
 	import Avatar from '$lib/components/ui/avatar/avatar.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import { getAvatarUrlByOsuId } from '$lib/utils/osu';
 	import RoundButton from '../ui/roundbutton/RoundButton.svelte';
 	import { toggleTheme, resolvedTheme } from '$lib/stores/theme';
 	import { Bell, Moon, Sun } from 'lucide-svelte';
@@ -27,7 +26,7 @@
 		</RoundButton>
 		<a href="/users/{user.id}">
 			<Avatar class="cursor-pointer">
-				<AvatarImage src={getAvatarUrlByOsuId(user.osuId)} />
+				<AvatarImage src={user.avatarUrl} />
 				<AvatarFallback>CN</AvatarFallback>
 			</Avatar>
 		</a>

@@ -51,6 +51,7 @@ const schedulePlayerDtoSchema = z.object({
   id: userIdSchema,
   osuId: z.number().int(),
   osuUsername: z.string(),
+  avatarUrl: z.url(),
   countryCode: z.string().nullable(),
   seed: z.number().int().nullable(),
   score: z.number().int().nullable(),
@@ -63,6 +64,7 @@ const scheduleStaffMemberDtoSchema = z.object({
   id: userIdSchema,
   osuId: z.number().int(),
   osuUsername: z.string(),
+  avatarUrl: z.url(),
   role: scheduleStaffRoleSchema,
 });
 

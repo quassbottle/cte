@@ -179,6 +179,9 @@ export class OsuService {
 type OsuUserProfile = {
   id: number;
   username: string;
+  country_code?: string | null;
+  cover_url?: string | null;
+  playmode?: string | null;
   statistics?: {
     pp?: number | null;
     global_rank?: number | null;

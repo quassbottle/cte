@@ -104,14 +104,42 @@ export class RegisterTournamentDto extends createZodDto(
   registerTournamentDtoSchema,
 ) {}
 
-export const tournamentParticipantDtoSchema = z.object({
+const tournamentParticipantResponseSchema = z.object({
   id: userIdSchema,
   osuId: z.number(),
   osuUsername: z.string(),
+  avatarUrl: z.url(),
 });
+
+const tournamentParticipantDbSchema = z
+  .object({
+    id: userIdSchema,
+    osuId: z.number(),
+    osuUsername: z.string(),
+  })
+  .passthrough();
+
+export const tournamentParticipantDtoSchema = z.codec(
+  tournamentParticipantDbSchema,
+  tournamentParticipantResponseSchema,
+  {
+    decode: (participant) => ({
+      id: userIdSchema.parse(participant.id),
+      osuId: participant.osuId,
+      osuUsername: participant.osuUsername,
+      avatarUrl: `https://a.ppy.sh/${participant.osuId}`,
+    }),
+    encode: (participant) => ({
+      id: userIdSchema.parse(participant.id),
+      osuId: participant.osuId,
+      osuUsername: participant.osuUsername,
+    }),
+  },
+);
 
 export class TournamentParticipantDto extends createZodDto(
   tournamentParticipantDtoSchema,
+  { codec: true },
 ) {}
 
 export const tournamentTeamDtoSchema = z.object({
