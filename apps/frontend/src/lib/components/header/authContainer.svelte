@@ -27,7 +27,7 @@
 		<a href="/users/{user.id}">
 			<Avatar class="cursor-pointer">
 				<AvatarImage src={user.avatarUrl} />
-				<AvatarFallback>CN</AvatarFallback>
+				<AvatarFallback></AvatarFallback>
 			</Avatar>
 		</a>
 	{:else}

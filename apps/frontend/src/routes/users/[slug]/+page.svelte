@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Banner from '$lib/components/banner/banner.svelte';
 	import Group from '$lib/components/group/group.svelte';
+	import OsuIcon from '$lib/components/icons/osuIcon.svelte';
 	import { AvatarFallback, AvatarImage } from '$lib/components/ui/avatar';
 	import Avatar from '$lib/components/ui/avatar/avatar.svelte';
 	import type { PageData } from './$types';
@@ -26,18 +27,20 @@
 				<div class="absolute bottom-4 flex w-full flex-row items-end gap-4 px-8">
 					<Avatar class="h-[128px] w-[128px] rounded-[24px]">
 						<AvatarImage src={user.avatarUrl} />
-						<AvatarFallback>CN</AvatarFallback>
+						<AvatarFallback class="h-[128px] w-[128px] rounded-[24px]"></AvatarFallback>
 					</Avatar>
 
-					<div class="flex flex-col pb-7">
+					<div class="flex flex-col pb-4">
 						<p class="text-[24px] font-semibold leading-tight">{user.osuUsername}</p>
+
 						<a
-							class="text-[14px] text-muted-foreground underline transition hover:text-card-foreground"
+							class="inline-flex h-5 items-center gap-1.5 text-[14px] leading-none text-muted-foreground transition hover:text-card-foreground"
 							href="https://osu.ppy.sh/u/{user.osuId}"
 							target="_blank"
 							rel="noreferrer noopener"
 						>
-							osu! profile
+							<OsuIcon class="relative top-px h-4 w-4 shrink-0" />
+							<span class="underline underline-offset-2">osu! profile</span>
 						</a>
 					</div>
 				</div>
