@@ -13,6 +13,8 @@
 	export let beatmaps: MappoolBeatmapDto[];
 	export let tournamentMode: OsuMode;
 	export let result: TournamentEditActionResult | undefined;
+	export let onSuccess: (() => void) | undefined = undefined;
+	export let onCancel: (() => void) | undefined = undefined;
 
 	const normalizeMod = (value: string) => value.trim().toUpperCase();
 	const metadataLookup = createBeatmapMetadataLookup();
@@ -34,11 +36,12 @@
 
 	const enhanceAddBeatmap: SubmitFunction = () => {
 		return async ({ result, update }) => {
-			await update();
+			await update({ invalidateAll: true });
 
 			if (result.type === 'success') {
 				beatmapId = '';
 				metadataLookup.reset();
+				onSuccess?.();
 			}
 		};
 	};
@@ -120,5 +123,10 @@
 		>
 			Add map to mappool
 		</Button>
+		{#if onCancel}
+			<Button type="button" variant="outline" class="ml-2 text-[12px]" on:click={onCancel}>
+				Cancel
+			</Button>
+		{/if}
 	</div>
 </form>

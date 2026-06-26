@@ -5,10 +5,13 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Label } from '$lib/components/ui/label';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
+	import type { SubmitFunction } from '@sveltejs/kit';
 
 	export let stage: StageDto;
 	export let hasMappool: boolean;
 	export let result: TournamentEditActionResult | undefined;
+	export let onSuccess: (() => void) | undefined = undefined;
+	export let onCancel: (() => void) | undefined = undefined;
 
 	const toDateTimeLocalValue = (value: Date | string) => {
 		const date = new Date(value);
@@ -20,9 +23,24 @@
 		result?.action === 'createMappool' && !result.ok && result.stageId === stage.id
 			? result
 			: undefined;
+
+	const enhanceCreateMappool: SubmitFunction = () => {
+		return async ({ result, update }) => {
+			await update({ invalidateAll: true });
+
+			if (result.type === 'success') {
+				onSuccess?.();
+			}
+		};
+	};
 </script>
 
-<form method="post" action="?/createMappool" class="flex flex-col gap-3" use:enhance>
+<form
+	method="post"
+	action="?/createMappool"
+	class="flex flex-col gap-3"
+	use:enhance={enhanceCreateMappool}
+>
 	<p class="text-sm font-medium">Create mappool</p>
 	<input type="hidden" name="stageId" value={stage.id} />
 	{#if hasMappool}
@@ -64,5 +82,10 @@
 		>
 			Add mappool
 		</Button>
+		{#if onCancel}
+			<Button type="button" variant="outline" class="ml-2 text-[12px]" on:click={onCancel}>
+				Cancel
+			</Button>
+		{/if}
 	</div>
 </form>
