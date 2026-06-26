@@ -1,10 +1,30 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import type { StageScheduleDtoOutput } from '$lib/api/generated/model';
 	import Schedule from '$lib/components/schedule/schedule.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
 
 	export let schedule: StageScheduleDtoOutput[];
+
+	$: requestedStageId = $page.url.searchParams.get('stage');
+	$: activeStageId = getActiveStageId(requestedStageId);
+
+	function getActiveStageId(value: string | null) {
+		if (value && schedule.some((stage) => stage.id === value)) {
+			return value;
+		}
+
+		return schedule[0]?.id ?? '';
+	}
+
+	function getStageTabHref(stageId: string) {
+		const params = new URLSearchParams($page.url.searchParams);
+		params.set('tab', 'schedule');
+		params.set('stage', stageId);
+		const query = params.toString();
+		return query ? `${$page.url.pathname}?${query}` : $page.url.pathname;
+	}
 </script>
 
 <div class="flex flex-col gap-3">
@@ -12,7 +32,7 @@
 		<p>No stages added yet.</p>
 	{:else}
 		<TabGroup
-			value={schedule[0]?.id}
+			value={activeStageId}
 			let:Head
 			let:ContentItem
 			class="flex flex-col gap-4 md:flex-row"
@@ -22,6 +42,7 @@
 					{#each schedule as stage}
 						<Item
 							value={stage.id}
+							href={getStageTabHref(stage.id)}
 							class="mr-0"
 							buttonClass={buttonVariants({
 								variant: 'default',

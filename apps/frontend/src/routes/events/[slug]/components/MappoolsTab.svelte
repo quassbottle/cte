@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { page } from '$app/stores';
 	import type { MappoolBeatmapDto, MappoolDto, OsuMode, StageDto } from '$lib/api/types';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
@@ -24,8 +25,26 @@
 	$: beatmapsByMappoolId = new Map(
 		mappoolBeatmaps.map((entry) => [entry.mappoolId, [...entry.beatmaps]])
 	);
+	$: requestedStageId = $page.url.searchParams.get('stage');
+	$: activeStageId = getActiveStageId(requestedStageId);
 
 	const getStageMappools = (stageId: string) => mappoolsByStageId.get(stageId) ?? [];
+
+	function getActiveStageId(value: string | null) {
+		if (value && sortedStages.some((stage) => stage.id === value)) {
+			return value;
+		}
+
+		return sortedStages[0]?.id ?? '';
+	}
+
+	function getStageTabHref(stageId: string) {
+		const params = new URLSearchParams($page.url.searchParams);
+		params.set('tab', 'mappools');
+		params.set('stage', stageId);
+		const query = params.toString();
+		return query ? `${$page.url.pathname}?${query}` : $page.url.pathname;
+	}
 </script>
 
 <div class="flex flex-col gap-3">
@@ -33,7 +52,7 @@
 		<p>No stages added yet.</p>
 	{:else}
 		<TabGroup
-			value={sortedStages[0]?.id}
+			value={activeStageId}
 			let:Head
 			let:ContentItem
 			class="flex flex-col gap-4 md:flex-row"
@@ -43,6 +62,7 @@
 					{#each sortedStages as stage}
 						<Item
 							value={stage.id}
+							href={getStageTabHref(stage.id)}
 							class="mr-0"
 							buttonClass={buttonVariants({
 								variant: 'default',

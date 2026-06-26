@@ -19,8 +19,10 @@
 	};
 	export let form: TournamentEditActionResult | undefined;
 
-	const editTabs = ['tournament', 'stages', 'schedule', 'mappools'] as const;
+	const editTabs = ['info', 'stages', 'schedule', 'mappools'] as const;
 	type EditTab = (typeof editTabs)[number];
+	let activeTab: EditTab = 'info';
+	let lastTabParam: string | null = null;
 
 	function isEditTab(value: string | null): value is EditTab {
 		return editTabs.some((tab) => tab === value);
@@ -34,10 +36,41 @@
 	}
 
 	function getActiveEditTab(value: string | null): EditTab {
-		return isEditTab(value) ? value : 'tournament';
+		if (value === 'tournament') {
+			return 'info';
+		}
+
+		return isEditTab(value) ? value : 'info';
 	}
 
-	$: activeTab = getActiveEditTab($page.url.searchParams.get('tab'));
+	function getViewHref(tab: EditTab) {
+		const params = new URLSearchParams($page.url.searchParams);
+		const viewTab = tab === 'schedule' || tab === 'mappools' ? tab : 'info';
+		params.set('tab', viewTab);
+
+		if (viewTab !== 'schedule' && viewTab !== 'mappools') {
+			params.delete('stage');
+		}
+
+		const query = params.toString();
+		return `/events/${data.tournament.id}${query ? `?${query}` : ''}`;
+	}
+
+	function setActiveTab(value: string) {
+		if (isEditTab(value)) {
+			activeTab = value;
+		}
+	}
+
+	$: {
+		const tabParam = $page.url.searchParams.get('tab');
+
+		if (tabParam !== lastTabParam) {
+			lastTabParam = tabParam;
+			activeTab = getActiveEditTab(tabParam);
+		}
+	}
+	$: viewHref = getViewHref(activeTab);
 </script>
 
 <svelte:head>
@@ -45,21 +78,21 @@
 </svelte:head>
 
 <div class="flex flex-col gap-8">
-	<TabGroup value={activeTab} let:Head let:ContentItem>
+	<TabGroup value={activeTab} onValueChange={setActiveTab} let:Head let:ContentItem>
 		<div class="mb-4 flex items-start justify-between">
 			<Head let:Item class="gap-4 text-[24px] font-semibold">
-				<Item value="tournament" href={getEditTabHref('tournament')}>Tournament</Item>
+				<Item value="info" href={getEditTabHref('info')}>Info</Item>
 				<Item value="stages" href={getEditTabHref('stages')}>Stages</Item>
 				<Item value="schedule" href={getEditTabHref('schedule')}>Schedule</Item>
 				<Item value="mappools" href={getEditTabHref('mappools')}>Mappools</Item>
 			</Head>
 
-			<a href="/events/{data.tournament.id}">
+			<a href={viewHref}>
 				<Button class="w-[120px] text-[12px]" variant="outline">View</Button>
 			</a>
 		</div>
 
-		<ContentItem value="tournament">
+		<ContentItem value="info">
 			<TournamentTab tournament={data.tournament} {form} />
 		</ContentItem>
 

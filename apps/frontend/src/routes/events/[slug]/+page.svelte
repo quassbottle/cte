@@ -35,6 +35,8 @@
 
 	const tournamentTabs = ['info', 'participants', 'schedule', 'mappools'] as const;
 	type TournamentTab = (typeof tournamentTabs)[number];
+	let activeTab: TournamentTab = 'info';
+	let lastTabParam: string | null = null;
 
 	function isTournamentTab(value: string | null): value is TournamentTab {
 		return tournamentTabs.some((tab) => tab === value);
@@ -51,14 +53,41 @@
 		return isTournamentTab(value) ? value : 'info';
 	}
 
-	$: activeTab = getActiveTournamentTab($page.url.searchParams.get('tab'));
+	function getEditHref(tab: TournamentTab) {
+		const params = new URLSearchParams($page.url.searchParams);
+		const editTab = tab === 'schedule' || tab === 'mappools' ? tab : 'info';
+		params.set('tab', editTab);
+
+		if (editTab !== 'schedule' && editTab !== 'mappools') {
+			params.delete('stage');
+		}
+
+		const query = params.toString();
+		return `/events/${data.tournament.id}/edit${query ? `?${query}` : ''}`;
+	}
+
+	function setActiveTab(value: string) {
+		if (isTournamentTab(value)) {
+			activeTab = value;
+		}
+	}
+
+	$: {
+		const tabParam = $page.url.searchParams.get('tab');
+
+		if (tabParam !== lastTabParam) {
+			lastTabParam = tabParam;
+			activeTab = getActiveTournamentTab(tabParam);
+		}
+	}
+	$: editHref = getEditHref(activeTab);
 </script>
 
 <svelte:head>
 	<title>CTE - {data.tournament.name}</title>
 </svelte:head>
 
-<TabGroup value={activeTab} let:Head let:ContentItem>
+<TabGroup value={activeTab} onValueChange={setActiveTab} let:Head let:ContentItem>
 	<div class="mb-4 flex items-start justify-between">
 		<Head let:Item class="gap-4 text-[24px] font-semibold">
 			<Item value="info" href={getTournamentTabHref('info')}>Info</Item>
@@ -68,7 +97,7 @@
 		</Head>
 
 		{#if data.canEditTournament}
-			<a href="/events/{data.tournament.id}/edit">
+			<a href={editHref}>
 				<Button class="w-[120px] text-[12px]">Edit</Button>
 			</a>
 		{/if}
