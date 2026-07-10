@@ -6,7 +6,7 @@ settings:
 
 patchedDependencies:
   '@ctrl/irc@3.1.2':
-    hash: d6cbd4a43ce069db9c78e202d731822aaafd717f476d59e3c1e1866d64782b0e
+    hash: 5gjyrfzpbgq3vyiddptzofoduy
     path: patches/@ctrl__irc@3.1.2.patch
 
 importers:
@@ -298,7 +298,7 @@ importers:
         version: link:../../packages/contracts
       '@ctrl/irc':
         specifier: ^3.1.2
-        version: 3.1.2(patch_hash=d6cbd4a43ce069db9c78e202d731822aaafd717f476d59e3c1e1866d64782b0e)
+        version: 3.1.2(patch_hash=5gjyrfzpbgq3vyiddptzofoduy)
       '@nats-io/jetstream':
         specifier: ^3.3.0
         version: 3.3.0
@@ -6863,7 +6863,7 @@ snapshots:
 
   '@csstools/css-tokenizer@4.0.0': {}
 
-  '@ctrl/irc@3.1.2(patch_hash=d6cbd4a43ce069db9c78e202d731822aaafd717f476d59e3c1e1866d64782b0e)':
+  '@ctrl/irc@3.1.2(patch_hash=5gjyrfzpbgq3vyiddptzofoduy)':
     dependencies:
       chardet: 2.1.1
       debug: 4.4.3

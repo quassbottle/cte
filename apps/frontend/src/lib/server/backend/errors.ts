@@ -1,4 +1,4 @@
-import type { BackendRequestError } from '$lib/server/backend/fetcher';
+import { BackendRequestError } from '$lib/server/backend/fetcher';
 
 export const hasBackendStatus = (cause: unknown): cause is Pick<BackendRequestError, 'status'> =>
 	typeof cause === 'object' &&
@@ -7,7 +7,7 @@ export const hasBackendStatus = (cause: unknown): cause is Pick<BackendRequestEr
 	typeof cause.status === 'number';
 
 export const isBackendRequestError = (cause: unknown): cause is BackendRequestError =>
-	hasBackendStatus(cause) && 'message' in cause && typeof cause.message === 'string';
+	cause instanceof BackendRequestError;
 
 export const backendErrorStatus = (cause: unknown, fallback = 400) =>
 	hasBackendStatus(cause) ? cause.status : fallback;

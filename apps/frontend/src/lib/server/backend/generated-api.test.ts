@@ -6,6 +6,9 @@ describe('generated backend API', () => {
 	it('exports generated endpoint functions', () => {
 		expect(Object.keys(generatedApi).length).toBeGreaterThan(0);
 		expect(typeof generatedApi.tournamentControllerFindMany).toBe('function');
+		expect(typeof generatedApi.tournamentControllerCreateMatch).toBe('function');
+		expect(typeof generatedApi.tournamentControllerUpdateMatch).toBe('function');
+		expect(typeof generatedApi.tournamentControllerDeleteMatch).toBe('function');
 	});
 
 	it('documents typed authentication responses', () => {

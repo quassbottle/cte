@@ -1,5 +1,4 @@
-import { userControllerGetByLookup } from '$lib/api/generated/browser-client';
-import type { SelectedUser } from '$lib/schemas/user.schema';
+import { selectedUserSchema, type SelectedUser } from '$lib/schemas/user.schema';
 
 export async function lookupSelectedUser(query: string): Promise<SelectedUser> {
 	const value = query.trim();
@@ -8,17 +7,12 @@ export async function lookupSelectedUser(query: string): Promise<SelectedUser> {
 	}
 
 	try {
-		const response = await userControllerGetByLookup({ query: value });
-		if (response.status < 200 || response.status >= 300) {
+		const response = await fetch(`/api/users/lookup?${new URLSearchParams({ query: value })}`);
+		if (!response.ok) {
 			throw new Error('User not found.');
 		}
 
-		return {
-			id: response.data.id,
-			osuId: response.data.osuId,
-			osuUsername: response.data.osuUsername,
-			avatarUrl: response.data.avatarUrl
-		};
+		return selectedUserSchema.parse(await response.json());
 	} catch {
 		throw new Error('User not found.');
 	}

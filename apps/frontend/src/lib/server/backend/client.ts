@@ -3,6 +3,7 @@ import type {
 	CreateTournamentDto,
 	CreateMappoolDto,
 	CreateStageDto,
+	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
 	UpdateMappoolBeatmapDto,
 	UpdateMappoolDto,
@@ -24,6 +25,8 @@ import {
 	stageControllerPatch,
 	stageControllerSoftDelete,
 	tournamentControllerCreate,
+	tournamentControllerCreateMatch,
+	tournamentControllerDeleteMatch,
 	tournamentControllerFindMany,
 	tournamentControllerArchive,
 	tournamentControllerGetById,
@@ -32,6 +35,7 @@ import {
 	tournamentControllerPatch,
 	tournamentControllerRegister,
 	tournamentControllerUnregister,
+	tournamentControllerUpdateMatch,
 	tournamentMappoolControllerFindByTournament,
 	tournamentMappoolControllerFindByTournamentForManagement,
 	userControllerGetById,
@@ -40,25 +44,6 @@ import {
 	tournamentControllerGetSchedule
 } from '$lib/server/backend/generated/endpoints';
 import type { ServerSession } from '$lib/server/auth/session';
-import { backendFetch } from './fetcher';
-
-export type ScheduleMatchUpsertInput = {
-	name: string;
-	stageId: string;
-	matchNumber: number | null;
-	startsAt: string;
-	endsAt: string;
-	mpUrl: string | null;
-	vodUrl: string | null;
-	players: {
-		userId: string;
-		score: number | null;
-	}[];
-	staff: {
-		userId: string;
-		role: 'referee' | 'streamer' | 'commentator';
-	}[];
-};
 
 type BackendClientInput =
 	| Pick<ServerSession, 'token'>
@@ -127,31 +112,12 @@ export function createBackendClient(input?: BackendClientInput) {
 			unregister: (id: string) => tournamentControllerUnregister(id, options)
 		},
 		matches: {
-			create: (tournamentId: string, input: ScheduleMatchUpsertInput) =>
-				backendFetch(`/api/tournaments/${tournamentId}/matches`, {
-					...options,
-					method: 'POST',
-					headers: {
-						...options.headers,
-						'content-type': 'application/json'
-					},
-					body: JSON.stringify(input)
-				}),
-			update: (tournamentId: string, matchId: string, input: ScheduleMatchUpsertInput) =>
-				backendFetch(`/api/tournaments/${tournamentId}/matches/${matchId}`, {
-					...options,
-					method: 'PATCH',
-					headers: {
-						...options.headers,
-						'content-type': 'application/json'
-					},
-					body: JSON.stringify(input)
-				}),
+			create: (tournamentId: string, input: ScheduleMatchUpsertDto) =>
+				tournamentControllerCreateMatch(tournamentId, input, options),
+			update: (tournamentId: string, matchId: string, input: ScheduleMatchUpsertDto) =>
+				tournamentControllerUpdateMatch(tournamentId, matchId, input, options),
 			delete: (tournamentId: string, matchId: string) =>
-				backendFetch(`/api/tournaments/${tournamentId}/matches/${matchId}`, {
-					...options,
-					method: 'DELETE'
-				})
+				tournamentControllerDeleteMatch(tournamentId, matchId, options)
 		},
 		stages: {
 			findByTournament: (tournamentId: string) => stageControllerFindMany(tournamentId, options),

@@ -25,7 +25,11 @@ describe('server-only infrastructure boundaries', () => {
 
 	it('prevents browser-facing code from importing the generated NestJS client', async () => {
 		const sourceRoot = resolve(import.meta.dir, '../..');
-		const browserRoots = [resolve(sourceRoot, 'routes'), resolve(sourceRoot, 'lib/components')];
+		const browserRoots = [
+			resolve(sourceRoot, 'routes'),
+			resolve(sourceRoot, 'lib/components'),
+			resolve(sourceRoot, 'lib/utils')
+		];
 		const files = (await Promise.all(browserRoots.map(collectFiles)))
 			.flat()
 			.filter(

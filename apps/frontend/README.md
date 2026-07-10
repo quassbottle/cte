@@ -28,7 +28,7 @@ The Bun adapter uses `HTTP_HOST` and `HTTP_PORT`. The frontend `Procfile` maps t
 
 ## Backend access
 
-Generated backend SDK code is server-only. Routes, services, and queries should use `createBackendClient` from `src/lib/server/backend/client.ts`; browser components must not import generated backend code.
+Generated backend SDK code is server-only. Routes, services, and queries should use `createBackendClient` from `src/lib/server/backend/client.ts`; browser code must use narrow local `/api/*` routes only when it needs data before a form submission or navigation.
 
 ## Generated backend API
 
