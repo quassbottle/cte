@@ -1,4 +1,9 @@
-import { Inject, Injectable } from '@nestjs/common';
+import {
+  Inject,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { beatmapId } from 'lib/domain/beatmap/beatmap.id';
 import { Schema, beatmaps } from 'lib/infrastructure/db';
@@ -84,7 +89,11 @@ export class OsuBeatmapService {
           };
         }
       }
-    } catch {
+    } catch (error) {
+      if (!this.isBeatmapNotFoundError(error)) {
+        throw error;
+      }
+
       if (existing) {
         const [updated] = await this.drizzle
           .update(beatmaps)
@@ -105,21 +114,20 @@ export class OsuBeatmapService {
           };
         }
       }
+
+      throw new NotFoundException(`Beatmap ${osuBeatmapId} was not found`);
     }
 
-    return {
-      osuBeatmapsetId: existing?.osuBeatmapsetId ?? 1,
-      osuBeatmapId: existing?.osuBeatmapId ?? osuBeatmapId,
-      artist: existing?.artist ?? 'Unknown artist',
-      title: existing?.title ?? 'Unknown title',
-      difficultyName: existing?.difficultyName ?? 'Unknown difficulty',
-      difficulty: this.normalizeStarRate(existing?.difficulty ?? 0),
-      version: existing?.version ?? 0,
-      deleted: existing?.deleted ?? true,
-    };
+    throw new InternalServerErrorException(
+      `Failed to persist beatmap ${osuBeatmapId}`,
+    );
   }
 
   private normalizeStarRate(value: number): number {
     return Math.round(value * 100) / 100;
+  }
+
+  private isBeatmapNotFoundError(error: unknown): boolean {
+    return error instanceof Error && /\b404\b|not found/i.test(error.message);
   }
 }

@@ -43,7 +43,7 @@ export function createBeatmapMetadataLookup() {
 				state.set({
 					status: 'error',
 					metadata: null,
-					message: 'Failed to load beatmap metadata'
+					message: response.status === 404 ? 'Beatmap not found' : 'Failed to load beatmap metadata'
 				});
 				return;
 			}
