@@ -120,6 +120,53 @@ export class OsuService {
     };
   }
 
+  public async getMatchSnapshot(params: {
+    osuMatchId: number;
+  }): Promise<OsuMatchSnapshot> {
+    await this.ensureGuestAuthorized();
+
+    const games = new Map<number, OsuMatchGame>();
+    let after = 0;
+    let closedAt: Date | null = null;
+
+    while (true) {
+      const result = await v2.matches.details({
+        match_id: params.osuMatchId,
+        after,
+        limit: 100,
+      });
+
+      if (result.error != null) throw result.error;
+
+      closedAt = result.match.end_time ? new Date(result.match.end_time) : null;
+      const eventIds = result.events.map((event) => event.id);
+
+      for (const event of result.events) {
+        if (!event.game) continue;
+        games.set(event.game.id, {
+          id: event.game.id,
+          beatmapId: event.game.beatmap_id,
+          endedAt: event.game.end_time ? new Date(event.game.end_time) : null,
+          scores: event.game.scores.map((score) => ({
+            userId: score.user_id,
+            score: score.score,
+          })),
+        });
+      }
+
+      const nextAfter = Math.max(after, ...eventIds);
+      if (nextAfter >= result.latest_event_id) break;
+      if (nextAfter === after) {
+        throw new Error(
+          `osu match ${params.osuMatchId} pagination made no progress`,
+        );
+      }
+      after = nextAfter;
+    }
+
+    return { closedAt, games: [...games.values()] };
+  }
+
   private createClient(accessToken?: string): OsuUserClient {
     return {
       users: {
@@ -187,6 +234,18 @@ type OsuUserProfile = {
     global_rank?: number | null;
   } | null;
   error?: unknown;
+};
+
+type OsuMatchSnapshot = {
+  closedAt: Date | null;
+  games: OsuMatchGame[];
+};
+
+type OsuMatchGame = {
+  id: number;
+  beatmapId: number;
+  endedAt: Date | null;
+  scores: { userId: number; score: number }[];
 };
 
 type OsuBeatmapDetails = {
