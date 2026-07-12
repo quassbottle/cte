@@ -12,7 +12,7 @@ export class MatchSyncScheduler {
     private readonly service: MatchSyncService,
   ) {}
 
-  @Interval(1_000)
+  @Interval(5_000)
   public async tick(): Promise<void> {
     const leases = await this.repository.claimDue();
     const results = await Promise.allSettled(

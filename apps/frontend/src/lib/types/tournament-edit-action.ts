@@ -9,6 +9,8 @@ export type EditAction =
 	| 'createScheduleMatch'
 	| 'updateScheduleMatch'
 	| 'deleteScheduleMatch'
+	| 'syncScheduleMatch'
+	| 'stopScheduleMatch'
 	| 'createMappool'
 	| 'updateMappoolVisibility'
 	| 'addMappoolBeatmap'

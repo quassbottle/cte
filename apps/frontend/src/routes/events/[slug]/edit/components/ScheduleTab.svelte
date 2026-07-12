@@ -150,6 +150,20 @@
 						{:else}
 							<Schedule matches={stage.matches} editable>
 								<div slot="actions" let:match class="flex justify-end gap-2">
+									<form method="post" action="?/syncScheduleMatch" use:enhance={enhanceDeleteMatch}>
+										<input type="hidden" name="matchId" value={match.id} />
+										<Button type="submit" variant="outline" class="text-[12px]">Sync</Button>
+									</form>
+									{#if match.syncStatus === 'active'}
+										<form
+											method="post"
+											action="?/stopScheduleMatch"
+											use:enhance={enhanceDeleteMatch}
+										>
+											<input type="hidden" name="matchId" value={match.id} />
+											<Button type="submit" variant="outline" class="text-[12px]">Stop sync</Button>
+										</form>
+									{/if}
 									<Button
 										type="button"
 										variant="outline"
