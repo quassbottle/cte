@@ -7,12 +7,12 @@ const checkbox = z.preprocess((value) => value === 'on' || value === 'true', z.b
 const positiveInt = z.coerce.number().int().positive();
 
 const optionalPositiveInt = z.preprocess(
-	(value) => (typeof value === 'string' && value.trim() === '' ? null : value),
+	(value) => (value === undefined || (typeof value === 'string' && value.trim() === '') ? null : value),
 	z.coerce.number().int().positive().nullable()
 );
 
 const optionalInt = z.preprocess(
-	(value) => (typeof value === 'string' && value.trim() === '' ? null : value),
+	(value) => (value === undefined || (typeof value === 'string' && value.trim() === '') ? null : value),
 	z.coerce.number().int().nullable()
 );
 
