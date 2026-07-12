@@ -47,6 +47,24 @@ describe('MatchSyncService', () => {
       expect.objectContaining({ lease, background: true }),
     );
   });
+
+  it('creates missing sync state before a manual sync', async () => {
+    const lease = {
+      matchId: matchIdSchema.parse('ckm123456789012345678901'),
+      osuMatchId: 1,
+      leaseToken: 'token',
+      status: 'active' as const,
+    };
+    const repository = {
+      ensureSync: jest.fn(),
+      claimOne: jest.fn().mockResolvedValue(lease),
+    };
+    const service = new MatchSyncService(repository as never, {} as never);
+    jest.spyOn(service, 'syncOnce').mockResolvedValue(true);
+
+    await expect(service.syncMatchOnce(lease.matchId)).resolves.toBe(true);
+    expect(repository.ensureSync).toHaveBeenCalledWith(lease.matchId);
+  });
 });
 jest.mock('@paralleldrive/cuid2', () => ({
   createId: jest.fn(),

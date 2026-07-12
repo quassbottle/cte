@@ -40,6 +40,7 @@ export class MatchSyncService {
   }
 
   public async syncMatchOnce(matchId: MatchId): Promise<boolean> {
+    await this.repository.ensureSync(matchId);
     const lease = await this.repository.claimOne(matchId);
     if (!lease) throw new ConflictException('Match sync is already running');
     return this.syncOnce(lease, false);

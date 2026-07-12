@@ -101,6 +101,19 @@ export class MatchSyncRepository {
       });
   }
 
+  public async ensureSync(matchId: MatchId): Promise<void> {
+    const sync = await this.getState(matchId);
+    if (sync) return;
+
+    const match = await this.drizzle.query.matches.findFirst({
+      where: eq(matches.id, matchId),
+    });
+    if (!match?.mpUrl) {
+      throw new Error('Match has no osu multiplayer URL');
+    }
+    await this.activate(matchId, match.mpUrl);
+  }
+
   public async stop(
     matchId: MatchId,
     db: Pick<Schema, 'update'> = this.drizzle,
