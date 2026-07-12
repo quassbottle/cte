@@ -204,9 +204,13 @@ export class OsuService {
       }),
     );
 
-    const result = (await this.guestAuthPromise) as {
-      error?: unknown;
-    };
+    let result: { error?: unknown };
+    try {
+      result = (await this.guestAuthPromise) as { error?: unknown };
+    } catch (error) {
+      this.guestAuthPromise = null;
+      throw error;
+    }
 
     if (result?.error != null) {
       this.guestAuthPromise = null;
