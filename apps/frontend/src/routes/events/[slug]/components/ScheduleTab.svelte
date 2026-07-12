@@ -1,11 +1,28 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { browser } from '$app/environment';
+	import { invalidateAll } from '$app/navigation';
 	import type { StageScheduleDtoOutput } from '$lib/api/generated/model';
 	import Schedule from '$lib/components/schedule/schedule.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
+	import { onDestroy } from 'svelte';
 
 	export let schedule: StageScheduleDtoOutput[];
+	let timer: ReturnType<typeof setInterval> | undefined;
+
+	$: hasActiveSync = schedule.some((stage) =>
+		stage.matches.some((match) => match.syncStatus === 'active')
+	);
+	$: {
+		if (browser && hasActiveSync && !timer) timer = setInterval(() => void invalidateAll(), 10_000);
+		if (browser && !hasActiveSync && timer) {
+			clearInterval(timer);
+			timer = undefined;
+		}
+	}
+
+	onDestroy(() => timer && clearInterval(timer));
 
 	$: requestedStageId = $page.url.searchParams.get('stage');
 	$: activeStageId = getActiveStageId(requestedStageId);

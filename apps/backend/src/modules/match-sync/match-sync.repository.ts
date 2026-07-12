@@ -1,8 +1,19 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { sql } from 'drizzle-orm';
+import { and, asc, eq, gte, isNull, lte, or } from 'drizzle-orm';
 import { EnvService } from 'lib/common/env/env.service';
-import { Schema } from 'lib/infrastructure/db';
+import type { MatchId } from 'lib/domain/match/match.id';
+import {
+  beatmaps,
+  mappools,
+  mappoolsBeatmaps,
+  matches,
+  matchOsuSync,
+  matchParticipants,
+  Schema,
+  users,
+} from 'lib/infrastructure/db';
+import { parseOsuMatchId } from './mp-url';
 import { MatchSyncInput, SyncLease } from './types';
 
 @Injectable()
@@ -16,40 +27,43 @@ export class MatchSyncRepository {
     limit = this.env.get('OSU_MATCH_SYNC_BATCH_SIZE'),
   ): Promise<SyncLease[]> {
     return this.drizzle.transaction(async (tx) => {
-      const claimed = await tx.execute(sql<{
-        match_id: string;
-        osu_match_id: number;
-        status: SyncLease['status'];
-      }>`
-      select match_id, osu_match_id, status
-      from match_osu_sync
-      where status = 'active'
-        and next_sync_at <= now()
-        and (lease_until is null or lease_until <= now())
-      order by next_sync_at
-      for update skip locked
-      limit ${limit}
-      `);
-
-      const rows = claimed.rows as {
-        match_id: string;
-        osu_match_id: number;
-        status: SyncLease['status'];
-      }[];
+      const now = new Date();
+      const rows = await tx
+        .select({
+          matchId: matchOsuSync.matchId,
+          osuMatchId: matchOsuSync.osuMatchId,
+          status: matchOsuSync.status,
+        })
+        .from(matchOsuSync)
+        .where(
+          and(
+            eq(matchOsuSync.status, 'active'),
+            lte(matchOsuSync.nextSyncAt, now),
+            or(
+              isNull(matchOsuSync.leaseUntil),
+              lte(matchOsuSync.leaseUntil, now),
+            ),
+          ),
+        )
+        .orderBy(asc(matchOsuSync.nextSyncAt))
+        .limit(limit)
+        .for('update', { skipLocked: true });
 
       return Promise.all(
         rows.map(async (row) => {
           const leaseToken = randomUUID();
-          await tx.execute(sql`
-          update match_osu_sync
-          set lease_token = ${leaseToken},
-              lease_until = now() + (${this.env.get('OSU_MATCH_SYNC_LEASE_MS')} * interval '1 millisecond'),
-              updated_at = now()
-          where match_id = ${row.match_id}
-          `);
+          await tx
+            .update(matchOsuSync)
+            .set({
+              leaseToken,
+              leaseUntil: new Date(
+                now.valueOf() + this.env.get('OSU_MATCH_SYNC_LEASE_MS'),
+              ),
+            })
+            .where(eq(matchOsuSync.matchId, row.matchId));
           return {
-            matchId: row.match_id,
-            osuMatchId: row.osu_match_id,
+            matchId: row.matchId,
+            osuMatchId: row.osuMatchId,
             leaseToken,
             status: row.status,
           };
@@ -58,78 +72,132 @@ export class MatchSyncRepository {
     });
   }
 
-  public async claimOne(matchId: string): Promise<SyncLease | null> {
+  public async activate(
+    matchId: MatchId,
+    mpUrl: string,
+    db: Pick<Schema, 'insert'> = this.drizzle,
+  ): Promise<void> {
+    const osuMatchId = parseOsuMatchId(mpUrl);
+    if (!osuMatchId) throw new Error('Invalid osu multiplayer URL');
+    await db
+      .insert(matchOsuSync)
+      .values({
+        matchId,
+        osuMatchId,
+        status: 'active',
+        nextSyncAt: new Date(),
+      })
+      .onConflictDoUpdate({
+        target: matchOsuSync.matchId,
+        set: {
+          osuMatchId,
+          status: 'active',
+          nextSyncAt: new Date(),
+          leaseUntil: null,
+          leaseToken: null,
+          lastError: null,
+          attempts: 0,
+        },
+      });
+  }
+
+  public async stop(
+    matchId: MatchId,
+    db: Pick<Schema, 'update'> = this.drizzle,
+  ): Promise<void> {
+    await db
+      .update(matchOsuSync)
+      .set({ status: 'stopped', leaseUntil: null, leaseToken: null })
+      .where(eq(matchOsuSync.matchId, matchId));
+  }
+
+  public async invalidateLease(
+    matchId: MatchId,
+    db: Pick<Schema, 'update'> = this.drizzle,
+  ): Promise<void> {
+    await db
+      .update(matchOsuSync)
+      .set({ leaseUntil: null, leaseToken: null })
+      .where(eq(matchOsuSync.matchId, matchId));
+  }
+
+  public async getState(matchId: MatchId) {
+    return this.drizzle.query.matchOsuSync.findFirst({
+      where: eq(matchOsuSync.matchId, matchId),
+    });
+  }
+
+  public async claimOne(matchId: MatchId): Promise<SyncLease | null> {
     return this.drizzle.transaction(async (tx) => {
-      const result = await tx.execute(sql<{
-        match_id: string;
-        osu_match_id: number;
-        status: SyncLease['status'];
-      }>`
-        select match_id, osu_match_id, status
-        from match_osu_sync
-        where match_id = ${matchId}
-          and (lease_until is null or lease_until <= now())
-        for update
-      `);
-      const row = result.rows[0] as
-        | {
-            match_id: string;
-            osu_match_id: number;
-            status: SyncLease['status'];
-          }
-        | undefined;
+      const now = new Date();
+      const row = await tx
+        .select({
+          matchId: matchOsuSync.matchId,
+          osuMatchId: matchOsuSync.osuMatchId,
+          status: matchOsuSync.status,
+        })
+        .from(matchOsuSync)
+        .where(
+          and(
+            eq(matchOsuSync.matchId, matchId),
+            or(
+              isNull(matchOsuSync.leaseUntil),
+              lte(matchOsuSync.leaseUntil, now),
+            ),
+          ),
+        )
+        .for('update')
+        .limit(1)
+        .then((rows) => rows[0]);
       if (!row) return null;
 
       const leaseToken = randomUUID();
-      await tx.execute(sql`
-        update match_osu_sync
-        set lease_token = ${leaseToken},
-            lease_until = now() + (${this.env.get('OSU_MATCH_SYNC_LEASE_MS')} * interval '1 millisecond'),
-            updated_at = now()
-        where match_id = ${row.match_id}
-      `);
+      await tx
+        .update(matchOsuSync)
+        .set({
+          leaseToken,
+          leaseUntil: new Date(
+            now.valueOf() + this.env.get('OSU_MATCH_SYNC_LEASE_MS'),
+          ),
+        })
+        .where(eq(matchOsuSync.matchId, row.matchId));
       return {
-        matchId: row.match_id,
-        osuMatchId: row.osu_match_id,
+        matchId: row.matchId,
+        osuMatchId: row.osuMatchId,
         leaseToken,
         status: row.status,
       };
     });
   }
 
-  public async loadInput(matchId: string): Promise<MatchSyncInput> {
-    const [playersResult, beatmapsResult] = await Promise.all([
-      this.drizzle.execute(sql<{ user_id: string; osu_id: number }>`
-        select u.id as user_id, u.osu_id
-        from match_participants mp
-        inner join users u on u.id = mp.user_id
-        where mp.match_id = ${matchId}
-        order by u.id
-      `),
-      this.drizzle.execute(sql<{ osu_beatmap_id: number }>`
-        select b.osu_beatmap_id
-        from matches m
-        inner join mappools p on p.stage_id = m.stage_id
-        inner join mappools_beatmaps pb on pb.mappool_id = p.id
-        inner join beatmaps b on b.id = pb.beatmap_id
-        where m.id = ${matchId}
-      `),
+  public async loadInput(matchId: MatchId): Promise<MatchSyncInput> {
+    const [players, mappoolBeatmaps] = await Promise.all([
+      this.drizzle
+        .select({ userId: users.id, osuId: users.osuId })
+        .from(matchParticipants)
+        .innerJoin(users, eq(users.id, matchParticipants.userId))
+        .where(eq(matchParticipants.matchId, matchId))
+        .orderBy(asc(users.id)),
+      this.drizzle
+        .select({ osuBeatmapId: beatmaps.osuBeatmapId })
+        .from(matches)
+        .innerJoin(mappools, eq(mappools.stageId, matches.stageId))
+        .innerJoin(
+          mappoolsBeatmaps,
+          eq(mappoolsBeatmaps.mappoolId, mappools.id),
+        )
+        .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
+        .where(eq(matches.id, matchId)),
     ]);
-    const players = playersResult.rows as { user_id: string; osu_id: number }[];
-    if (players.length !== 2 || beatmapsResult.rows.length === 0) {
+    if (players.length !== 2 || mappoolBeatmaps.length === 0) {
       throw new Error(
         'Match sync requires two participants and a stage mappool',
       );
     }
     return {
-      players: players.map((player) => ({
-        userId: player.user_id,
-        osuId: player.osu_id,
-      })) as MatchSyncInput['players'],
+      players: players as MatchSyncInput['players'],
       allowedBeatmapIds: new Set(
-        (beatmapsResult.rows as { osu_beatmap_id: number }[]).map(
-          (row) => row.osu_beatmap_id,
-        ),
+        mappoolBeatmaps.map((row) => row.osuBeatmapId),
       ),
     };
   }
@@ -142,39 +210,109 @@ export class MatchSyncRepository {
     background: boolean;
   }): Promise<boolean> {
     return this.drizzle.transaction(async (tx) => {
-      const locked = await tx.execute(sql<{ status: SyncLease['status'] }>`
-        select status from match_osu_sync
-        where match_id = ${params.lease.matchId} and lease_token = ${params.lease.leaseToken}
-        for update
-      `);
-      if (!locked.rows[0]) return false;
+      const locked = await tx
+        .select({ matchId: matchOsuSync.matchId })
+        .from(matchOsuSync)
+        .where(
+          and(
+            eq(matchOsuSync.matchId, params.lease.matchId),
+            eq(matchOsuSync.leaseToken, params.lease.leaseToken),
+            gte(matchOsuSync.leaseUntil, new Date()),
+          ),
+        )
+        .for('update')
+        .limit(1);
+      if (!locked[0]) return false;
 
       const [first, second] = params.input.players;
       const firstPoints = params.points.get(first.osuId) ?? 0;
       const secondPoints = params.points.get(second.osuId) ?? 0;
-      await tx.execute(sql`
-        update match_participants set score = case user_id
-          when ${first.userId} then ${firstPoints}
-          when ${second.userId} then ${secondPoints}
-        end,
-        is_winner = case
-          when ${firstPoints} = ${secondPoints} then null
-          when user_id = ${first.userId} then ${firstPoints > secondPoints}
-          else ${secondPoints > firstPoints}
-        end,
-        updated_at = now()
-        where match_id = ${params.lease.matchId} and user_id in (${first.userId}, ${second.userId})
-      `);
-      await tx.execute(sql`
-        update match_osu_sync
-        set status = case when ${params.background} and ${params.closedAt !== null} then 'completed' else status end,
-            next_sync_at = case when ${params.background} and ${params.closedAt === null}
-              then now() + (${this.env.get('OSU_MATCH_SYNC_POLL_INTERVAL_MS')} * interval '1 millisecond')
-              else next_sync_at end,
-            lease_token = null, lease_until = null, last_synced_at = now(), last_error = null, attempts = 0, updated_at = now()
-        where match_id = ${params.lease.matchId} and lease_token = ${params.lease.leaseToken}
-      `);
+      const firstWins =
+        firstPoints === secondPoints ? null : firstPoints > secondPoints;
+      const secondWins =
+        firstPoints === secondPoints ? null : secondPoints > firstPoints;
+      await tx
+        .update(matchParticipants)
+        .set({ score: firstPoints, isWinner: firstWins })
+        .where(
+          and(
+            eq(matchParticipants.matchId, params.lease.matchId),
+            eq(matchParticipants.userId, first.userId),
+          ),
+        );
+      await tx
+        .update(matchParticipants)
+        .set({ score: secondPoints, isWinner: secondWins })
+        .where(
+          and(
+            eq(matchParticipants.matchId, params.lease.matchId),
+            eq(matchParticipants.userId, second.userId),
+          ),
+        );
+      const now = new Date();
+      await tx
+        .update(matchOsuSync)
+        .set({
+          status:
+            params.background && params.closedAt
+              ? 'completed'
+              : params.lease.status,
+          nextSyncAt:
+            params.background && !params.closedAt
+              ? new Date(
+                  now.valueOf() +
+                    this.env.get('OSU_MATCH_SYNC_POLL_INTERVAL_MS'),
+                )
+              : now,
+          leaseToken: null,
+          leaseUntil: null,
+          lastSyncedAt: now,
+          lastError: null,
+          attempts: 0,
+        })
+        .where(
+          and(
+            eq(matchOsuSync.matchId, params.lease.matchId),
+            eq(matchOsuSync.leaseToken, params.lease.leaseToken),
+          ),
+        );
       return true;
     });
+  }
+
+  public async applyFailure(lease: SyncLease, error: unknown): Promise<void> {
+    const current = await this.drizzle.query.matchOsuSync.findFirst({
+      where: and(
+        eq(matchOsuSync.matchId, lease.matchId),
+        eq(matchOsuSync.leaseToken, lease.leaseToken),
+      ),
+    });
+    if (!current) return;
+
+    const attempts = current.attempts + 1;
+    const delay = Math.min(
+      this.env.get('OSU_MATCH_SYNC_MAX_BACKOFF_MS'),
+      this.env.get('OSU_MATCH_SYNC_POLL_INTERVAL_MS') *
+        2 ** Math.min(attempts, 8),
+    );
+    await this.drizzle
+      .update(matchOsuSync)
+      .set({
+        attempts,
+        lastError:
+          error instanceof Error
+            ? error.message.slice(0, 1_000)
+            : 'Unknown osu sync error',
+        leaseToken: null,
+        leaseUntil: null,
+        nextSyncAt: new Date(Date.now() + delay),
+      })
+      .where(
+        and(
+          eq(matchOsuSync.matchId, lease.matchId),
+          eq(matchOsuSync.leaseToken, lease.leaseToken),
+          gte(matchOsuSync.leaseUntil, new Date()),
+        ),
+      );
   }
 }

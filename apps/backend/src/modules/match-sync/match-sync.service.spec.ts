@@ -1,9 +1,10 @@
+import { matchIdSchema } from 'lib/domain/match/match.id';
 import { MatchSyncService } from './match-sync.service';
 
 describe('MatchSyncService', () => {
   it('recalculates and writes one claimed match', async () => {
     const lease = {
-      matchId: 'match',
+      matchId: matchIdSchema.parse('ckm123456789012345678901'),
       osuMatchId: 1,
       leaseToken: 'token',
       status: 'active' as const,
@@ -47,3 +48,7 @@ describe('MatchSyncService', () => {
     );
   });
 });
+jest.mock('@paralleldrive/cuid2', () => ({
+  createId: jest.fn(),
+  init: jest.fn(() => jest.fn()),
+}));

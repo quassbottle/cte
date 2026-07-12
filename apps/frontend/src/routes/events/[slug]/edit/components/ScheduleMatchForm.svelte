@@ -145,6 +145,7 @@
 					name="player1Score"
 					type="number"
 					min="0"
+					disabled={match?.syncStatus === 'active'}
 					value={match?.players[0]?.score ?? ''}
 				/>
 			</div>
@@ -158,6 +159,7 @@
 					name="player2Score"
 					type="number"
 					min="0"
+					disabled={match?.syncStatus === 'active'}
 					value={match?.players[1]?.score ?? ''}
 				/>
 			</div>

@@ -2,19 +2,17 @@ import { MatchSyncRepository } from './match-sync.repository';
 
 describe('MatchSyncRepository', () => {
   it('uses a different lease token for every claimed match', async () => {
-    const execute = jest
-      .fn()
-      .mockResolvedValueOnce({
-        rows: [
-          { match_id: 'a', osu_match_id: 1, status: 'active' },
-          { match_id: 'b', osu_match_id: 2, status: 'active' },
-        ],
-      })
-      .mockResolvedValue({ rows: [] });
+    const update = jest.fn(() => ({ set: jest.fn(() => ({ where: jest.fn() })) }));
+    const rows = [
+      { matchId: 'a', osuMatchId: 1, status: 'active' },
+      { matchId: 'b', osuMatchId: 2, status: 'active' },
+    ];
+    const forUpdate = jest.fn().mockResolvedValue(rows);
     const drizzle = {
-      transaction: (callback: (tx: { execute: typeof execute }) => unknown) =>
-        callback({ execute }),
-      execute,
+      transaction: (callback: (tx: unknown) => unknown) => callback({
+        select: () => ({ from: () => ({ where: () => ({ orderBy: () => ({ limit: () => ({ for: forUpdate }) }) }) }) }),
+        update,
+      }),
     };
     const repository = new MatchSyncRepository(
       drizzle as never,

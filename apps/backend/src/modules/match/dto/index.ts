@@ -2,6 +2,7 @@ import { isoStringToDate } from 'lib/common/utils/zod/date';
 import { matchIdSchema } from 'lib/domain/match/match.id';
 import { stageIdSchema } from 'lib/domain/stage/stage.id';
 import { userIdSchema } from 'lib/domain/user/user.id';
+import { parseOsuMatchId } from 'modules/match-sync/mp-url';
 import { userDtoSchema } from 'modules/user/dto';
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
@@ -76,6 +77,8 @@ export const scheduleMatchDtoSchema = z.object({
   endsAt: scheduleDate,
   mpUrl: z.string().nullable(),
   vodUrl: z.string().nullable(),
+  syncStatus: z.enum(['active', 'stopped', 'completed']).nullable(),
+  lastSyncedAt: scheduleDate.nullable(),
   players: z.array(schedulePlayerDtoSchema),
   staff: z.array(scheduleStaffMemberDtoSchema),
 });
@@ -103,6 +106,11 @@ const nullableUrl = z
   .optional()
   .transform((value) => value ?? null);
 
+const nullableMpUrl = nullableUrl.refine(
+  (value) => value === null || parseOsuMatchId(value) !== null,
+  'mpUrl must be an official osu multiplayer URL',
+);
+
 const scheduleMatchPlayerInputSchema = z.object({
   userId: userIdSchema,
   score: z
@@ -125,7 +133,7 @@ export const scheduleMatchUpsertDtoSchema = z
     matchNumber: z.number().int().positive().nullable().optional(),
     startsAt: isoStringToDate,
     endsAt: isoStringToDate,
-    mpUrl: nullableUrl,
+    mpUrl: nullableMpUrl,
     vodUrl: nullableUrl,
     players: z.array(scheduleMatchPlayerInputSchema).max(2).default([]),
     staff: z.array(scheduleMatchStaffInputSchema).default([]),

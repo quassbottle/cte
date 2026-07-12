@@ -36,6 +36,16 @@ export class ScheduleService {
                   'endsAt', match_row.ends_at,
                   'mpUrl', match_row.mp_url,
                   'vodUrl', match_row.vod_url,
+                  'syncStatus', (
+                    select sync_row.status
+                    from match_osu_sync sync_row
+                    where sync_row.match_id = match_row.id
+                  ),
+                  'lastSyncedAt', (
+                    select sync_row.last_synced_at
+                    from match_osu_sync sync_row
+                    where sync_row.match_id = match_row.id
+                  ),
                   'players', coalesce(
                     (
                       select json_agg(

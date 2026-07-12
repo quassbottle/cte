@@ -20,12 +20,16 @@ import {
   stages,
   users,
 } from 'lib/infrastructure/db';
+import { MatchSyncRepository } from 'modules/match-sync/match-sync.repository';
 import { ScheduleMatchUpsertInput } from './dto';
 import { MatchCreateParams, ScheduleMatchCreateParams } from './types';
 
 @Injectable()
 export class MatchService {
-  constructor(@Inject('DB') private readonly drizzle: Schema) {}
+  constructor(
+    @Inject('DB') private readonly drizzle: Schema,
+    private readonly matchSyncRepository: MatchSyncRepository,
+  ) {}
 
   async create(data: MatchCreateParams): Promise<DbMatch> {
     const id = matchId();
@@ -69,6 +73,8 @@ export class MatchService {
 
       await this.replaceParticipants(tx, id, data.players);
       await this.replaceStaff(tx, id, data.staff);
+      if (data.mpUrl)
+        await this.matchSyncRepository.activate(id, data.mpUrl, tx);
 
       return match;
     });
@@ -83,12 +89,24 @@ export class MatchService {
   }): Promise<DbMatch> {
     const { tournamentId, matchId: id, data } = params;
 
+    const sync = await this.matchSyncRepository.getState(id);
+    if (
+      sync?.status === 'active' &&
+      data.players.some((player) => player.score !== null)
+    ) {
+      throw new MatchException(
+        'Manual score changes are unavailable while match sync is active',
+        MatchExceptionCode.MATCH_SYNC_ACTIVE,
+      );
+    }
+
     await this.assertStageBelongsToTournament({
       stageId: data.stageId,
       tournamentId,
     });
     await this.assertMatchBelongsToTournament({ matchId: id, tournamentId });
 
+    const current = await this.getById({ id });
     const updated = await this.drizzle.transaction(async (tx) => {
       const [match] = await tx
         .update(matches)
@@ -113,6 +131,14 @@ export class MatchService {
 
       await this.replaceParticipants(tx, id, data.players);
       await this.replaceStaff(tx, id, data.staff);
+      if (sync && data.players.some((player) => player.score !== null)) {
+        await this.matchSyncRepository.invalidateLease(id, tx);
+      }
+      if (data.mpUrl && data.mpUrl !== current.mpUrl) {
+        await this.matchSyncRepository.activate(id, data.mpUrl, tx);
+      } else if (!data.mpUrl && current.mpUrl) {
+        await this.matchSyncRepository.stop(id, tx);
+      }
 
       return match;
     });

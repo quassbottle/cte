@@ -16,6 +16,7 @@ export enum MatchExceptionCode {
   PARTICIPANT_NOT_FOUND = 'PARTICIPANT_NOT_FOUND',
   ALREADY_PARTICIPATING = 'ALREADY_PARTICIPATING',
   MATCH_ACCESS_DENIED = 'MATCH_ACCESS_DENIED',
+  MATCH_SYNC_ACTIVE = 'MATCH_SYNC_ACTIVE',
 }
 
 const MatchExceptionHTTPStatus = {
@@ -23,4 +24,5 @@ const MatchExceptionHTTPStatus = {
   [MatchExceptionCode.PARTICIPANT_NOT_FOUND]: HttpStatus.NOT_FOUND,
   [MatchExceptionCode.ALREADY_PARTICIPATING]: HttpStatus.CONFLICT,
   [MatchExceptionCode.MATCH_ACCESS_DENIED]: HttpStatus.FORBIDDEN,
+  [MatchExceptionCode.MATCH_SYNC_ACTIVE]: HttpStatus.CONFLICT,
 };

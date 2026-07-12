@@ -26,6 +26,10 @@ export type StageScheduleDtoOutputMatchesItem = {
 	mpUrl: string | null;
 	/** @nullable */
 	vodUrl: string | null;
+	/** @nullable */
+	syncStatus: 'active' | 'stopped' | 'completed' | null;
+	/** @nullable */
+	lastSyncedAt: string | null;
 	players: StageScheduleDtoOutputMatchesItemPlayersItem[];
 	staff: StageScheduleDtoOutputMatchesItemStaffItem[];
 };

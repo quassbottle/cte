@@ -1,3 +1,6 @@
+import { MatchId } from 'lib/domain/match/match.id';
+import { UserId } from 'lib/domain/user/user.id';
+
 export type OsuMatchScore = { userId: number; score: number };
 
 export type OsuMatchGame = {
@@ -15,7 +18,7 @@ export type OsuMatchSnapshot = {
 export type SyncMode = 'background' | 'manual';
 
 export type SyncLease = {
-  matchId: string;
+  matchId: MatchId;
   osuMatchId: number;
   leaseToken: string;
   status: 'active' | 'stopped' | 'completed';
@@ -23,8 +26,8 @@ export type SyncLease = {
 
 export type MatchSyncInput = {
   players: [
-    { userId: string; osuId: number },
-    { userId: string; osuId: number },
+    { userId: UserId; osuId: number },
+    { userId: UserId; osuId: number },
   ];
   allowedBeatmapIds: Set<number>;
 };
