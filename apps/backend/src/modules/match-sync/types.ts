@@ -20,3 +20,11 @@ export type SyncLease = {
   leaseToken: string;
   status: 'active' | 'stopped' | 'completed';
 };
+
+export type MatchSyncInput = {
+  players: [
+    { userId: string; osuId: number },
+    { userId: string; osuId: number },
+  ];
+  allowedBeatmapIds: Set<number>;
+};
