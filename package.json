@@ -20,7 +20,8 @@
   },
   "pnpm": {
     "patchedDependencies": {
-      "@ctrl/irc@3.1.2": "patches/@ctrl__irc@3.1.2.patch"
+      "@ctrl/irc@3.1.2": "patches/@ctrl__irc@3.1.2.patch",
+      "osu-api-extended@3.1.8": "patches/osu-api-extended@3.1.8.patch"
     }
   },
   "keywords": [],
