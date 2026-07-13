@@ -23,8 +23,16 @@ describe('OsuService', () => {
             beatmap_id: 5616113,
             end_time: '2026-04-18T03:23:19Z',
             scores: [
-              { user_id: 16536516, legacy_total_score: 966909 },
-              { user_id: 4050738, legacy_total_score: 920079 },
+              {
+                user_id: 16536516,
+                legacy_total_score: 966909,
+                match: { team: 'blue' },
+              },
+              {
+                user_id: 4050738,
+                legacy_total_score: 920079,
+                match: { team: 'red' },
+              },
             ],
           },
         },

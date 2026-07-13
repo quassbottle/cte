@@ -14,7 +14,7 @@ import {
   users,
 } from 'lib/infrastructure/db';
 import { parseOsuMatchId } from './mp-url';
-import { MatchSyncInput, SyncLease } from './types';
+import { MatchSyncInput, MatchSyncPoints, SyncLease } from './types';
 
 @Injectable()
 export class MatchSyncRepository {
@@ -184,7 +184,10 @@ export class MatchSyncRepository {
   }
 
   public async loadInput(matchId: MatchId): Promise<MatchSyncInput> {
-    const [players, mappoolBeatmaps] = await Promise.all([
+    const [match, players, mappoolBeatmaps] = await Promise.all([
+      this.drizzle.query.matches.findFirst({
+        where: eq(matches.id, matchId),
+      }),
       this.drizzle
         .select({ userId: users.id, osuId: users.osuId })
         .from(matchParticipants)
@@ -202,13 +205,29 @@ export class MatchSyncRepository {
         .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
         .where(eq(matches.id, matchId)),
     ]);
-    if (players.length !== 2 || mappoolBeatmaps.length === 0) {
+    if (!match || mappoolBeatmaps.length === 0) {
       throw new Error(
-        'Match sync requires two participants and a stage mappool',
+        'Match sync requires a stage mappool',
       );
     }
+    if (match.redTeamId || match.blueTeamId) {
+      if (!match.redTeamId || !match.blueTeamId) {
+        throw new Error('Team match sync requires two teams');
+      }
+      return {
+        kind: 'team',
+        allowedBeatmapIds: new Set(
+          mappoolBeatmaps.map((row) => row.osuBeatmapId),
+        ),
+      };
+    }
+    const [firstPlayer, secondPlayer] = players;
+    if (!firstPlayer || !secondPlayer || players.length !== 2) {
+      throw new Error('Solo match sync requires two participants');
+    }
     return {
-      players: players as MatchSyncInput['players'],
+      kind: 'solo',
+      players: [firstPlayer, secondPlayer],
       allowedBeatmapIds: new Set(
         mappoolBeatmaps.map((row) => row.osuBeatmapId),
       ),
@@ -218,7 +237,7 @@ export class MatchSyncRepository {
   public async applySuccess(params: {
     lease: SyncLease;
     input: MatchSyncInput;
-    points: ReadonlyMap<number, number>;
+    points: MatchSyncPoints;
     closedAt: Date | null;
     background: boolean;
   }): Promise<boolean> {
@@ -237,31 +256,43 @@ export class MatchSyncRepository {
         .limit(1);
       if (!locked[0]) return false;
 
-      const [first, second] = params.input.players;
-      const firstPoints = params.points.get(first.osuId) ?? 0;
-      const secondPoints = params.points.get(second.osuId) ?? 0;
-      const firstWins =
-        firstPoints === secondPoints ? null : firstPoints > secondPoints;
-      const secondWins =
-        firstPoints === secondPoints ? null : secondPoints > firstPoints;
-      await tx
-        .update(matchParticipants)
-        .set({ score: firstPoints, isWinner: firstWins })
-        .where(
-          and(
-            eq(matchParticipants.matchId, params.lease.matchId),
-            eq(matchParticipants.userId, first.userId),
-          ),
-        );
-      await tx
-        .update(matchParticipants)
-        .set({ score: secondPoints, isWinner: secondWins })
-        .where(
-          and(
-            eq(matchParticipants.matchId, params.lease.matchId),
-            eq(matchParticipants.userId, second.userId),
-          ),
-        );
+      if (params.input.kind === 'team') {
+        await tx
+          .update(matches)
+          .set({
+            redScore: params.points.redScore,
+            blueScore: params.points.blueScore,
+          })
+          .where(eq(matches.id, params.lease.matchId));
+      } else {
+        const [first, second] = params.input.players;
+        const firstWins =
+          params.points.redScore === params.points.blueScore
+            ? null
+            : params.points.redScore > params.points.blueScore;
+        const secondWins =
+          params.points.redScore === params.points.blueScore
+            ? null
+            : params.points.blueScore > params.points.redScore;
+        await tx
+          .update(matchParticipants)
+          .set({ score: params.points.redScore, isWinner: firstWins })
+          .where(
+            and(
+              eq(matchParticipants.matchId, params.lease.matchId),
+              eq(matchParticipants.userId, first.userId),
+            ),
+          );
+        await tx
+          .update(matchParticipants)
+          .set({ score: params.points.blueScore, isWinner: secondWins })
+          .where(
+            and(
+              eq(matchParticipants.matchId, params.lease.matchId),
+              eq(matchParticipants.userId, second.userId),
+            ),
+          );
+      }
       const now = new Date();
       await tx
         .update(matchOsuSync)

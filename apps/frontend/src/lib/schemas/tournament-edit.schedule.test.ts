@@ -33,4 +33,27 @@ describe('scheduleMatchFormSchema', () => {
 			{ userId: 'com-2', role: 'commentator' }
 		]);
 	});
+
+	it('builds a team match payload', () => {
+		const parsed = scheduleMatchFormSchema.parse({
+			name: 'Team Finals',
+			stageId: 'stage-1',
+			startsAt: '2026-07-10T16:00',
+			endsAt: '2026-07-10T17:00',
+			mpUrl: '',
+			vodUrl: '',
+			redTeamId: 'red-team',
+			blueTeamId: 'blue-team',
+			redScore: '5',
+			blueScore: '3'
+		});
+
+		expect(parsed).toMatchObject({
+			redTeamId: 'red-team',
+			blueTeamId: 'blue-team',
+			redScore: 5,
+			blueScore: 3,
+			players: []
+		});
+	});
 });

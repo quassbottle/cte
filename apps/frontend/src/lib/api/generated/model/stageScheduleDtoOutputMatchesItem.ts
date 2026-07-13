@@ -8,6 +8,8 @@
 import type { StageScheduleDtoOutputMatchesItemPlayersItem } from './stageScheduleDtoOutputMatchesItemPlayersItem';
 import type { StageScheduleDtoOutputMatchesItemStaffItem } from './stageScheduleDtoOutputMatchesItemStaffItem';
 
+type ScheduleTeam = { id: string; name: string };
+
 export type StageScheduleDtoOutputMatchesItem = {
 	/** @pattern ^[0-9a-z]+$ */
 	id: string;
@@ -30,6 +32,10 @@ export type StageScheduleDtoOutputMatchesItem = {
 	syncStatus: 'active' | 'stopped' | 'completed' | null;
 	/** @nullable */
 	lastSyncedAt: string | null;
+	redTeam: ScheduleTeam | null;
+	blueTeam: ScheduleTeam | null;
+	redScore: number | null;
+	blueScore: number | null;
 	players: StageScheduleDtoOutputMatchesItemPlayersItem[];
 	staff: StageScheduleDtoOutputMatchesItemStaffItem[];
 };

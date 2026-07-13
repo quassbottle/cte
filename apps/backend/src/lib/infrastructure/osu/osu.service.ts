@@ -40,6 +40,7 @@ const osuMatchDetailsSchema = z.object({
             z.object({
               user_id: z.number(),
               legacy_total_score: z.number(),
+              match: z.object({ team: z.enum(['red', 'blue', 'none']) }),
             }),
           ),
         })
@@ -175,6 +176,7 @@ export class OsuService {
           scores: event.game.scores.map((score) => ({
             userId: score.user_id,
             score: score.legacy_total_score,
+            team: score.match.team === 'none' ? null : score.match.team,
           })),
         });
       }
@@ -274,7 +276,7 @@ type OsuMatchGame = {
   id: number;
   beatmapId: number;
   endedAt: Date | null;
-  scores: { userId: number; score: number }[];
+  scores: { userId: number; score: number; team: 'red' | 'blue' | null }[];
 };
 
 type OsuBeatmapDetails = {

@@ -28,12 +28,14 @@ export async function getTournamentEditPage(
 		backend.tournaments.getSchedule(tournamentId),
 		backend.mappools.findByTournamentForManagement(tournamentId)
 	]);
+	const teams = tournament.isTeam ? (await backend.tournaments.getTeams(tournamentId)).data : [];
 	const mappools = mappoolsResponse.data;
 
 	return {
 		tournament,
 		stages: stagesResponse.data,
 		schedule: scheduleResponse.data,
+		teams,
 		mappools: mappools.map(({ beatmaps, ...mappool }) => mappool),
 		mappoolBeatmaps: mappools.map((mappool) => ({
 			mappoolId: mappool.id,

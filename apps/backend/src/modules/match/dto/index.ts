@@ -1,6 +1,7 @@
 import { isoStringToDate } from 'lib/common/utils/zod/date';
 import { matchIdSchema } from 'lib/domain/match/match.id';
 import { stageIdSchema } from 'lib/domain/stage/stage.id';
+import { teamIdSchema } from 'lib/domain/team/team.id';
 import { userIdSchema } from 'lib/domain/user/user.id';
 import { parseOsuMatchId } from 'modules/match-sync/mp-url';
 import { userDtoSchema } from 'modules/user/dto';
@@ -32,6 +33,10 @@ export const matchDtoSchema = z.object({
   endsAt: isoStringToDate,
   mpUrl: z.string().nullable(),
   vodUrl: z.string().nullable(),
+  redTeamId: teamIdSchema.nullable(),
+  blueTeamId: teamIdSchema.nullable(),
+  redScore: z.number().int().nullable(),
+  blueScore: z.number().int().nullable(),
   createdAt: isoStringToDate,
   updatedAt: isoStringToDate,
 });
@@ -61,6 +66,11 @@ const schedulePlayerDtoSchema = z.object({
 
 const scheduleStaffRoleSchema = z.enum(['referee', 'streamer', 'commentator']);
 
+const scheduleTeamDtoSchema = z.object({
+  id: teamIdSchema,
+  name: z.string(),
+});
+
 const scheduleStaffMemberDtoSchema = z.object({
   id: userIdSchema,
   osuId: z.number().int(),
@@ -79,6 +89,10 @@ export const scheduleMatchDtoSchema = z.object({
   vodUrl: z.string().nullable(),
   syncStatus: z.enum(['active', 'stopped', 'completed']).nullable(),
   lastSyncedAt: scheduleDate.nullable(),
+  redTeam: scheduleTeamDtoSchema.nullable(),
+  blueTeam: scheduleTeamDtoSchema.nullable(),
+  redScore: z.number().int().nullable(),
+  blueScore: z.number().int().nullable(),
   players: z.array(schedulePlayerDtoSchema),
   staff: z.array(scheduleStaffMemberDtoSchema),
 });
@@ -135,6 +149,10 @@ export const scheduleMatchUpsertDtoSchema = z
     endsAt: isoStringToDate,
     mpUrl: nullableMpUrl,
     vodUrl: nullableUrl,
+    redTeamId: teamIdSchema.nullable().optional().transform((value) => value ?? null),
+    blueTeamId: teamIdSchema.nullable().optional().transform((value) => value ?? null),
+    redScore: z.number().int().nullable().optional().transform((value) => value ?? null),
+    blueScore: z.number().int().nullable().optional().transform((value) => value ?? null),
     players: z.array(scheduleMatchPlayerInputSchema).max(2).default([]),
     staff: z.array(scheduleMatchStaffInputSchema).default([]),
   })
@@ -142,6 +160,19 @@ export const scheduleMatchUpsertDtoSchema = z
     path: ['endsAt'],
     message: 'endsAt must be greater than startsAt',
   })
+  .refine((data) => (data.redTeamId === null) === (data.blueTeamId === null), {
+    message: 'Both teams must be provided together',
+    path: ['redTeamId'],
+  })
+  .refine(
+    (data) =>
+      data.redTeamId === null ||
+      (data.redTeamId !== data.blueTeamId && data.players.length === 0),
+    {
+      message: 'Team matches require distinct teams and no players',
+      path: ['redTeamId'],
+    },
+  )
   .refine(
     (data) =>
       data.staff.filter((staff) => staff.role === 'referee').length <= 1,

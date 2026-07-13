@@ -46,6 +46,18 @@ export class ScheduleService {
                     from match_osu_sync sync_row
                     where sync_row.match_id = match_row.id
                   ),
+                  'redTeam', (
+                    select json_build_object('id', red_team.id, 'name', red_team.name)
+                    from teams red_team
+                    where red_team.id = match_row.red_team_id
+                  ),
+                  'blueTeam', (
+                    select json_build_object('id', blue_team.id, 'name', blue_team.name)
+                    from teams blue_team
+                    where blue_team.id = match_row.blue_team_id
+                  ),
+                  'redScore', match_row.red_score,
+                  'blueScore', match_row.blue_score,
                   'players', coalesce(
                     (
                       select json_agg(

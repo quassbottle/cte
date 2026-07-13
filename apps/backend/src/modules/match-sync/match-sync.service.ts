@@ -19,11 +19,19 @@ export class MatchSyncService {
     try {
       const input = await this.repository.loadInput(lease.matchId);
       const snapshot = await this.client.get(lease.osuMatchId);
-      const points = calculateMatchPoints({
-        snapshot,
-        playerOsuIds: [input.players[0].osuId, input.players[1].osuId],
-        allowedBeatmapIds: input.allowedBeatmapIds,
-      });
+      const points =
+        input.kind === 'solo'
+          ? calculateMatchPoints({
+              kind: 'solo',
+              snapshot,
+              allowedBeatmapIds: input.allowedBeatmapIds,
+              playerOsuIds: [input.players[0].osuId, input.players[1].osuId],
+            })
+          : calculateMatchPoints({
+              kind: 'team',
+              snapshot,
+              allowedBeatmapIds: input.allowedBeatmapIds,
+            });
       const written = await this.repository.applySuccess({
         lease,
         input,

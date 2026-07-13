@@ -10,6 +10,8 @@
 	import ScheduleUserPicker from './ScheduleUserPicker.svelte';
 
 	export let stages: StageDtoOutput[];
+	export let teams: { id: string; name: string }[] = [];
+	export let isTeam = false;
 	export let match: StageScheduleDtoOutputMatchesItem | undefined = undefined;
 	export let stageId: string | undefined = undefined;
 	export let form: TournamentEditActionResult | undefined;
@@ -45,6 +47,8 @@
 
 	let player1Users = match?.players[0] ? [toSelectedUser(match.players[0])] : [];
 	let player2Users = match?.players[1] ? [toSelectedUser(match.players[1])] : [];
+	let redTeamId = match?.redTeam?.id ?? '';
+	let blueTeamId = match?.blueTeam?.id ?? '';
 	let refereeUsers =
 		match?.staff.filter((staff) => staff.role === 'referee').map(toSelectedUser) ?? [];
 	let streamerUsers =
@@ -135,6 +139,58 @@
 		</div>
 	</div>
 
+	{#if isTeam}
+		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
+				<Label for={`match-red-team-${match?.id ?? 'new'}`}>Red team</Label>
+				<select
+					id={`match-red-team-${match?.id ?? 'new'}`}
+					name="redTeamId"
+					bind:value={redTeamId}
+					required
+					class="h-10 rounded-md border border-input bg-background px-3"
+				>
+					<option value="" disabled>Select team</option>
+					{#each teams as team}
+						<option value={team.id}>{team.name}</option>
+					{/each}
+				</select>
+				<Label for={`match-red-score-${match?.id ?? 'new'}`}>Score</Label>
+				<Input
+					id={`match-red-score-${match?.id ?? 'new'}`}
+					name="redScore"
+					type="number"
+					min="0"
+					disabled={match?.syncStatus === 'active'}
+					value={match?.redScore ?? ''}
+				/>
+			</div>
+			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
+				<Label for={`match-blue-team-${match?.id ?? 'new'}`}>Blue team</Label>
+				<select
+					id={`match-blue-team-${match?.id ?? 'new'}`}
+					name="blueTeamId"
+					bind:value={blueTeamId}
+					required
+					class="h-10 rounded-md border border-input bg-background px-3"
+				>
+					<option value="" disabled>Select team</option>
+					{#each teams as team}
+						<option value={team.id}>{team.name}</option>
+					{/each}
+				</select>
+				<Label for={`match-blue-score-${match?.id ?? 'new'}`}>Score</Label>
+				<Input
+					id={`match-blue-score-${match?.id ?? 'new'}`}
+					name="blueScore"
+					type="number"
+					min="0"
+					disabled={match?.syncStatus === 'active'}
+					value={match?.blueScore ?? ''}
+				/>
+			</div>
+		</div>
+	{:else}
 	<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 		<div class="flex flex-col gap-2 rounded-md border border-border p-3">
 			<ScheduleUserPicker label="Player 1" name="player1UserId" bind:selectedUsers={player1Users} />
@@ -165,6 +221,7 @@
 			</div>
 		</div>
 	</div>
+	{/if}
 
 	<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">
 		<ScheduleUserPicker label="Referee" name="refereeId" bind:selectedUsers={refereeUsers} />

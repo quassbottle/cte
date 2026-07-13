@@ -123,6 +123,10 @@ export const scheduleMatchFormSchema = z
 		player1Score: optionalInt,
 		player2UserId: z.string().trim().optional(),
 		player2Score: optionalInt,
+		redTeamId: z.string().trim().optional(),
+		blueTeamId: z.string().trim().optional(),
+		redScore: optionalInt,
+		blueScore: optionalInt,
 		refereeId: z.string().trim().optional(),
 		streamerId: z.string().trim().optional(),
 		commentatorIds: csvIds
@@ -140,6 +144,10 @@ export const scheduleMatchFormSchema = z
 		endsAt: value.endsAt.toISOString(),
 		mpUrl: value.mpUrl,
 		vodUrl: value.vodUrl,
+		redTeamId: value.redTeamId || null,
+		blueTeamId: value.blueTeamId || null,
+		redScore: value.redScore,
+		blueScore: value.blueScore,
 		players: [
 			value.player1UserId
 				? {

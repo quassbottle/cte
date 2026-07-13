@@ -10,10 +10,11 @@ describe('MatchSyncService', () => {
       status: 'active' as const,
     };
     const input = {
+      kind: 'solo' as const,
       players: [
         { userId: 'a', osuId: 1 },
         { userId: 'b', osuId: 2 },
-      ] as never,
+      ],
       allowedBeatmapIds: new Set([10]),
     };
     const repository = {
@@ -29,8 +30,8 @@ describe('MatchSyncService', () => {
             beatmapId: 10,
             endedAt: new Date(),
             scores: [
-              { userId: 1, score: 2 },
-              { userId: 2, score: 1 },
+              { userId: 1, score: 2, team: null },
+              { userId: 2, score: 1, team: null },
             ],
           },
         ],

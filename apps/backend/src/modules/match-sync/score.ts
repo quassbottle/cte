@@ -1,32 +1,41 @@
-import { OsuMatchSnapshot } from './types';
+import { MatchSyncPoints, OsuMatchSnapshot } from './types';
 
-export function calculateMatchPoints(params: {
-  snapshot: OsuMatchSnapshot;
-  playerOsuIds: [number, number];
-  allowedBeatmapIds: ReadonlySet<number>;
-}): Map<number, number> {
-  const [firstPlayerId, secondPlayerId] = params.playerOsuIds;
-  const points = new Map([
-    [firstPlayerId, 0],
-    [secondPlayerId, 0],
-  ]);
+type Params =
+  | {
+      kind: 'solo';
+      snapshot: OsuMatchSnapshot;
+      playerOsuIds: [number, number];
+      allowedBeatmapIds: ReadonlySet<number>;
+    }
+  | {
+      kind: 'team';
+      snapshot: OsuMatchSnapshot;
+      allowedBeatmapIds: ReadonlySet<number>;
+    };
+
+export function calculateMatchPoints(params: Params): MatchSyncPoints {
+  const points: MatchSyncPoints = { redScore: 0, blueScore: 0 };
 
   for (const game of params.snapshot.games) {
     if (!game.endedAt || !params.allowedBeatmapIds.has(game.beatmapId))
       continue;
 
-    const firstScore = game.scores.find(
-      (score) => score.userId === firstPlayerId,
-    );
-    const secondScore = game.scores.find(
-      (score) => score.userId === secondPlayerId,
-    );
-    if (!firstScore || !secondScore || firstScore.score === secondScore.score)
+    const [redScore, blueScore] =
+      params.kind === 'solo'
+        ? params.playerOsuIds.map((userId) =>
+            game.scores.find((score) => score.userId === userId)?.score,
+          )
+        : ['red', 'blue'].map((team) => {
+            const scores = game.scores.filter((score) => score.team === team);
+            return scores.length
+              ? scores.reduce((total, score) => total + score.score, 0)
+              : undefined;
+          });
+    if (redScore === undefined || blueScore === undefined || redScore === blueScore)
       continue;
 
-    const winnerId =
-      firstScore.score > secondScore.score ? firstPlayerId : secondPlayerId;
-    points.set(winnerId, (points.get(winnerId) ?? 0) + 1);
+    if (redScore > blueScore) points.redScore += 1;
+    else points.blueScore += 1;
   }
 
   return points;

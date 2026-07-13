@@ -1,7 +1,11 @@
 import { MatchId } from 'lib/domain/match/match.id';
 import { UserId } from 'lib/domain/user/user.id';
 
-export type OsuMatchScore = { userId: number; score: number };
+export type OsuMatchScore = {
+  userId: number;
+  score: number;
+  team: 'red' | 'blue' | null;
+};
 
 export type OsuMatchGame = {
   id: number;
@@ -24,10 +28,20 @@ export type SyncLease = {
   status: 'active' | 'stopped' | 'completed';
 };
 
-export type MatchSyncInput = {
+export type SoloMatchSyncInput = {
+  kind: 'solo';
   players: [
     { userId: UserId; osuId: number },
     { userId: UserId; osuId: number },
   ];
   allowedBeatmapIds: Set<number>;
 };
+
+export type TeamMatchSyncInput = {
+  kind: 'team';
+  allowedBeatmapIds: Set<number>;
+};
+
+export type MatchSyncInput = SoloMatchSyncInput | TeamMatchSyncInput;
+
+export type MatchSyncPoints = { redScore: number; blueScore: number };

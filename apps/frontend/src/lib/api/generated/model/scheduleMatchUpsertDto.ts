@@ -27,6 +27,14 @@ export interface ScheduleMatchUpsertDto {
 	mpUrl?: string | null;
 	/** @nullable */
 	vodUrl?: string | null;
+	/** @nullable */
+	redTeamId?: string | null;
+	/** @nullable */
+	blueTeamId?: string | null;
+	/** @nullable */
+	redScore?: number | null;
+	/** @nullable */
+	blueScore?: number | null;
 	/** @maxItems 2 */
 	players?: ScheduleMatchUpsertDtoPlayersItem[];
 	staff?: ScheduleMatchUpsertDtoStaffItem[];

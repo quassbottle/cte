@@ -54,6 +54,8 @@ export const toMatchView = (
 	time: formatTime(match.startsAt),
 	player1: toPlayerView(match.players[0]),
 	player2: toPlayerView(match.players[1]),
+	redTeam: match.redTeam ? { name: match.redTeam.name, score: match.redScore } : null,
+	blueTeam: match.blueTeam ? { name: match.blueTeam.name, score: match.blueScore } : null,
 	staff: match.staff.map((staff) => ({
 		id: staff.id,
 		name: staff.osuUsername,

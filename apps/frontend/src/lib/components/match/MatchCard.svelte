@@ -19,16 +19,24 @@
 
 	<div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
 		<div class="min-w-0">
-			<PlayerCell player={match.player1} compact />
+			{#if match.redTeam}
+				<p class="truncate font-semibold">{match.redTeam.name}</p>
+			{:else}
+				<PlayerCell player={match.player1} compact />
+			{/if}
 		</div>
 		<div class="text-center">
 			<p class="text-lg font-semibold">
-				{match.player1?.score ?? '-'} : {match.player2?.score ?? '-'}
+				{match.redTeam?.score ?? match.player1?.score ?? '-'} : {match.blueTeam?.score ?? match.player2?.score ?? '-'}
 			</p>
 			<p class="text-[11px] uppercase text-muted-foreground">score</p>
 		</div>
 		<div class="min-w-0">
-			<PlayerCell player={match.player2} side="right" compact />
+			{#if match.blueTeam}
+				<p class="truncate text-right font-semibold">{match.blueTeam.name}</p>
+			{:else}
+				<PlayerCell player={match.player2} side="right" compact />
+			{/if}
 		</div>
 	</div>
 
