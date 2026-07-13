@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EnvService } from 'lib/common/env/env.service';
 import { auth, v2 } from 'osu-api-extended';
+import { z } from 'zod';
 
 export enum OsuApiMode {
   Osu = 'osu',
@@ -23,6 +24,29 @@ type OsuUserClient = {
 
 const DEFAULT_SCOPES = ['identify'] as const;
 const CACHED_TOKEN_PATH = './osu-api-backend-token.json';
+
+const osuMatchDetailsSchema = z.object({
+  match: z.object({ end_time: z.string().nullable() }),
+  latest_event_id: z.number(),
+  events: z.array(
+    z.object({
+      id: z.number(),
+      game: z
+        .object({
+          id: z.number(),
+          beatmap_id: z.number(),
+          end_time: z.string().nullable(),
+          scores: z.array(
+            z.object({
+              user_id: z.number(),
+              legacy_total_score: z.number(),
+            }),
+          ),
+        })
+        .optional(),
+    }),
+  ),
+});
 
 @Injectable()
 export class OsuService {
@@ -138,10 +162,11 @@ export class OsuService {
 
       if (result.error != null) throw result.error;
 
-      closedAt = result.match.end_time ? new Date(result.match.end_time) : null;
-      const eventIds = result.events.map((event) => event.id);
+      const match = osuMatchDetailsSchema.parse(result);
+      closedAt = match.match.end_time ? new Date(match.match.end_time) : null;
+      const eventIds = match.events.map((event) => event.id);
 
-      for (const event of result.events) {
+      for (const event of match.events) {
         if (!event.game) continue;
         games.set(event.game.id, {
           id: event.game.id,
@@ -149,13 +174,13 @@ export class OsuService {
           endedAt: event.game.end_time ? new Date(event.game.end_time) : null,
           scores: event.game.scores.map((score) => ({
             userId: score.user_id,
-            score: score.score,
+            score: score.legacy_total_score,
           })),
         });
       }
 
       const nextAfter = Math.max(after, ...eventIds);
-      if (nextAfter >= result.latest_event_id) break;
+      if (nextAfter >= match.latest_event_id) break;
       if (nextAfter === after) {
         throw new Error(
           `osu match ${params.osuMatchId} pagination made no progress`,
