@@ -16,12 +16,20 @@ export class StageService {
   public async create(params: StageCreateParams): Promise<DbStage> {
     const id = stageId();
 
-    const [created] = await this.drizzle
-      .insert(stages)
-      .values({ id, ...params })
-      .returning();
+    if (params.type === 'qualification') {
+      await this.assertQualificationAvailable(params.tournamentId);
+    }
 
-    return created;
+    try {
+      const [created] = await this.drizzle
+        .insert(stages)
+        .values({ id, ...params })
+        .returning();
+
+      return created;
+    } catch (error) {
+      this.translateQualificationConflict(error);
+    }
   }
 
   public async getById(params: {
@@ -83,17 +91,26 @@ export class StageService {
       );
     }
 
-    const [updated] = await this.drizzle
-      .update(stages)
-      .set({ ...rest, startsAt, endsAt })
-      .where(
-        and(
-          eq(stages.id, id),
-          tournamentId ? eq(stages.tournamentId, tournamentId) : undefined,
-          isNull(stages.deletedAt),
-        ),
-      )
-      .returning();
+    if (rest.type === 'qualification' && current.type !== 'qualification') {
+      await this.assertQualificationAvailable(current.tournamentId);
+    }
+
+    let updated: DbStage | undefined;
+    try {
+      [updated] = await this.drizzle
+        .update(stages)
+        .set({ ...rest, startsAt, endsAt })
+        .where(
+          and(
+            eq(stages.id, id),
+            tournamentId ? eq(stages.tournamentId, tournamentId) : undefined,
+            isNull(stages.deletedAt),
+          ),
+        )
+        .returning();
+    } catch (error) {
+      this.translateQualificationConflict(error);
+    }
 
     if (!updated) {
       throw new StageException(
@@ -131,5 +148,41 @@ export class StageService {
     }
 
     return deleted;
+  }
+
+  private async assertQualificationAvailable(
+    tournamentId: TournamentId,
+  ): Promise<void> {
+    const existing = await this.drizzle.query.stages.findFirst({
+      where: and(
+        eq(stages.tournamentId, tournamentId),
+        eq(stages.type, 'qualification'),
+        isNull(stages.deletedAt),
+      ),
+    });
+
+    if (existing) this.throwQualificationConflict();
+  }
+
+  private translateQualificationConflict(error: unknown): never {
+    if (
+      typeof error === 'object' &&
+      error !== null &&
+      'code' in error &&
+      error.code === '23505' &&
+      'constraint' in error &&
+      error.constraint === 'stages_one_qualification_per_tournament'
+    ) {
+      this.throwQualificationConflict();
+    }
+
+    throw error;
+  }
+
+  private throwQualificationConflict(): never {
+    throw new StageException(
+      'Tournament already has a qualification stage',
+      StageExceptionCode.STAGE_QUALIFICATION_EXISTS,
+    );
   }
 }

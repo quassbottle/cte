@@ -22,6 +22,7 @@ export class ScheduleService {
       .select({
         id: stageRow.id,
         name: stageRow.name,
+        type: stageRow.type,
         startsAt: stageRow.startsAt,
         endsAt: stageRow.endsAt,
         matches: sql<StageScheduleInput['matches']>`

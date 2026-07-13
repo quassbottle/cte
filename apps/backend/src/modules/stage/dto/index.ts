@@ -1,5 +1,6 @@
 import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
 import { stageIdSchema } from 'lib/domain/stage/stage.id';
+import { stageTypeSchema } from 'lib/domain/stage/stage.type';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
@@ -7,6 +8,7 @@ import z from 'zod';
 export const stageDtoSchema = z.object({
   id: stageIdSchema,
   name: z.string(),
+  type: stageTypeSchema,
   tournamentId: tournamentIdSchema,
   startsAt: dateToIsoString,
   endsAt: dateToIsoString,
@@ -20,6 +22,7 @@ export class StageDto extends createZodDto(stageDtoSchema) {}
 export const createStageDtoSchema = z
   .object({
     name: z.string().trim().min(1),
+    type: stageTypeSchema.default('regular'),
     startsAt: isoStringToDate,
     endsAt: isoStringToDate,
   })
@@ -33,6 +36,7 @@ export class CreateStageDto extends createZodDto(createStageDtoSchema) {}
 export const updateStageDtoSchema = z
   .object({
     name: z.string().trim().min(1).optional(),
+    type: stageTypeSchema.optional(),
     startsAt: isoStringToDate.optional(),
     endsAt: isoStringToDate.optional(),
   })
