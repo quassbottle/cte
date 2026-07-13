@@ -1,6 +1,6 @@
 import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
-import { ApiResponse } from '@nestjs/swagger';
-import { OsuBeatmapMetadataDto, osuBeatmapMetadataDtoSchema } from './dto';
+import { ZodResponse } from 'nestjs-zod';
+import { OsuBeatmapMetadataDto } from './dto';
 import { OsuBeatmapService } from './osu.service';
 
 @Controller('osu')
@@ -8,18 +8,16 @@ export class OsuController {
   constructor(private readonly osuBeatmapService: OsuBeatmapService) {}
 
   @Get('beatmaps/:beatmapId')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns beatmap metadata from osu API with local sync.',
-    type: OsuBeatmapMetadataDto.Output,
+    type: OsuBeatmapMetadataDto,
   })
   public async getBeatmapMetadata(
     @Param('beatmapId', ParseIntPipe) beatmapId: number,
   ): Promise<OsuBeatmapMetadataDto> {
-    const metadata = await this.osuBeatmapService.getBeatmapMetadata({
+    return this.osuBeatmapService.getBeatmapMetadata({
       beatmapId,
     });
-
-    return osuBeatmapMetadataDtoSchema.parse(metadata);
   }
 }

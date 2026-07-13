@@ -120,19 +120,19 @@ const tournamentParticipantDbSchema = z
   .passthrough();
 
 export const tournamentParticipantDtoSchema = z.codec(
-  tournamentParticipantDbSchema,
   tournamentParticipantResponseSchema,
+  tournamentParticipantDbSchema,
   {
     decode: (participant) => ({
       id: userIdSchema.parse(participant.id),
       osuId: participant.osuId,
       osuUsername: participant.osuUsername,
-      avatarUrl: `https://a.ppy.sh/${participant.osuId}`,
     }),
     encode: (participant) => ({
       id: userIdSchema.parse(participant.id),
       osuId: participant.osuId,
       osuUsername: participant.osuUsername,
+      avatarUrl: `https://a.ppy.sh/${participant.osuId}`,
     }),
   },
 );
@@ -149,4 +149,6 @@ export const tournamentTeamDtoSchema = z.object({
   participants: z.array(tournamentParticipantDtoSchema),
 });
 
-export class TournamentTeamDto extends createZodDto(tournamentTeamDtoSchema) {}
+export class TournamentTeamDto extends createZodDto(tournamentTeamDtoSchema, {
+  codec: true,
+}) {}

@@ -1,7 +1,7 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import { and, asc, count, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
-import { teamId } from 'lib/domain/team/team.id';
+import { TeamId, teamId } from 'lib/domain/team/team.id';
 import {
   TournamentException,
   TournamentExceptionCode,
@@ -149,7 +149,7 @@ export class TournamentService {
 
   public async getTeams(params: { id: TournamentId }): Promise<
     {
-      id: string;
+      id: TeamId;
       name: string;
       captainId: UserId;
       participants: DbUser[];
@@ -174,8 +174,8 @@ export class TournamentService {
       .orderBy(asc(teams.name), asc(users.osuUsername));
 
     const byTeam = new Map<
-      string,
-      { id: string; name: string; captainId: UserId; participants: DbUser[] }
+      TeamId,
+      { id: TeamId; name: string; captainId: UserId; participants: DbUser[] }
     >();
 
     for (const row of rows) {

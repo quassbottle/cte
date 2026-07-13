@@ -17,6 +17,7 @@ import {
   matchParticipants,
   matchStaff,
   Schema,
+  soloParticipants,
   stages,
   teams,
   tournaments,
@@ -97,10 +98,7 @@ export class MatchService {
     const { tournamentId, matchId: id, data } = params;
 
     const sync = await this.matchSyncRepository.getState(id);
-    if (
-      sync?.status === 'active' &&
-      this.hasManualScore(data)
-    ) {
+    if (sync?.status === 'active' && this.hasManualScore(data)) {
       throw new MatchException(
         'Manual score changes are unavailable while match sync is active',
         MatchExceptionCode.MATCH_SYNC_ACTIVE,
@@ -386,8 +384,30 @@ export class MatchService {
         MatchExceptionCode.MATCH_ACCESS_DENIED,
       );
     }
+    if (!hasTeams) {
+      const playerIds = [...new Set(data.players.map(({ userId }) => userId))];
+      if (playerIds.length === 0) return;
+
+      const registered = await this.drizzle
+        .select({ userId: soloParticipants.userId })
+        .from(soloParticipants)
+        .where(
+          and(
+            eq(soloParticipants.tournamentId, tournamentId),
+            inArray(soloParticipants.userId, playerIds),
+          ),
+        );
+
+      if (registered.length !== playerIds.length) {
+        throw new MatchException(
+          'Players must participate in the tournament',
+          MatchExceptionCode.MATCH_ACCESS_DENIED,
+        );
+      }
+
+      return;
+    }
     if (!data.redTeamId || !data.blueTeamId) {
-      if (!hasTeams) return;
       throw new MatchException(
         'Team matches require two teams',
         MatchExceptionCode.MATCH_ACCESS_DENIED,

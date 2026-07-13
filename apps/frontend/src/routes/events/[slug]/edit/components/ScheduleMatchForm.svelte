@@ -11,6 +11,7 @@
 
 	export let stages: StageDtoOutput[];
 	export let teams: { id: string; name: string }[] = [];
+	export let participants: SelectedUser[] = [];
 	export let isTeam = false;
 	export let match: StageScheduleDtoOutputMatchesItem | undefined = undefined;
 	export let stageId: string | undefined = undefined;
@@ -191,36 +192,46 @@
 			</div>
 		</div>
 	{:else}
-	<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-		<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-			<ScheduleUserPicker label="Player 1" name="player1UserId" bind:selectedUsers={player1Users} />
-			<div class="flex max-w-[160px] flex-col gap-1.5">
-				<Label for={`match-score-1-${match?.id ?? 'new'}`}>Score</Label>
-				<Input
-					id={`match-score-1-${match?.id ?? 'new'}`}
-					name="player1Score"
-					type="number"
-					min="0"
-					disabled={match?.syncStatus === 'active'}
-					value={match?.players[0]?.score ?? ''}
+		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
+				<ScheduleUserPicker
+					label="Player 1"
+					name="player1UserId"
+					options={participants}
+					bind:selectedUsers={player1Users}
 				/>
+				<div class="flex max-w-[160px] flex-col gap-1.5">
+					<Label for={`match-score-1-${match?.id ?? 'new'}`}>Score</Label>
+					<Input
+						id={`match-score-1-${match?.id ?? 'new'}`}
+						name="player1Score"
+						type="number"
+						min="0"
+						disabled={match?.syncStatus === 'active'}
+						value={match?.players[0]?.score ?? ''}
+					/>
+				</div>
+			</div>
+			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
+				<ScheduleUserPicker
+					label="Player 2"
+					name="player2UserId"
+					options={participants}
+					bind:selectedUsers={player2Users}
+				/>
+				<div class="flex max-w-[160px] flex-col gap-1.5">
+					<Label for={`match-score-2-${match?.id ?? 'new'}`}>Score</Label>
+					<Input
+						id={`match-score-2-${match?.id ?? 'new'}`}
+						name="player2Score"
+						type="number"
+						min="0"
+						disabled={match?.syncStatus === 'active'}
+						value={match?.players[1]?.score ?? ''}
+					/>
+				</div>
 			</div>
 		</div>
-		<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-			<ScheduleUserPicker label="Player 2" name="player2UserId" bind:selectedUsers={player2Users} />
-			<div class="flex max-w-[160px] flex-col gap-1.5">
-				<Label for={`match-score-2-${match?.id ?? 'new'}`}>Score</Label>
-				<Input
-					id={`match-score-2-${match?.id ?? 'new'}`}
-					name="player2Score"
-					type="number"
-					min="0"
-					disabled={match?.syncStatus === 'active'}
-					value={match?.players[1]?.score ?? ''}
-				/>
-			</div>
-		</div>
-	</div>
 	{/if}
 
 	<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">

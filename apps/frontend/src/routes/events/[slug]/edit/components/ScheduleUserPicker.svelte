@@ -9,8 +9,10 @@
 	export let name: string;
 	export let selectedUsers: SelectedUser[] = [];
 	export let multiple = false;
+	export let options: SelectedUser[] | undefined = undefined;
 
 	let query = '';
+	let selectedOptionId = '';
 	let error = '';
 	let isPending = false;
 
@@ -47,35 +49,56 @@
 			isPending = false;
 		}
 	};
+
+	const handleSelect = () => {
+		const user = options?.find((candidate) => candidate.id === selectedOptionId);
+		if (user) addUser(user);
+		selectedOptionId = '';
+	};
 </script>
 
 <div class="flex flex-col gap-2">
 	<input type="hidden" {name} value={selectedUsers.map((user) => user.id).join(',')} />
-	<p class="text-[12px] font-medium">{label}</p>
+	<label for={`schedule-user-${name}`} class="text-[12px] font-medium">{label}</label>
 
-	<div class="flex flex-col gap-2 sm:flex-row">
-		<input
-			class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
-			placeholder="osu id / username"
-			bind:value={query}
-			on:keydown={(event) => {
-				if (event.key === 'Enter') {
-					event.preventDefault();
-					void handleAddUser();
-				}
-			}}
-		/>
-		<Button
-			type="button"
-			variant="outline"
-			class="gap-1"
-			on:click={() => void handleAddUser()}
-			disabled={isPending}
+	{#if options}
+		<select
+			id={`schedule-user-${name}`}
+			bind:value={selectedOptionId}
+			on:change={handleSelect}
+			class="h-9 rounded-md border border-input bg-background px-3 text-sm"
 		>
-			<Plus class="h-4 w-4" />
-			Add
-		</Button>
-	</div>
+			<option value="">Select tournament participant</option>
+			{#each options as user}
+				<option value={user.id}>{user.osuUsername}</option>
+			{/each}
+		</select>
+	{:else}
+		<div class="flex flex-col gap-2 sm:flex-row">
+			<input
+				id={`schedule-user-${name}`}
+				class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+				placeholder="osu id / username"
+				bind:value={query}
+				on:keydown={(event) => {
+					if (event.key === 'Enter') {
+						event.preventDefault();
+						void handleAddUser();
+					}
+				}}
+			/>
+			<Button
+				type="button"
+				variant="outline"
+				class="gap-1"
+				on:click={() => void handleAddUser()}
+				disabled={isPending}
+			>
+				<Plus class="h-4 w-4" />
+				Add
+			</Button>
+		</div>
+	{/if}
 
 	{#if error}
 		<p class="text-xs text-destructive">{error}</p>

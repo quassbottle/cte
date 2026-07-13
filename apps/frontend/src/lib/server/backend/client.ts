@@ -5,6 +5,7 @@ import type {
 	CreateStageDto,
 	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
+	TournamentControllerGetParticipantsParams,
 	UpdateMappoolBeatmapDto,
 	UpdateMappoolDto,
 	UpdateStageDto,
@@ -103,7 +104,8 @@ export function createBackendClient(input?: BackendClientInput) {
 				tournamentControllerFindMany(input, options),
 			archive: (id: string) => tournamentControllerArchive(id, options),
 			getById: (id: string) => tournamentControllerGetById(id, options),
-			getParticipants: (id: string) => tournamentControllerGetParticipants(id, undefined, options),
+			getParticipants: (id: string, params?: TournamentControllerGetParticipantsParams) =>
+				tournamentControllerGetParticipants(id, params, options),
 			getSchedule: (id: string) => tournamentControllerGetSchedule(id, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
 			update: (id: string, input: UpdateTournamentDto) =>

@@ -10,6 +10,14 @@ import {
   StageExceptionCode,
 } from 'lib/domain/stage/stage.exception';
 import { stageIdSchema } from 'lib/domain/stage/stage.id';
+import {
+  TournamentException,
+  TournamentExceptionCode,
+} from 'lib/domain/tournament/tournament.exception';
+import {
+  TournamentId,
+  tournamentIdSchema,
+} from 'lib/domain/tournament/tournament.id';
 import { Schema, mappools, stages, tournaments } from 'lib/infrastructure/db';
 import z from 'zod';
 import { PolicyContext, PolicyContextResolver, PolicyRequest } from '../types';
@@ -22,6 +30,10 @@ const mappoolParamsSchema = z.object({
   id: mappoolIdSchema,
 });
 
+const tournamentMappoolParamsSchema = z.object({
+  tournamentId: tournamentIdSchema,
+});
+
 @Injectable()
 export class MappoolPolicyContextResolver implements PolicyContextResolver {
   constructor(@Inject('DB') private readonly drizzle: Schema) {}
@@ -30,9 +42,13 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
     const route =
       request.originalUrl ?? request.url ?? request.path ?? request.baseUrl;
     const isMappoolRoute = /(^|\/)mappools(\/|$)/.test(route);
+    const isManagementRoute =
+      request.method === 'GET' && /\/mappools\/manage(?:\/|$)/.test(route);
 
     return (
-      isMappoolRoute && ['POST', 'PATCH', 'DELETE'].includes(request.method)
+      isMappoolRoute &&
+      (isManagementRoute ||
+        ['POST', 'PATCH', 'DELETE'].includes(request.method))
     );
   }
 
@@ -53,6 +69,12 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
   }
 
   private async resolveTournament(request: PolicyRequest) {
+    if (request.method === 'GET') {
+      return this.resolveTournamentById(
+        tournamentMappoolParamsSchema.parse(request.params).tournamentId,
+      );
+    }
+
     const mappoolId = mappoolParamsSchema.safeParse(request.params).data?.id;
 
     if (mappoolId) {
@@ -66,6 +88,24 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
     }
 
     throw new Error('Mappool id is required');
+  }
+
+  private async resolveTournamentById(tournamentId: TournamentId) {
+    const tournament = await this.drizzle.query.tournaments.findFirst({
+      where: and(
+        eq(tournaments.id, tournamentId),
+        isNull(tournaments.deletedAt),
+      ),
+    });
+
+    if (!tournament) {
+      throw new TournamentException(
+        'Tournament not found',
+        TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+      );
+    }
+
+    return tournament;
   }
 
   private async resolveTournamentByStageId(stageId: unknown) {
