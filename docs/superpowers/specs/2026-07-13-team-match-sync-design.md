@@ -10,17 +10,12 @@ Make osu match synchronisation calculate results for both solo and team tourname
 
 - A solo match has both fields `NULL` and exactly two selected players.
 - A team match has two different teams from the same tournament, selected as red and blue.
-- Team members are read from the existing `team_participants` table. The match does not copy a roster.
+- `team_participants` is used to list and validate tournament teams. The match does not copy a roster.
 - A team match cannot be saved with manual player selection; a solo match cannot be saved with team selection.
 
 ## Result calculation
 
-The sync repository loads two competitors:
-
-- solo: one player per competitor;
-- team: osu IDs of the members of the selected red and blue teams.
-
-For each completed osu game whose beatmap belongs to the stage mappool, the calculator sums `legacy_total_score` for each competitor's members. A higher sum grants one point; a tie or a game without a score from every member is ignored. Games outside the mappool are ignored.
+For a solo match, the calculator compares the two selected players. For a team match, it sums `legacy_total_score` by the actual osu game side, `score.match.team` (`red` or `blue`). A higher sum grants one point; a tie is ignored. This makes historic results independent of later changes to a tournament team roster. Completed games outside the stage mappool are ignored.
 
 The scheduler, durable leases, retry policy, osu client, and mp-link lifecycle remain unchanged.
 
