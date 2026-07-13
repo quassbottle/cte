@@ -25,13 +25,23 @@ import { UserId } from 'lib/domain/user/user.id';
 import {
   DbTournament,
   DbUser,
+  mappools,
+  mappoolsBeatmaps,
+  matches,
+  qualificationAttempts,
   Schema,
   soloParticipants,
+  stages,
   teamParticipants,
   teams,
   tournaments,
   users,
 } from 'lib/infrastructure/db';
+import {
+  QualificationRosterInput,
+  UpdateQualificationCompetitorInput,
+} from './dto';
+import { calculateQualificationSeeds as calculateSeeds } from './qualification-seeding';
 import {
   TournamentCreateParams,
   TournamentRegisterParams,
@@ -164,6 +174,280 @@ export class TournamentService {
       .offset(offset);
 
     return found.map(({ user }) => user);
+  }
+
+  public async getQualificationRoster(params: {
+    id: TournamentId;
+  }): Promise<QualificationRosterInput> {
+    const { id } = params;
+    const tournament = await this.getById({ id });
+
+    if (!tournament.isTeam) {
+      const participants = await this.drizzle
+        .select({
+          id: users.id,
+          osuId: users.osuId,
+          osuUsername: users.osuUsername,
+          seed: soloParticipants.seed,
+          withdrawn: soloParticipants.withdrawn,
+          withdrawalReason: soloParticipants.withdrawalReason,
+        })
+        .from(soloParticipants)
+        .innerJoin(users, eq(users.id, soloParticipants.userId))
+        .where(eq(soloParticipants.tournamentId, id))
+        .orderBy(asc(soloParticipants.seed), asc(users.osuUsername));
+
+      return {
+        kind: 'solo',
+        participants: participants.map((participant) => ({
+          ...participant,
+          avatarUrl: `https://a.ppy.sh/${participant.osuId}`,
+        })),
+      };
+    }
+
+    const rows = await this.drizzle
+      .select({
+        teamId: teams.id,
+        teamName: teams.name,
+        teamSeed: teams.seed,
+        teamWithdrawn: teams.withdrawn,
+        teamWithdrawalReason: teams.withdrawalReason,
+        id: users.id,
+        osuId: users.osuId,
+        osuUsername: users.osuUsername,
+        withdrawn: teamParticipants.withdrawn,
+        withdrawalReason: teamParticipants.withdrawalReason,
+      })
+      .from(teams)
+      .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
+      .innerJoin(users, eq(users.id, teamParticipants.userId))
+      .where(eq(teams.tournamentId, id))
+      .orderBy(asc(teams.seed), asc(teams.name), asc(users.osuUsername));
+
+    const managedTeams = new Map<
+      TeamId,
+      Extract<QualificationRosterInput, { kind: 'team' }>['teams'][number]
+    >();
+    for (const row of rows) {
+      const participant = {
+        id: row.id,
+        osuId: row.osuId,
+        osuUsername: row.osuUsername,
+        avatarUrl: `https://a.ppy.sh/${row.osuId}`,
+        withdrawn: row.withdrawn,
+        withdrawalReason: row.withdrawalReason,
+      };
+      const team = managedTeams.get(row.teamId);
+      if (team) {
+        team.participants.push(participant);
+      } else {
+        managedTeams.set(row.teamId, {
+          id: row.teamId,
+          name: row.teamName,
+          seed: row.teamSeed,
+          withdrawn: row.teamWithdrawn,
+          withdrawalReason: row.teamWithdrawalReason,
+          participants: [participant],
+        });
+      }
+    }
+
+    return { kind: 'team', teams: [...managedTeams.values()] };
+  }
+
+  public async updateSoloQualificationParticipant(params: {
+    id: TournamentId;
+    userId: UserId;
+    data: UpdateQualificationCompetitorInput;
+  }): Promise<void> {
+    const { id, userId, data } = params;
+    const [updated] = await this.drizzle
+      .update(soloParticipants)
+      .set(this.qualificationUpdate(data))
+      .where(
+        and(
+          eq(soloParticipants.tournamentId, id),
+          eq(soloParticipants.userId, userId),
+        ),
+      )
+      .returning();
+
+    if (!updated) this.throwScopedQualificationNotFound('Participant');
+  }
+
+  public async updateQualificationTeam(params: {
+    id: TournamentId;
+    teamId: TeamId;
+    data: UpdateQualificationCompetitorInput;
+  }): Promise<void> {
+    const { id, teamId, data } = params;
+    const [updated] = await this.drizzle
+      .update(teams)
+      .set(this.qualificationUpdate(data))
+      .where(and(eq(teams.tournamentId, id), eq(teams.id, teamId)))
+      .returning();
+
+    if (!updated) this.throwScopedQualificationNotFound('Team');
+  }
+
+  public async updateQualificationTeamParticipant(params: {
+    id: TournamentId;
+    teamId: TeamId;
+    userId: UserId;
+    data: Omit<UpdateQualificationCompetitorInput, 'seed'>;
+  }): Promise<void> {
+    const { id, teamId, userId, data } = params;
+    const [updated] = await this.drizzle
+      .update(teamParticipants)
+      .set(this.qualificationUpdate(data))
+      .from(teams)
+      .where(
+        and(
+          eq(teamParticipants.teamId, teamId),
+          eq(teamParticipants.userId, userId),
+          eq(teams.id, teamParticipants.teamId),
+          eq(teams.tournamentId, id),
+        ),
+      )
+      .returning();
+
+    if (!updated) this.throwScopedQualificationNotFound('Team participant');
+  }
+
+  public async calculateQualificationSeeds(params: {
+    id: TournamentId;
+  }): Promise<QualificationRosterInput> {
+    const { id } = params;
+
+    await this.drizzle.transaction(async (tx) => {
+      const tournament = await tx.query.tournaments.findFirst({
+        where: and(eq(tournaments.id, id), isNull(tournaments.deletedAt)),
+      });
+      if (!tournament) {
+        throw new TournamentException(
+          'Tournament not found',
+          TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+        );
+      }
+
+      const stage = await tx.query.stages.findFirst({
+        where: and(
+          eq(stages.tournamentId, id),
+          eq(stages.type, 'qualification'),
+          isNull(stages.deletedAt),
+        ),
+      });
+      if (!stage) {
+        throw new BadRequestException('Qualification stage not found');
+      }
+
+      const beatmaps = await tx
+        .select({ beatmapId: mappoolsBeatmaps.beatmapId })
+        .from(mappoolsBeatmaps)
+        .innerJoin(mappools, eq(mappools.id, mappoolsBeatmaps.mappoolId))
+        .where(eq(mappools.stageId, stage.id));
+      if (beatmaps.length === 0) {
+        throw new BadRequestException('Qualification mappool is empty');
+      }
+
+      const attempts = await tx
+        .select({
+          osuGameId: qualificationAttempts.osuGameId,
+          beatmapId: qualificationAttempts.beatmapId,
+          userId: qualificationAttempts.userId,
+          score: qualificationAttempts.score,
+        })
+        .from(qualificationAttempts)
+        .innerJoin(matches, eq(matches.id, qualificationAttempts.matchId))
+        .where(eq(matches.stageId, stage.id));
+
+      const beatmapIds = beatmaps.map(({ beatmapId }) => beatmapId);
+      if (!tournament.isTeam) {
+        const competitors = await tx
+          .select({
+            id: soloParticipants.userId,
+            userId: soloParticipants.userId,
+            osuId: users.osuId,
+          })
+          .from(soloParticipants)
+          .innerJoin(users, eq(users.id, soloParticipants.userId))
+          .where(
+            and(
+              eq(soloParticipants.tournamentId, id),
+              eq(soloParticipants.withdrawn, false),
+            ),
+          );
+        const seeds = calculateSeeds({
+          beatmapIds,
+          competitors: competitors.map((competitor) => ({
+            id: competitor.id,
+            tieBreakId: competitor.osuId,
+            userIds: [competitor.userId],
+          })),
+          attempts,
+        });
+
+        await tx
+          .update(soloParticipants)
+          .set({ seed: null })
+          .where(eq(soloParticipants.tournamentId, id));
+        for (const seed of seeds) {
+          await tx
+            .update(soloParticipants)
+            .set({ seed: seed.seed })
+            .where(
+              and(
+                eq(soloParticipants.tournamentId, id),
+                eq(soloParticipants.userId, seed.competitorId as UserId),
+              ),
+            );
+        }
+        return;
+      }
+
+      const members = await tx
+        .select({
+          teamId: teams.id,
+          userId: teamParticipants.userId,
+        })
+        .from(teams)
+        .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
+        .where(and(eq(teams.tournamentId, id), eq(teams.withdrawn, false)));
+      const membersByTeam = new Map<TeamId, UserId[]>();
+      for (const member of members) {
+        const userIds = membersByTeam.get(member.teamId) ?? [];
+        userIds.push(member.userId);
+        membersByTeam.set(member.teamId, userIds);
+      }
+      const seeds = calculateSeeds({
+        beatmapIds,
+        competitors: [...membersByTeam].map(([teamId, userIds]) => ({
+          id: teamId,
+          tieBreakId: teamId,
+          userIds,
+        })),
+        attempts,
+      });
+
+      await tx
+        .update(teams)
+        .set({ seed: null })
+        .where(eq(teams.tournamentId, id));
+      for (const seed of seeds) {
+        await tx
+          .update(teams)
+          .set({ seed: seed.seed })
+          .where(
+            and(
+              eq(teams.tournamentId, id),
+              eq(teams.id, seed.competitorId as TeamId),
+            ),
+          );
+      }
+    });
+
+    return this.getQualificationRoster({ id });
   }
 
   public async searchTeams(
@@ -590,5 +874,19 @@ export class TournamentService {
     if (tournament.archivedAt) {
       throw new BadRequestException('Archived tournaments cannot be changed');
     }
+  }
+
+  private qualificationUpdate(data: UpdateQualificationCompetitorInput) {
+    return {
+      ...data,
+      withdrawalReason: data.withdrawn === false ? null : data.withdrawalReason,
+    };
+  }
+
+  private throwScopedQualificationNotFound(subject: string): never {
+    throw new TournamentException(
+      `${subject} not found in tournament`,
+      TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+    );
   }
 }

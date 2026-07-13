@@ -11,9 +11,13 @@ import {
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { MatchIdPipe } from 'lib/common/pipes/match-id.pipe';
+import { TeamIdPipe } from 'lib/common/pipes/team-id.pipe';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
+import { UserIdPipe } from 'lib/common/pipes/user-id.pipe';
 import { MatchId } from 'lib/domain/match/match.id';
+import { TeamId } from 'lib/domain/team/team.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
+import { UserId } from 'lib/domain/user/user.id';
 import { DbUser } from 'lib/infrastructure/db';
 import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
@@ -33,11 +37,14 @@ import {
   FindTournamentParticipantsDto,
   FindTournamentTeamsDto,
   FindTournamentsDto,
+  type QualificationRosterInput,
   RegisterTournamentDto,
   TournamentDto,
   TournamentParticipantDto,
   TournamentTeamDto,
   TournamentTeamSummaryDto,
+  UpdateQualificationCompetitorDto,
+  UpdateQualificationTeamParticipantDto,
   UpdateTournamentDto,
 } from './dto';
 import { TournamentService } from './tournament.service';
@@ -100,6 +107,85 @@ export class TournamentController {
       id,
       ...query,
     });
+  }
+
+  @Get(':id/participants/manage')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ApiResponse({ status: 200, description: 'Returns the managed roster.' })
+  public async getQualificationRoster(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+  ): Promise<QualificationRosterInput> {
+    return this.tournamentService.getQualificationRoster({ id });
+  }
+
+  @Patch(':id/participants/:userId/manage')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  public async updateSoloQualificationParticipant(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Param('userId', UserIdPipe) userId: UserId,
+    @Body() body: UpdateQualificationCompetitorDto,
+  ): Promise<QualificationRosterInput> {
+    await this.tournamentService.updateSoloQualificationParticipant({
+      id,
+      userId,
+      data: body,
+    });
+    return this.tournamentService.getQualificationRoster({ id });
+  }
+
+  @Patch(':id/teams/:teamId/manage')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  public async updateQualificationTeam(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Param('teamId', TeamIdPipe) teamId: TeamId,
+    @Body() body: UpdateQualificationCompetitorDto,
+  ): Promise<QualificationRosterInput> {
+    await this.tournamentService.updateQualificationTeam({
+      id,
+      teamId,
+      data: body,
+    });
+    return this.tournamentService.getQualificationRoster({ id });
+  }
+
+  @Patch(':id/teams/:teamId/participants/:userId/manage')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  public async updateQualificationTeamParticipant(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Param('teamId', TeamIdPipe) teamId: TeamId,
+    @Param('userId', UserIdPipe) userId: UserId,
+    @Body() body: UpdateQualificationTeamParticipantDto,
+  ): Promise<QualificationRosterInput> {
+    await this.tournamentService.updateQualificationTeamParticipant({
+      id,
+      teamId,
+      userId,
+      data: body,
+    });
+    return this.tournamentService.getQualificationRoster({ id });
+  }
+
+  @Post(':id/qualification/calculate-seeds')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  public async calculateQualificationSeeds(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+  ): Promise<QualificationRosterInput> {
+    return this.tournamentService.calculateQualificationSeeds({ id });
   }
 
   @Get(':id/teams/search')

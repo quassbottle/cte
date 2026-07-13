@@ -21,14 +21,21 @@ export class TournamentPolicyContextResolver implements PolicyContextResolver {
     const route =
       request.originalUrl ?? request.url ?? request.path ?? request.baseUrl;
     const isTournamentRoute = /(^|\/)tournaments(\/|$)/.test(route);
+    const isManagementRead =
+      request.method === 'GET' && /\/participants\/manage(?:\/|$)/.test(route);
 
     return (
-      isTournamentRoute && ['POST', 'PATCH', 'DELETE'].includes(request.method)
+      isTournamentRoute &&
+      (isManagementRead || ['POST', 'PATCH', 'DELETE'].includes(request.method))
     );
   }
 
   public async resolve(request: PolicyRequest): Promise<PolicyContext> {
-    if (request.method === 'POST') {
+    const route =
+      request.originalUrl ?? request.url ?? request.path ?? request.baseUrl;
+    const isCollectionPost =
+      request.method === 'POST' && /\/tournaments\/?(?:\?.*)?$/.test(route);
+    if (isCollectionPost) {
       return {
         subject: 'Tournament',
         subjectData: {
