@@ -8,7 +8,7 @@ import {
   Post,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { StageIdPipe } from 'lib/common/pipes/stage-id.pipe';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
 import { StageId } from 'lib/domain/stage/stage.id';
@@ -16,12 +16,8 @@ import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
-import {
-  CreateStageDto,
-  StageDto,
-  UpdateStageDto,
-  stageDtoSchema,
-} from './dto';
+import { ZodResponse } from 'nestjs-zod';
+import { CreateStageDto, StageDto, UpdateStageDto } from './dto';
 import { StageService } from './stage.service';
 
 @ApiBearerAuth('bearer')
@@ -30,32 +26,28 @@ export class StageController {
   constructor(private readonly stageService: StageService) {}
 
   @Get()
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns stages list for tournament.',
-    type: [StageDto.Output],
+    type: [StageDto],
   })
   public async findMany(
     @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
-  ): Promise<StageDto[]> {
-    const stages = await this.stageService.findByTournament({ tournamentId });
-
-    return stages.map((stage) => stageDtoSchema.parse(stage));
+  ) {
+    return this.stageService.findByTournament({ tournamentId });
   }
 
   @Get(':id')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns stage by id.',
-    type: StageDto.Output,
+    type: StageDto,
   })
   public async getById(
     @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
     @Param('id', StageIdPipe) id: StageId,
-  ): Promise<StageDto> {
-    const stage = await this.stageService.getById({ id, tournamentId });
-
-    return stageDtoSchema.parse(stage);
+  ) {
+    return this.stageService.getById({ id, tournamentId });
   }
 
   @Post()
@@ -63,18 +55,16 @@ export class StageController {
   @CheckPolicies((ability, context) =>
     ability.can('create', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 201,
     description: 'Creates a stage.',
-    type: StageDto.Output,
+    type: StageDto,
   })
   public async create(
     @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
     @Body() body: CreateStageDto,
-  ): Promise<StageDto> {
-    const created = await this.stageService.create({ ...body, tournamentId });
-
-    return stageDtoSchema.parse(created);
+  ) {
+    return this.stageService.create({ ...body, tournamentId });
   }
 
   @Patch(':id')
@@ -82,23 +72,21 @@ export class StageController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Updates a stage.',
-    type: StageDto.Output,
+    type: StageDto,
   })
   public async patch(
     @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
     @Param('id', StageIdPipe) id: StageId,
     @Body() body: UpdateStageDto,
-  ): Promise<StageDto> {
-    const updated = await this.stageService.update({
+  ) {
+    return this.stageService.update({
       id,
       tournamentId,
       data: body,
     });
-
-    return stageDtoSchema.parse(updated);
   }
 
   @Delete(':id')
@@ -106,17 +94,15 @@ export class StageController {
   @CheckPolicies((ability, context) =>
     ability.can('delete', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Soft deletes a stage.',
-    type: StageDto.Output,
+    type: StageDto,
   })
   public async softDelete(
     @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
     @Param('id', StageIdPipe) id: StageId,
-  ): Promise<StageDto> {
-    const deleted = await this.stageService.softDelete({ id, tournamentId });
-
-    return stageDtoSchema.parse(deleted);
+  ) {
+    return this.stageService.softDelete({ id, tournamentId });
   }
 }

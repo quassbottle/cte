@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import {
   MatchException,
@@ -17,15 +17,22 @@ import {
   matchParticipants,
   matchStaff,
   Schema,
+  soloParticipants,
   stages,
+  teams,
+  tournaments,
   users,
 } from 'lib/infrastructure/db';
+import { MatchSyncRepository } from 'modules/match-sync/match-sync.repository';
 import { ScheduleMatchUpsertInput } from './dto';
 import { MatchCreateParams, ScheduleMatchCreateParams } from './types';
 
 @Injectable()
 export class MatchService {
-  constructor(@Inject('DB') private readonly drizzle: Schema) {}
+  constructor(
+    @Inject('DB') private readonly drizzle: Schema,
+    private readonly matchSyncRepository: MatchSyncRepository,
+  ) {}
 
   async create(data: MatchCreateParams): Promise<DbMatch> {
     const id = matchId();
@@ -48,6 +55,7 @@ export class MatchService {
       stageId: data.stageId,
       tournamentId,
     });
+    await this.assertMatchCompetitors(tournamentId, data);
 
     const id = matchId();
 
@@ -64,11 +72,17 @@ export class MatchService {
           endsAt: data.endsAt,
           mpUrl: data.mpUrl,
           vodUrl: data.vodUrl,
+          redTeamId: data.redTeamId,
+          blueTeamId: data.blueTeamId,
+          redScore: data.redScore,
+          blueScore: data.blueScore,
         })
         .returning();
 
       await this.replaceParticipants(tx, id, data.players);
       await this.replaceStaff(tx, id, data.staff);
+      if (data.mpUrl)
+        await this.matchSyncRepository.activate(id, data.mpUrl, tx);
 
       return match;
     });
@@ -83,12 +97,22 @@ export class MatchService {
   }): Promise<DbMatch> {
     const { tournamentId, matchId: id, data } = params;
 
+    const sync = await this.matchSyncRepository.getState(id);
+    if (sync?.status === 'active' && this.hasManualScore(data)) {
+      throw new MatchException(
+        'Manual score changes are unavailable while match sync is active',
+        MatchExceptionCode.MATCH_SYNC_ACTIVE,
+      );
+    }
+
     await this.assertStageBelongsToTournament({
       stageId: data.stageId,
       tournamentId,
     });
     await this.assertMatchBelongsToTournament({ matchId: id, tournamentId });
+    await this.assertMatchCompetitors(tournamentId, data);
 
+    const current = await this.getById({ id });
     const updated = await this.drizzle.transaction(async (tx) => {
       const [match] = await tx
         .update(matches)
@@ -100,6 +124,10 @@ export class MatchService {
           endsAt: data.endsAt,
           mpUrl: data.mpUrl,
           vodUrl: data.vodUrl,
+          redTeamId: data.redTeamId,
+          blueTeamId: data.blueTeamId,
+          redScore: data.redScore,
+          blueScore: data.blueScore,
         })
         .where(eq(matches.id, id))
         .returning();
@@ -113,6 +141,14 @@ export class MatchService {
 
       await this.replaceParticipants(tx, id, data.players);
       await this.replaceStaff(tx, id, data.staff);
+      if (sync && this.hasManualScore(data)) {
+        await this.matchSyncRepository.invalidateLease(id, tx);
+      }
+      if (data.mpUrl && data.mpUrl !== current.mpUrl) {
+        await this.matchSyncRepository.activate(id, data.mpUrl, tx);
+      } else if (!data.mpUrl && current.mpUrl) {
+        await this.matchSyncRepository.stop(id, tx);
+      }
 
       return match;
     });
@@ -320,6 +356,77 @@ export class MatchService {
       throw new MatchException(
         `Stage not found`,
         MatchExceptionCode.MATCH_NOT_FOUND,
+      );
+    }
+  }
+
+  private hasManualScore(data: ScheduleMatchUpsertInput): boolean {
+    return (
+      data.redScore !== null ||
+      data.blueScore !== null ||
+      data.players.some((player) => player.score !== null)
+    );
+  }
+
+  private async assertMatchCompetitors(
+    tournamentId: TournamentId,
+    data: ScheduleMatchUpsertInput,
+  ): Promise<void> {
+    const tournament = await this.drizzle.query.tournaments.findFirst({
+      where: eq(tournaments.id, tournamentId),
+    });
+    const hasTeams = data.redTeamId !== null;
+    if (tournament?.isTeam !== hasTeams) {
+      throw new MatchException(
+        tournament?.isTeam
+          ? 'Team matches require two teams'
+          : 'Solo matches cannot have teams',
+        MatchExceptionCode.MATCH_ACCESS_DENIED,
+      );
+    }
+    if (!hasTeams) {
+      const playerIds = [...new Set(data.players.map(({ userId }) => userId))];
+      if (playerIds.length === 0) return;
+
+      const registered = await this.drizzle
+        .select({ userId: soloParticipants.userId })
+        .from(soloParticipants)
+        .where(
+          and(
+            eq(soloParticipants.tournamentId, tournamentId),
+            inArray(soloParticipants.userId, playerIds),
+          ),
+        );
+
+      if (registered.length !== playerIds.length) {
+        throw new MatchException(
+          'Players must participate in the tournament',
+          MatchExceptionCode.MATCH_ACCESS_DENIED,
+        );
+      }
+
+      return;
+    }
+    if (!data.redTeamId || !data.blueTeamId) {
+      throw new MatchException(
+        'Team matches require two teams',
+        MatchExceptionCode.MATCH_ACCESS_DENIED,
+      );
+    }
+
+    const found = await this.drizzle
+      .select({ id: teams.id })
+      .from(teams)
+      .where(
+        and(
+          eq(teams.tournamentId, tournamentId),
+          inArray(teams.id, [data.redTeamId, data.blueTeamId]),
+        ),
+      );
+    if (found.length !== 2) {
+      throw new MatchException(
+        'Teams must belong to the tournament',
+        MatchExceptionCode.MATCH_ACCESS_DENIED,
       );
     }
   }

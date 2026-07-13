@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { EnvService } from 'lib/common/env/env.service';
 import { auth, v2 } from 'osu-api-extended';
+import { z } from 'zod';
 
 export enum OsuApiMode {
   Osu = 'osu',
@@ -23,6 +24,30 @@ type OsuUserClient = {
 
 const DEFAULT_SCOPES = ['identify'] as const;
 const CACHED_TOKEN_PATH = './osu-api-backend-token.json';
+
+const osuMatchDetailsSchema = z.object({
+  match: z.object({ end_time: z.string().nullable() }),
+  latest_event_id: z.number(),
+  events: z.array(
+    z.object({
+      id: z.number(),
+      game: z
+        .object({
+          id: z.number(),
+          beatmap_id: z.number(),
+          end_time: z.string().nullable(),
+          scores: z.array(
+            z.object({
+              user_id: z.number(),
+              legacy_total_score: z.number(),
+              match: z.object({ team: z.enum(['red', 'blue', 'none']) }),
+            }),
+          ),
+        })
+        .optional(),
+    }),
+  ),
+});
 
 @Injectable()
 export class OsuService {
@@ -120,6 +145,55 @@ export class OsuService {
     };
   }
 
+  public async getMatchSnapshot(params: {
+    osuMatchId: number;
+  }): Promise<OsuMatchSnapshot> {
+    await this.ensureGuestAuthorized();
+
+    const games = new Map<number, OsuMatchGame>();
+    let after = 0;
+    let closedAt: Date | null = null;
+
+    while (true) {
+      const result = await v2.matches.details({
+        match_id: params.osuMatchId,
+        after,
+        limit: 100,
+      });
+
+      if (result.error != null) throw result.error;
+
+      const match = osuMatchDetailsSchema.parse(result);
+      closedAt = match.match.end_time ? new Date(match.match.end_time) : null;
+      const eventIds = match.events.map((event) => event.id);
+
+      for (const event of match.events) {
+        if (!event.game) continue;
+        games.set(event.game.id, {
+          id: event.game.id,
+          beatmapId: event.game.beatmap_id,
+          endedAt: event.game.end_time ? new Date(event.game.end_time) : null,
+          scores: event.game.scores.map((score) => ({
+            userId: score.user_id,
+            score: score.legacy_total_score,
+            team: score.match.team === 'none' ? null : score.match.team,
+          })),
+        });
+      }
+
+      const nextAfter = Math.max(after, ...eventIds);
+      if (nextAfter >= match.latest_event_id) break;
+      if (nextAfter === after) {
+        throw new Error(
+          `osu match ${params.osuMatchId} pagination made no progress`,
+        );
+      }
+      after = nextAfter;
+    }
+
+    return { closedAt, games: [...games.values()] };
+  }
+
   private createClient(accessToken?: string): OsuUserClient {
     return {
       users: {
@@ -157,9 +231,13 @@ export class OsuService {
       }),
     );
 
-    const result = (await this.guestAuthPromise) as {
-      error?: unknown;
-    };
+    let result: { error?: unknown };
+    try {
+      result = (await this.guestAuthPromise) as { error?: unknown };
+    } catch (error) {
+      this.guestAuthPromise = null;
+      throw error;
+    }
 
     if (result?.error != null) {
       this.guestAuthPromise = null;
@@ -187,6 +265,18 @@ type OsuUserProfile = {
     global_rank?: number | null;
   } | null;
   error?: unknown;
+};
+
+type OsuMatchSnapshot = {
+  closedAt: Date | null;
+  games: OsuMatchGame[];
+};
+
+type OsuMatchGame = {
+  id: number;
+  beatmapId: number;
+  endedAt: Date | null;
+  scores: { userId: number; score: number; team: 'red' | 'blue' | null }[];
 };
 
 type OsuBeatmapDetails = {

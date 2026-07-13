@@ -29,6 +29,22 @@ describe('scheduleMatchUpsertDtoSchema', () => {
     expect(parsed.staff).toHaveLength(2);
   });
 
+  it('accepts a team match payload', () => {
+    const parsed = scheduleMatchUpsertDtoSchema.parse({
+      name: 'Team Finals',
+      stageId: 'ckm123456789012345678901',
+      startsAt: '2026-07-10T16:00:00.000Z',
+      endsAt: '2026-07-10T17:00:00.000Z',
+      redTeamId: 'ckt123456789012345678901',
+      blueTeamId: 'ckt123456789012345678902',
+      players: [],
+      staff: [],
+    });
+
+    expect(parsed.redTeamId).toBe('ckt123456789012345678901');
+    expect(parsed.blueTeamId).toBe('ckt123456789012345678902');
+  });
+
   it('rejects matches ending before they start', () => {
     const result = scheduleMatchUpsertDtoSchema.safeParse({
       name: 'Grand Finals',

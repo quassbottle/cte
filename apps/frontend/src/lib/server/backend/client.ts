@@ -5,6 +5,8 @@ import type {
 	CreateStageDto,
 	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
+	TournamentControllerGetParticipantsParams,
+	TournamentParticipantDtoOutput,
 	UpdateMappoolBeatmapDto,
 	UpdateMappoolDto,
 	UpdateStageDto,
@@ -44,6 +46,7 @@ import {
 	tournamentControllerGetSchedule
 } from '$lib/server/backend/generated/endpoints';
 import type { ServerSession } from '$lib/server/auth/session';
+import { backendFetch } from './fetcher';
 
 type BackendClientInput =
 	| Pick<ServerSession, 'token'>
@@ -102,7 +105,18 @@ export function createBackendClient(input?: BackendClientInput) {
 				tournamentControllerFindMany(input, options),
 			archive: (id: string) => tournamentControllerArchive(id, options),
 			getById: (id: string) => tournamentControllerGetById(id, options),
-			getParticipants: (id: string) => tournamentControllerGetParticipants(id, undefined, options),
+			getParticipants: (id: string, params?: TournamentControllerGetParticipantsParams) =>
+				tournamentControllerGetParticipants(id, params, options),
+			searchParticipants: (id: string, query: string, signal?: AbortSignal) =>
+				backendFetch<{ data: TournamentParticipantDtoOutput[] }>(
+					`/api/tournaments/${id}/participants?${new URLSearchParams({ query, limit: '20' })}`,
+					{ ...options, signal }
+				),
+			searchTeams: (id: string, query: string, signal?: AbortSignal) =>
+				backendFetch<{ data: { id: string; name: string }[] }>(
+					`/api/tournaments/${id}/teams/search?${new URLSearchParams({ query, limit: '20' })}`,
+					{ ...options, signal }
+				),
 			getSchedule: (id: string) => tournamentControllerGetSchedule(id, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
 			update: (id: string, input: UpdateTournamentDto) =>
@@ -117,7 +131,11 @@ export function createBackendClient(input?: BackendClientInput) {
 			update: (tournamentId: string, matchId: string, input: ScheduleMatchUpsertDto) =>
 				tournamentControllerUpdateMatch(tournamentId, matchId, input, options),
 			delete: (tournamentId: string, matchId: string) =>
-				tournamentControllerDeleteMatch(tournamentId, matchId, options)
+				tournamentControllerDeleteMatch(tournamentId, matchId, options),
+			sync: (matchId: string) =>
+				backendFetch(`/api/matches/${matchId}/sync`, { ...options, method: 'POST' }),
+			stopSync: (matchId: string) =>
+				backendFetch(`/api/matches/${matchId}/sync`, { ...options, method: 'DELETE' })
 		},
 		stages: {
 			findByTournament: (tournamentId: string) => stageControllerFindMany(tournamentId, options),

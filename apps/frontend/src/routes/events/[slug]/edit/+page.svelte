@@ -101,7 +101,13 @@
 		</ContentItem>
 
 		<ContentItem value="schedule">
-			<ScheduleTab stages={data.stages} schedule={data.schedule} {form} />
+			<ScheduleTab
+				tournamentId={data.tournament.id}
+				stages={data.stages}
+				schedule={data.schedule}
+				isTeam={data.tournament.isTeam}
+				{form}
+			/>
 		</ContentItem>
 
 		<ContentItem value="mappools">

@@ -145,3 +145,5 @@ vite.config.ts.timestamp-*
 _tmp_*
 
 osu-api-backend-token.json
+
+graphify-out

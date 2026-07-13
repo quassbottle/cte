@@ -224,6 +224,62 @@ export const actions: Actions = {
 			matchId
 		} satisfies TournamentEditActionResult;
 	},
+	syncScheduleMatch: async (event) => {
+		requireSession(event.locals);
+		const matchId = stringValue(Object.fromEntries(await event.request.formData()).matchId);
+		if (!matchId)
+			return fail(400, {
+				action: 'syncScheduleMatch',
+				ok: false,
+				message: 'Match id is required',
+				errors: {},
+				matchId
+			} satisfies TournamentEditActionResult);
+		try {
+			await createBackendClient(event).matches.sync(matchId);
+			return {
+				action: 'syncScheduleMatch',
+				ok: true,
+				matchId
+			} satisfies TournamentEditActionResult;
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				action: 'syncScheduleMatch',
+				ok: false,
+				message: backendErrorMessage(cause, 'Request failed'),
+				errors: {},
+				matchId
+			} satisfies TournamentEditActionResult);
+		}
+	},
+	stopScheduleMatch: async (event) => {
+		requireSession(event.locals);
+		const matchId = stringValue(Object.fromEntries(await event.request.formData()).matchId);
+		if (!matchId)
+			return fail(400, {
+				action: 'stopScheduleMatch',
+				ok: false,
+				message: 'Match id is required',
+				errors: {},
+				matchId
+			} satisfies TournamentEditActionResult);
+		try {
+			await createBackendClient(event).matches.stopSync(matchId);
+			return {
+				action: 'stopScheduleMatch',
+				ok: true,
+				matchId
+			} satisfies TournamentEditActionResult;
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				action: 'stopScheduleMatch',
+				ok: false,
+				message: backendErrorMessage(cause, 'Request failed'),
+				errors: {},
+				matchId
+			} satisfies TournamentEditActionResult);
+		}
+	},
 	createMappool: (event) =>
 		withFormValues(event, (values) =>
 			submitForm(

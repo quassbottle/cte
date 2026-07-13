@@ -12,7 +12,6 @@ import {
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { MatchIdPipe } from 'lib/common/pipes/match-id.pipe';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
-import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { MatchId } from 'lib/domain/match/match.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { DbUser } from 'lib/infrastructure/db';
@@ -20,27 +19,26 @@ import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
-import { ZodResponse } from 'nestjs-zod';
 import {
   MatchDto,
   type MatchDtoOutput,
   ScheduleMatchUpsertDto,
   StageScheduleDto,
-  stageScheduleDtoSchema,
 } from 'modules/match/dto';
 import { MatchService } from 'modules/match/match.service';
 import { ScheduleService } from 'modules/match/schedule.service';
+import { ZodResponse } from 'nestjs-zod';
 import {
   CreateTournamentDto,
+  FindTournamentParticipantsDto,
+  FindTournamentTeamsDto,
   FindTournamentsDto,
   RegisterTournamentDto,
   TournamentDto,
   TournamentParticipantDto,
   TournamentTeamDto,
+  TournamentTeamSummaryDto,
   UpdateTournamentDto,
-  tournamentDtoSchema,
-  tournamentParticipantDtoSchema,
-  tournamentTeamDtoSchema,
 } from './dto';
 import { TournamentService } from './tournament.service';
 
@@ -54,103 +52,91 @@ export class TournamentController {
   ) {}
 
   @Get()
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns tournaments list.',
-    type: [TournamentDto.Output],
+    type: [TournamentDto],
   })
-  public async findMany(
-    @Query() query: FindTournamentsDto,
-  ): Promise<TournamentDto[]> {
+  public async findMany(@Query() query: FindTournamentsDto) {
     const tournaments = await this.tournamentService.findMany(query);
     const participantsCountByTournamentId =
       await this.tournamentService.getParticipantsCountMap(
         tournaments.map((tournament) => tournament.id),
       );
 
-    return tournaments.map((tournament) =>
-      tournamentDtoSchema.parse({
-        ...tournament,
-        participantsCount:
-          participantsCountByTournamentId.get(tournament.id) ?? 0,
-      }),
-    );
+    return tournaments.map((tournament) => ({
+      ...tournament,
+      participantsCount:
+        participantsCountByTournamentId.get(tournament.id) ?? 0,
+    }));
   }
 
   @Get(':id')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns tournament by id.',
-    type: TournamentDto.Output,
+    type: TournamentDto,
   })
-  public async getById(
-    @Param('id', TournamentIdPipe) id: TournamentId,
-  ): Promise<TournamentDto> {
+  public async getById(@Param('id', TournamentIdPipe) id: TournamentId) {
     const tournament = await this.tournamentService.getById({ id });
     const participantsCount = await this.tournamentService.getParticipantsCount(
       { id, isTeam: tournament.isTeam },
     );
 
-    return tournamentDtoSchema.parse({ ...tournament, participantsCount });
+    return { ...tournament, participantsCount };
   }
 
   @Get(':id/participants')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns the participants of the tournament.',
-    type: [TournamentParticipantDto.Output],
+    type: [TournamentParticipantDto],
   })
   public async getParticipants(
     @Param('id', TournamentIdPipe) id: TournamentId,
-    @Query() query: PaginationDto,
-  ): Promise<TournamentParticipantDto[]> {
-    const participants = await this.tournamentService.getParticipants({
+    @Query() query: FindTournamentParticipantsDto,
+  ) {
+    return this.tournamentService.getParticipants({
       id,
       ...query,
     });
+  }
 
-    return participants.map((participant) =>
-      tournamentParticipantDtoSchema.parse(participant),
-    );
+  @Get(':id/teams/search')
+  @ZodResponse({
+    status: 200,
+    description: 'Searches tournament teams.',
+    type: [TournamentTeamSummaryDto],
+  })
+  public async searchTeams(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Query() query: FindTournamentTeamsDto,
+  ) {
+    return this.tournamentService.searchTeams({ id, ...query });
   }
 
   @Get(':id/teams')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns teams of the tournament with participants.',
-    type: [TournamentTeamDto.Output],
+    type: [TournamentTeamDto],
   })
-  public async getTeams(
-    @Param('id', TournamentIdPipe) id: TournamentId,
-  ): Promise<TournamentTeamDto[]> {
+  public async getTeams(@Param('id', TournamentIdPipe) id: TournamentId) {
     const teams = await this.tournamentService.getTeams({ id });
 
-    return teams.map((team) =>
-      tournamentTeamDtoSchema.parse({
-        id: team.id,
-        name: team.name,
-        captainId: team.captainId,
-        participants: team.participants.map((participant) =>
-          tournamentParticipantDtoSchema.parse(participant),
-        ),
-      }),
-    );
+    return teams;
   }
 
   @Get(':id/matches')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns tournament schedule grouped by stages.',
-    type: [StageScheduleDto.Output],
+    type: [StageScheduleDto],
   })
-  public async getSchedule(
-    @Param('id', TournamentIdPipe) id: TournamentId,
-  ): Promise<StageScheduleDto[]> {
-    const schedule = await this.scheduleService.findByTournament({
+  public async getSchedule(@Param('id', TournamentIdPipe) id: TournamentId) {
+    return this.scheduleService.findByTournament({
       tournamentId: id,
     });
-
-    return schedule.map((stage) => stageScheduleDtoSchema.parse(stage));
   }
 
   @Post(':id/matches')
@@ -221,21 +207,21 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('create', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 201,
     description: 'Creates a tournament.',
-    type: TournamentDto.Output,
+    type: TournamentDto,
   })
   public async create(
     @RequestUser() user: DbUser,
     @Body() body: CreateTournamentDto,
-  ): Promise<TournamentDto> {
+  ) {
     const created = await this.tournamentService.create({
       ...body,
       creatorId: user.id,
     });
 
-    return tournamentDtoSchema.parse({ ...created, participantsCount: 0 });
+    return { ...created, participantsCount: 0 };
   }
 
   @Patch(':id/archive')
@@ -243,20 +229,18 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Archives a tournament.',
-    type: TournamentDto.Output,
+    type: TournamentDto,
   })
-  public async archive(
-    @Param('id', TournamentIdPipe) id: TournamentId,
-  ): Promise<TournamentDto> {
+  public async archive(@Param('id', TournamentIdPipe) id: TournamentId) {
     const archived = await this.tournamentService.archive({ id });
     const participantsCount = await this.tournamentService.getParticipantsCount(
       { id, isTeam: archived.isTeam },
     );
 
-    return tournamentDtoSchema.parse({ ...archived, participantsCount });
+    return { ...archived, participantsCount };
   }
 
   @Patch(':id')
@@ -264,21 +248,21 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Updates a tournament.',
-    type: TournamentDto.Output,
+    type: TournamentDto,
   })
   public async patch(
     @Param('id', TournamentIdPipe) id: TournamentId,
     @Body() body: UpdateTournamentDto,
-  ): Promise<TournamentDto> {
+  ) {
     const updated = await this.tournamentService.update({ id, data: body });
     const participantsCount = await this.tournamentService.getParticipantsCount(
       { id, isTeam: updated.isTeam },
     );
 
-    return tournamentDtoSchema.parse({ ...updated, participantsCount });
+    return { ...updated, participantsCount };
   }
 
   @Delete(':id')
@@ -286,20 +270,18 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('delete', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Soft deletes a tournament.',
-    type: TournamentDto.Output,
+    type: TournamentDto,
   })
-  public async softDelete(
-    @Param('id', TournamentIdPipe) id: TournamentId,
-  ): Promise<TournamentDto> {
+  public async softDelete(@Param('id', TournamentIdPipe) id: TournamentId) {
     const deleted = await this.tournamentService.softDelete({ id });
     const participantsCount = await this.tournamentService.getParticipantsCount(
       { id, isTeam: deleted.isTeam },
     );
 
-    return tournamentDtoSchema.parse({ ...deleted, participantsCount });
+    return { ...deleted, participantsCount };
   }
 
   @Post(':id/register')

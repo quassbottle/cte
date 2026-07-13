@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Delete,
-  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -11,18 +10,16 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
-import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { MappoolIdPipe } from 'lib/common/pipes/mappool-id.pipe';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
 import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { MappoolId } from 'lib/domain/mappool/mappool.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
-import { DbUser } from 'lib/infrastructure/db';
-import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
-import { TournamentService } from 'modules/tournament/tournament.service';
+import { ZodResponse } from 'nestjs-zod';
 import {
   AddMappoolBeatmapDto,
   CreateMappoolDto,
@@ -31,68 +28,47 @@ import {
   MappoolWithBeatmapsDto,
   UpdateMappoolBeatmapDto,
   UpdateMappoolDto,
-  mappoolBeatmapDtoSchema,
-  mappoolDtoSchema,
-  mappoolWithBeatmapsDtoSchema,
 } from './dto';
 import { MappoolService } from './mappool.service';
 
 @ApiBearerAuth('bearer')
 @Controller('tournaments/:tournamentId/mappools')
 export class TournamentMappoolController {
-  constructor(
-    private readonly mappoolService: MappoolService,
-    private readonly tournamentService: TournamentService,
-  ) {}
+  constructor(private readonly mappoolService: MappoolService) {}
 
   @Get()
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns visible tournament mappools with beatmaps.',
-    type: [MappoolWithBeatmapsDto.Output],
+    type: [MappoolWithBeatmapsDto],
   })
   public async findByTournament(
     @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
-  ): Promise<MappoolWithBeatmapsDto[]> {
-    const mappools = await this.mappoolService.findByTournamentWithBeatmaps({
+  ) {
+    return this.mappoolService.findByTournamentWithBeatmaps({
       tournamentId,
       includeHidden: false,
     });
-
-    return mappools.map((mappool) =>
-      mappoolWithBeatmapsDtoSchema.parse(mappool),
-    );
   }
 
   @Get('manage')
-  @UseGuards(JwtUserGuard)
-  @ApiResponse({
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ZodResponse({
     status: 200,
-    description: 'Returns all tournament mappools with beatmaps for tournament creator.',
-    type: [MappoolWithBeatmapsDto.Output],
+    description:
+      'Returns all tournament mappools with beatmaps for tournament creator.',
+    type: [MappoolWithBeatmapsDto],
   })
   public async findByTournamentForManagement(
     @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
-    @RequestUser() user: DbUser,
-  ): Promise<MappoolWithBeatmapsDto[]> {
-    const tournament = await this.tournamentService.getById({ id: tournamentId });
-
-    if (tournament.creatorId !== user.id && user.role !== 'admin') {
-      throw new ForbiddenException("You aren't allowed to manage this tournament");
-    }
-
-    if (tournament.archivedAt) {
-      throw new ForbiddenException('Archived tournaments cannot be changed');
-    }
-
-    const mappools = await this.mappoolService.findByTournamentWithBeatmaps({
+  ) {
+    return this.mappoolService.findByTournamentWithBeatmaps({
       tournamentId,
       includeHidden: true,
     });
-
-    return mappools.map((mappool) =>
-      mappoolWithBeatmapsDtoSchema.parse(mappool),
-    );
   }
 }
 
@@ -102,43 +78,33 @@ export class MappoolController {
   constructor(private readonly mappoolService: MappoolService) {}
 
   @Get()
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns mappools list.',
-    type: [MappoolDto.Output],
+    type: [MappoolDto],
   })
-  public async findMany(@Query() query: PaginationDto): Promise<MappoolDto[]> {
-    const mappools = await this.mappoolService.findMany(query);
-
-    return mappools.map((mappool) => mappoolDtoSchema.parse(mappool));
+  public async findMany(@Query() query: PaginationDto) {
+    return this.mappoolService.findMany(query);
   }
 
   @Get(':id')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns mappool by id.',
-    type: MappoolDto.Output,
+    type: MappoolDto,
   })
-  public async getById(
-    @Param('id', MappoolIdPipe) id: MappoolId,
-  ): Promise<MappoolDto> {
-    const mappool = await this.mappoolService.getById({ id });
-
-    return mappoolDtoSchema.parse(mappool);
+  public async getById(@Param('id', MappoolIdPipe) id: MappoolId) {
+    return this.mappoolService.getById({ id });
   }
 
   @Get(':id/beatmaps')
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Returns beatmaps in mappool.',
-    type: [MappoolBeatmapDto.Output],
+    type: [MappoolBeatmapDto],
   })
-  public async findBeatmaps(
-    @Param('id', MappoolIdPipe) id: MappoolId,
-  ): Promise<MappoolBeatmapDto[]> {
-    const beatmaps = await this.mappoolService.findBeatmaps({ id });
-
-    return beatmaps.map((beatmap) => mappoolBeatmapDtoSchema.parse(beatmap));
+  public async findBeatmaps(@Param('id', MappoolIdPipe) id: MappoolId) {
+    return this.mappoolService.findBeatmaps({ id });
   }
 
   @Post()
@@ -146,15 +112,13 @@ export class MappoolController {
   @CheckPolicies((ability, context) =>
     ability.can('create', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 201,
     description: 'Creates a mappool.',
-    type: MappoolDto.Output,
+    type: MappoolDto,
   })
-  public async create(@Body() body: CreateMappoolDto): Promise<MappoolDto> {
-    const created = await this.mappoolService.create(body);
-
-    return mappoolDtoSchema.parse(created);
+  public async create(@Body() body: CreateMappoolDto) {
+    return this.mappoolService.create(body);
   }
 
   @Post(':id/beatmaps')
@@ -162,23 +126,21 @@ export class MappoolController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 201,
     description: 'Adds beatmap to mappool.',
-    type: MappoolBeatmapDto.Output,
+    type: MappoolBeatmapDto,
   })
   public async addBeatmap(
     @Param('id', MappoolIdPipe) id: MappoolId,
     @Body() body: AddMappoolBeatmapDto,
-  ): Promise<MappoolBeatmapDto> {
-    const created = await this.mappoolService.addBeatmap({
+  ) {
+    return this.mappoolService.addBeatmap({
       id,
       mod: body.mod,
       osuBeatmapsetId: body.beatmapsetId,
       osuBeatmapId: body.beatmapId,
     });
-
-    return mappoolBeatmapDtoSchema.parse(created);
   }
 
   @Patch(':id/beatmaps/:osuBeatmapId')
@@ -186,17 +148,17 @@ export class MappoolController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Updates mappool beatmap mod/index or replaces beatmap.',
-    type: MappoolBeatmapDto.Output,
+    type: MappoolBeatmapDto,
   })
   public async updateBeatmap(
     @Param('id', MappoolIdPipe) id: MappoolId,
     @Param('osuBeatmapId', ParseIntPipe) osuBeatmapId: number,
     @Body() body: UpdateMappoolBeatmapDto,
-  ): Promise<MappoolBeatmapDto> {
-    const updated = await this.mappoolService.updateBeatmap({
+  ) {
+    return this.mappoolService.updateBeatmap({
       id,
       osuBeatmapId,
       mod: body.mod,
@@ -204,8 +166,6 @@ export class MappoolController {
       osuBeatmapsetId: body.beatmapsetId,
       nextOsuBeatmapId: body.beatmapId,
     });
-
-    return mappoolBeatmapDtoSchema.parse(updated);
   }
 
   @Delete(':id/beatmaps/:osuBeatmapId')
@@ -213,21 +173,19 @@ export class MappoolController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Deletes beatmap from mappool.',
-    type: MappoolBeatmapDto.Output,
+    type: MappoolBeatmapDto,
   })
   public async deleteBeatmap(
     @Param('id', MappoolIdPipe) id: MappoolId,
     @Param('osuBeatmapId', ParseIntPipe) osuBeatmapId: number,
-  ): Promise<MappoolBeatmapDto> {
-    const deleted = await this.mappoolService.deleteBeatmap({
+  ) {
+    return this.mappoolService.deleteBeatmap({
       id,
       osuBeatmapId,
     });
-
-    return mappoolBeatmapDtoSchema.parse(deleted);
   }
 
   @Patch(':id')
@@ -235,18 +193,16 @@ export class MappoolController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Updates a mappool.',
-    type: MappoolDto.Output,
+    type: MappoolDto,
   })
   public async patch(
     @Param('id', MappoolIdPipe) id: MappoolId,
     @Body() body: UpdateMappoolDto,
-  ): Promise<MappoolDto> {
-    const updated = await this.mappoolService.update({ id, data: body });
-
-    return mappoolDtoSchema.parse(updated);
+  ) {
+    return this.mappoolService.update({ id, data: body });
   }
 
   @Delete(':id')
@@ -254,16 +210,12 @@ export class MappoolController {
   @CheckPolicies((ability, context) =>
     ability.can('delete', context.subjectData),
   )
-  @ApiResponse({
+  @ZodResponse({
     status: 200,
     description: 'Deletes a mappool.',
-    type: MappoolDto.Output,
+    type: MappoolDto,
   })
-  public async delete(
-    @Param('id', MappoolIdPipe) id: MappoolId,
-  ): Promise<MappoolDto> {
-    const deleted = await this.mappoolService.delete({ id });
-
-    return mappoolDtoSchema.parse(deleted);
+  public async delete(@Param('id', MappoolIdPipe) id: MappoolId) {
+    return this.mappoolService.delete({ id });
   }
 }

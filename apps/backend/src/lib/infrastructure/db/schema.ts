@@ -2,6 +2,7 @@ export * from './beatmaps';
 export * from './mappools';
 export * from './mappools/beatmaps';
 export * from './matches';
+export * from './matches/osu-sync';
 export * from './matches/participants';
 export * from './matches/staff';
 export * from './osu-stats';

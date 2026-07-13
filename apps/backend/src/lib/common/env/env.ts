@@ -1,5 +1,8 @@
 import { z } from 'zod';
 
+const positiveInt = (fallback: number) =>
+  z.coerce.number().int().positive().default(fallback);
+
 export const envSchema = z.object({
   DATABASE_URL: z.string(),
   OSU_CLIENT_ID: z.coerce.string().transform(Number),
@@ -7,6 +10,10 @@ export const envSchema = z.object({
   OSU_REDIRECT_URL: z.string(),
   JWT_SECRET: z.string(),
   JWT_EXPIRES_IN: z.coerce.string().transform(Number),
+  OSU_MATCH_SYNC_POLL_INTERVAL_MS: positiveInt(15_000),
+  OSU_MATCH_SYNC_LEASE_MS: positiveInt(60_000),
+  OSU_MATCH_SYNC_BATCH_SIZE: positiveInt(10),
+  OSU_MATCH_SYNC_MAX_BACKOFF_MS: positiveInt(300_000),
   // NATS_HOST: z.string(),
   // NATS_PORT: z.coerce.string().transform(Number),
   // NATS_SERVER_URL: z.string(),

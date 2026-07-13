@@ -1,0 +1,19 @@
+diff --git a/dist/utility/request.js b/dist/utility/request.js
+index a48fe2cd6c8f92a76c01f008ad8dd8fd357f61ca..0bfb99fcdc94f4b8df387eb1f3864cc472d3e85f 100644
+--- a/dist/utility/request.js
++++ b/dist/utility/request.js
+@@ -182,7 +182,13 @@ const request = (url, { method, headers, data, params = {}, addons = {} }) => ne
+     });
+     // send error
+     req.on('error', (error) => {
+-        resolve({ error: error.name });
++        const aggregate = error instanceof AggregateError ? error.errors : [];
++        const details = [
++            error.message,
++            error.code,
++            ...aggregate.map(item => item.message || item.code || item.name),
++        ].filter(Boolean).join('; ');
++        resolve({ error: details || error.name });
+     });
+     // timeout
+     req.setTimeout(addons.timeout_ms || auth.settings.timeout, () => {

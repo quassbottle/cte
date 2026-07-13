@@ -17,7 +17,7 @@ export class AppAbilityFactory {
       can(['create', 'update', 'delete'], 'Stage', {
         tournamentCreatorId: user.id,
       });
-      can(['create', 'update', 'delete'], 'Match', {
+      can(['create', 'read', 'update', 'delete'], 'Match', {
         tournamentCreatorId: user.id,
       });
       can(['create', 'update', 'delete'], 'Mappool', {

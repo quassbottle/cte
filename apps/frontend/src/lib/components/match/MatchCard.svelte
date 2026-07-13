@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { MatchView } from './types';
 	import MatchLinks from './MatchLinks.svelte';
+	import MatchStatusBadge from './MatchStatusBadge.svelte';
 	import PlayerCell from './PlayerCell.svelte';
 	import StaffList from './StaffList.svelte';
 
@@ -10,7 +11,7 @@
 <article class="flex flex-col gap-4 p-4">
 	<div class="flex items-start justify-between gap-3">
 		<div>
-			<p class="text-xs font-semibold text-muted-foreground">Match {match.number}</p>
+			<p class="mb-1 text-xs font-semibold text-muted-foreground">Match {match.number}</p>
 			<p class="font-semibold">{match.date}</p>
 			<p class="text-xs text-muted-foreground">{match.time} UTC+0</p>
 		</div>
@@ -19,16 +20,28 @@
 
 	<div class="grid grid-cols-[1fr_auto_1fr] items-center gap-3">
 		<div class="min-w-0">
-			<PlayerCell player={match.player1} compact />
+			{#if match.redTeam}
+				<p class="truncate font-semibold">{match.redTeam.name}</p>
+			{:else}
+				<PlayerCell player={match.player1} compact />
+			{/if}
 		</div>
 		<div class="text-center">
 			<p class="text-lg font-semibold">
-				{match.player1?.score ?? '-'} : {match.player2?.score ?? '-'}
+				{match.redTeam?.score ?? match.player1?.score ?? '-'} : {match.blueTeam?.score ??
+					match.player2?.score ??
+					'-'}
 			</p>
-			<p class="text-[11px] uppercase text-muted-foreground">score</p>
+			<div class="mt-1 flex justify-center">
+				<MatchStatusBadge status={match.status} />
+			</div>
 		</div>
 		<div class="min-w-0">
-			<PlayerCell player={match.player2} side="right" compact />
+			{#if match.blueTeam}
+				<p class="truncate text-right font-semibold">{match.blueTeam.name}</p>
+			{:else}
+				<PlayerCell player={match.player2} side="right" compact />
+			{/if}
 		</div>
 	</div>
 

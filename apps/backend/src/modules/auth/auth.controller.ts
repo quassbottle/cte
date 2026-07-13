@@ -1,5 +1,5 @@
 import { Controller, Get, Post, Query } from '@nestjs/common';
-import { ApiOkResponse } from '@nestjs/swagger';
+import { ZodResponse } from 'nestjs-zod';
 import { AuthService } from './auth.service';
 import { AuthTokenDto, AuthUrlDto, LoginDto } from './dto';
 
@@ -8,7 +8,8 @@ export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Get('auth-callback')
-  @ApiOkResponse({
+  @ZodResponse({
+    status: 200,
     description: 'Returns the application session token.',
     type: AuthTokenDto,
   })
@@ -17,7 +18,8 @@ export class AuthController {
   }
 
   @Post('init-login')
-  @ApiOkResponse({
+  @ZodResponse({
+    status: 200,
     description: 'Returns the osu! OAuth authorization URL.',
     type: AuthUrlDto,
   })

@@ -637,6 +637,78 @@ export const tournamentControllerUnregister = async (
 	);
 };
 
+export type matchSyncControllerGetResponse200 = {
+	data: void;
+	status: 200;
+};
+
+export type matchSyncControllerGetResponseSuccess = matchSyncControllerGetResponse200 & {
+	headers: Headers;
+};
+export type matchSyncControllerGetResponse = matchSyncControllerGetResponseSuccess;
+
+export const getMatchSyncControllerGetUrl = (matchId: string) => {
+	return `/api/matches/${matchId}/sync`;
+};
+
+export const matchSyncControllerGet = async (
+	matchId: string,
+	options?: RequestInit
+): Promise<matchSyncControllerGetResponse> => {
+	return backendFetch<matchSyncControllerGetResponse>(getMatchSyncControllerGetUrl(matchId), {
+		...options,
+		method: 'GET'
+	});
+};
+
+export type matchSyncControllerSyncResponse201 = {
+	data: void;
+	status: 201;
+};
+
+export type matchSyncControllerSyncResponseSuccess = matchSyncControllerSyncResponse201 & {
+	headers: Headers;
+};
+export type matchSyncControllerSyncResponse = matchSyncControllerSyncResponseSuccess;
+
+export const getMatchSyncControllerSyncUrl = (matchId: string) => {
+	return `/api/matches/${matchId}/sync`;
+};
+
+export const matchSyncControllerSync = async (
+	matchId: string,
+	options?: RequestInit
+): Promise<matchSyncControllerSyncResponse> => {
+	return backendFetch<matchSyncControllerSyncResponse>(getMatchSyncControllerSyncUrl(matchId), {
+		...options,
+		method: 'POST'
+	});
+};
+
+export type matchSyncControllerStopResponse200 = {
+	data: void;
+	status: 200;
+};
+
+export type matchSyncControllerStopResponseSuccess = matchSyncControllerStopResponse200 & {
+	headers: Headers;
+};
+export type matchSyncControllerStopResponse = matchSyncControllerStopResponseSuccess;
+
+export const getMatchSyncControllerStopUrl = (matchId: string) => {
+	return `/api/matches/${matchId}/sync`;
+};
+
+export const matchSyncControllerStop = async (
+	matchId: string,
+	options?: RequestInit
+): Promise<matchSyncControllerStopResponse> => {
+	return backendFetch<matchSyncControllerStopResponse>(getMatchSyncControllerStopUrl(matchId), {
+		...options,
+		method: 'DELETE'
+	});
+};
+
 export type stageControllerFindManyResponse200 = {
 	data: StageDtoOutput[];
 	status: 200;

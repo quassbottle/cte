@@ -51,10 +51,11 @@
 
 <div class="flex flex-col gap-2">
 	<input type="hidden" {name} value={selectedUsers.map((user) => user.id).join(',')} />
-	<p class="text-[12px] font-medium">{label}</p>
+	<label for={`schedule-user-${name}`} class="text-[12px] font-medium">{label}</label>
 
 	<div class="flex flex-col gap-2 sm:flex-row">
 		<input
+			id={`schedule-user-${name}`}
 			class="h-9 min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
 			placeholder="osu id / username"
 			bind:value={query}

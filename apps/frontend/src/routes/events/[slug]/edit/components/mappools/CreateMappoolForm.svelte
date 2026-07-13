@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { StageDto } from '$lib/api/types';
 	import { Button } from '$lib/components/ui/button';
+	import DateTimeInput from '$lib/components/ui/date-time-input/DateTimeInput.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Label } from '$lib/components/ui/label';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
@@ -51,20 +52,18 @@
 	<div class="flex flex-col gap-4 md:flex-row">
 		<div class="flex w-full max-w-sm flex-col gap-1.5">
 			<Label for={`mappool-starts-at-${stage.id}`}>Starts at</Label>
-			<Input
+			<DateTimeInput
 				id={`mappool-starts-at-${stage.id}`}
 				name="startsAt"
-				type="datetime-local"
 				required
 				value={toDateTimeLocalValue(stage.startsAt)}
 			/>
 		</div>
 		<div class="flex w-full max-w-sm flex-col gap-1.5">
 			<Label for={`mappool-ends-at-${stage.id}`}>Ends at</Label>
-			<Input
+			<DateTimeInput
 				id={`mappool-ends-at-${stage.id}`}
 				name="endsAt"
-				type="datetime-local"
 				required
 				value={toDateTimeLocalValue(stage.endsAt)}
 			/>

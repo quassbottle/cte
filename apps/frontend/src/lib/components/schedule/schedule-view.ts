@@ -2,7 +2,15 @@ import type {
 	StageScheduleDtoOutputMatchesItem,
 	StageScheduleDtoOutputMatchesItemPlayersItem
 } from '$lib/api/generated/model';
-import type { MatchPlayerView, MatchView } from '$lib/components/match/types';
+import type { MatchDisplayStatus, MatchPlayerView, MatchView } from '$lib/components/match/types';
+
+export const getMatchDisplayStatus = (
+	status: StageScheduleDtoOutputMatchesItem['syncStatus']
+): MatchDisplayStatus => {
+	if (status === 'active') return 'live';
+	if (status === 'stopped' || status === 'completed') return 'finished';
+	return 'soon';
+};
 
 const formatDate = (value: string) =>
 	new Intl.DateTimeFormat('en-US', {
@@ -52,8 +60,11 @@ export const toMatchView = (
 	number: match.matchNumber ?? index + 1,
 	date: formatDate(match.startsAt),
 	time: formatTime(match.startsAt),
+	status: getMatchDisplayStatus(match.syncStatus),
 	player1: toPlayerView(match.players[0]),
 	player2: toPlayerView(match.players[1]),
+	redTeam: match.redTeam ? { name: match.redTeam.name, score: match.redScore } : null,
+	blueTeam: match.blueTeam ? { name: match.blueTeam.name, score: match.blueScore } : null,
 	staff: match.staff.map((staff) => ({
 		id: staff.id,
 		name: staff.osuUsername,
