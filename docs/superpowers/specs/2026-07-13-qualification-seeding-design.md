@@ -15,11 +15,11 @@ The qualification stage uses the existing single stage mappool. Its schedule ent
 The existing osu match client continues to fetch lobby snapshots. For a qualification lobby, synchronization stores every score from each completed game on a map in the qualification mappool:
 
 - tournament match and osu game ID;
-- mappool beatmap;
-- osu user ID;
+- internal beatmap reference;
+- internal user reference;
 - score.
 
-The game and user identity make imports idempotent: synchronizing a lobby again updates the stored score instead of adding a duplicate. Scores from unrelated maps and unfinished games are ignored. Any number of qualification lobbies may contribute attempts for the same competitor.
+Raw osu beatmap and user IDs from the lobby are resolved through the existing `beatmaps` and `users` records before persistence. Unknown users, unrelated maps, and unfinished games are ignored. The match, game, and internal user identity make imports idempotent: synchronizing a lobby again updates the stored score instead of adding a duplicate. Any number of qualification lobbies may contribute attempts for the same competitor. osu metadata needed for calculation or diagnosis is joined from the referenced beatmap and user rows rather than duplicated on each attempt.
 
 Attempts are retained in normalized rows so seed calculation is repeatable without another osu API request and the imported source data remains available for database-level diagnosis. A separate attempts UI is outside this feature.
 
@@ -27,7 +27,7 @@ Attempts are retained in normalized rows so seed calculation is repeatable witho
 
 For solo tournaments, the solo registration stores a nullable integer seed, a withdrawal flag, and a nullable withdrawal reason.
 
-For team tournaments, the team stores its nullable integer seed, withdrawal flag, and nullable withdrawal reason. Each team membership separately stores a withdrawal flag and nullable withdrawal reason, but no player seed.
+For team tournaments, the team stores its nullable integer seed, withdrawal flag, and nullable withdrawal reason. Each team membership separately stores a withdrawal flag and nullable withdrawal reason. Its legacy nullable player seed column is retained for compatibility and data safety but is not exposed or used by the new interface or calculation.
 
 Clearing a withdrawal flag also clears its reason. A withdrawn team member remains part of the historical roster for qualification aggregation: scores imported before or after the withdrawal still contribute while the team itself remains active.
 

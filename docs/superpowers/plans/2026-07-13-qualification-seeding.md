@@ -35,6 +35,7 @@
 - Modify: `apps/backend/src/modules/match/schedule.service.ts`
 - Create: `apps/backend/drizzle/0018_qualification_seeding.sql`
 - Modify: `apps/backend/drizzle/meta/_journal.json`
+- Create: `apps/backend/drizzle/meta/0010_snapshot.json` through `0017_snapshot.json`
 - Create: `apps/backend/drizzle/meta/0018_snapshot.json`
 
 **Interfaces:**
@@ -63,17 +64,29 @@ export const qualificationAttempts = pgTable(
       .$type<MatchId>()
       .references(() => matches.id, { onDelete: 'cascade' }),
     osuGameId: bigint('osu_game_id', { mode: 'number' }).notNull(),
-    osuBeatmapId: bigint('osu_beatmap_id', { mode: 'number' }).notNull(),
-    osuUserId: bigint('osu_user_id', { mode: 'number' }).notNull(),
+    beatmapId: text('beatmap_id')
+      .notNull()
+      .$type<BeatmapId>()
+      .references(() => beatmaps.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
+    userId: text('user_id')
+      .notNull()
+      .$type<UserId>()
+      .references(() => users.id, {
+        onDelete: 'cascade',
+        onUpdate: 'cascade',
+      }),
     score: integer('score').notNull(),
     createdAt,
     updatedAt,
   },
   (table) => [
-    primaryKey({ columns: [table.matchId, table.osuGameId, table.osuUserId] }),
+    primaryKey({ columns: [table.matchId, table.osuGameId, table.userId] }),
     index('qualification_attempts_map_user_idx').on(
-      table.osuBeatmapId,
-      table.osuUserId,
+      table.beatmapId,
+      table.userId,
     ),
   ],
 );
@@ -87,7 +100,7 @@ uniqueIndex('stages_one_qualification_per_tournament')
   .where(sql`${table.deletedAt} IS NULL AND ${table.type} = 'qualification'`)
 ```
 
-Add `withdrawn: boolean('withdrawn').notNull().default(false)` and `withdrawalReason: text('withdrawal_reason')` to solo participants, teams, and team participants. Keep `seed` on solo participants, move team seed to `teams`, and remove the unused member `seed` from `teamParticipants`.
+Add `withdrawn: boolean('withdrawn').notNull().default(false)` and `withdrawalReason: text('withdrawal_reason')` to solo participants, teams, and team participants. Keep `seed` on solo participants, add team seed to `teams`, and retain the legacy `teamParticipants.seed` column for compatibility and data safety. Do not expose or use member seed in new UI or calculation code.
 
 Remove the `team_participants.seed` fallback from `ScheduleService`; regular team matches already display aggregate team scores, and individual team members no longer own seeds.
 
@@ -96,10 +109,12 @@ Remove the `team_participants.seed` fallback from `ScheduleService`; regular tea
 Run in `apps/backend`:
 
 ```bash
-pnpm migration:generate -- --name qualification_seeding
+pnpm migration:generate --name qualification_seeding
 ```
 
-Expected: `0018_qualification_seeding.sql`, journal entry `idx: 18`, and `0018_snapshot.json` are created. Amend the SQL with the active-stage invariant if Drizzle does not emit its predicate:
+First reconstruct missing snapshots 10–17 by running Drizzle generation sequentially against their exact historical schema commits, retaining the command-generated snapshots and journal without editing their contents. Preserve the old SQL migrations. Then run the command above from the current schema.
+
+Expected: `0018_qualification_seeding.sql`, journal entry `idx: 18`, and `0018_snapshot.json` are created. Keep generated artifacts verbatim and verify the generated SQL includes the active-stage invariant:
 
 ```sql
 CREATE UNIQUE INDEX "stages_one_qualification_per_tournament"
@@ -263,7 +278,7 @@ Working directory: `apps/backend`. Expected: tests and build exit 0.
 
 **Interfaces:**
 - Consumes: `OsuMatchSnapshot`, stage type, allowed osu beatmap IDs, and `qualificationAttempts`.
-- Produces: `QualificationMatchSyncInput` and persisted `{ osuGameId, osuBeatmapId, osuUserId, score }[]` for every completed allowed game.
+- Produces: `QualificationMatchSyncInput`, raw extracted osu attempt metadata, and normalized persisted `{ osuGameId, beatmapId, userId, score }[]` for every completed allowed game whose beatmap and user resolve locally.
 
 - [ ] **Step 1: Write the failing pure extraction test**
 
@@ -322,6 +337,8 @@ export type QualificationMatchSyncInput = {
 
 Make `loadInput()` select `stages.type` with the match. Return the qualification input before the regular solo/team participant checks. This is the single switch that permits arbitrary lobby members.
 
+Keep raw osu IDs only at the match-client boundary. Before persistence, resolve the extracted osu beatmap IDs through `beatmaps.osuBeatmapId` and osu user IDs through `users.osuId`. Ignore attempts whose user is unknown; allowed maps already resolve to a beatmap row. This keeps `qualification_attempts` normalized while still accepting arbitrary lobby snapshots.
+
 - [ ] **Step 4: Persist attempts in the fenced success transaction**
 
 In `MatchSyncService.syncOnce`, extract attempts only for `input.kind === 'qualification'`; keep `calculateMatchPoints` for the other two kinds. Make `applySuccess` a correlated union so points cannot be absent for regular matches:
@@ -342,24 +359,38 @@ Inside its existing lease-fenced transaction:
 ```ts
 if (params.input.kind === 'qualification') {
   if (params.attempts?.length) {
-    await tx
-      .insert(qualificationAttempts)
-      .values(params.attempts.map((attempt) => ({
-        ...attempt,
-        matchId: params.lease.matchId,
-      })))
-      .onConflictDoUpdate({
-        target: [
-          qualificationAttempts.matchId,
-          qualificationAttempts.osuGameId,
-          qualificationAttempts.osuUserId,
-        ],
-        set: {
-          osuBeatmapId: sql`excluded.osu_beatmap_id`,
-          score: sql`excluded.score`,
-          updatedAt: new Date(),
-        },
-      });
+    const beatmapIdsByOsuId = await loadBeatmapIdsByOsuId(tx, params.attempts);
+    const userIdsByOsuId = await loadUserIdsByOsuId(tx, params.attempts);
+    const values = params.attempts.flatMap((attempt) => {
+      const beatmapId = beatmapIdsByOsuId.get(attempt.osuBeatmapId);
+      const userId = userIdsByOsuId.get(attempt.osuUserId);
+      return beatmapId && userId
+        ? [{
+            matchId: params.lease.matchId,
+            osuGameId: attempt.osuGameId,
+            beatmapId,
+            userId,
+            score: attempt.score,
+          }]
+        : [];
+    });
+    if (values.length) {
+      await tx
+        .insert(qualificationAttempts)
+        .values(values)
+        .onConflictDoUpdate({
+          target: [
+            qualificationAttempts.matchId,
+            qualificationAttempts.osuGameId,
+            qualificationAttempts.userId,
+          ],
+          set: {
+            beatmapId: sql`excluded.beatmap_id`,
+            score: sql`excluded.score`,
+            updatedAt: new Date(),
+          },
+        });
+    }
   }
 } else if (params.input.kind === 'team') {
   await tx.update(matches).set({
@@ -422,7 +453,7 @@ git commit -m "feat: import qualification attempts"
 - Create: `apps/backend/src/modules/tournament/qualification-seeding.spec.ts`
 
 **Interfaces:**
-- Consumes: mappool osu beatmap IDs, active competitors with one or more member osu IDs, and persisted attempts.
+- Consumes: mappool beatmap IDs, active competitors with one or more internal user IDs, and persisted normalized attempts.
 - Produces: `calculateQualificationSeeds(input): CalculatedSeed[]` where each result has `competitorId`, `seed`, `averagePlace`, and `totalScore`.
 
 - [ ] **Step 1: Write one table-driven failing calculator test**
@@ -456,13 +487,13 @@ Use these inputs so solo and team share all ranking code:
 export type QualificationCompetitor = {
   id: string;
   tieBreakId: string | number;
-  osuUserIds: readonly number[];
+  userIds: readonly string[];
 };
 
 export type QualificationAttempt = {
   osuGameId: number;
-  osuBeatmapId: number;
-  osuUserId: number;
+  beatmapId: string;
+  userId: string;
   score: number;
 };
 ```
@@ -470,17 +501,20 @@ export type QualificationAttempt = {
 Implementation outline with no additional classes:
 
 ```ts
-const members = new Set(competitor.osuUserIds);
-const gameTotals = new Map<string, number>();
+const members = new Set(competitor.userIds);
+const gameTotalsByMap = new Map<string, Map<number, number>>();
 for (const attempt of attempts) {
-  if (!members.has(attempt.osuUserId)) continue;
-  const key = `${attempt.osuBeatmapId}:${attempt.osuGameId}`;
-  gameTotals.set(key, (gameTotals.get(key) ?? 0) + attempt.score);
+  if (!members.has(attempt.userId)) continue;
+  const gameTotals = gameTotalsByMap.get(attempt.beatmapId) ?? new Map();
+  gameTotals.set(
+    attempt.osuGameId,
+    (gameTotals.get(attempt.osuGameId) ?? 0) + attempt.score,
+  );
+  gameTotalsByMap.set(attempt.beatmapId, gameTotals);
 }
 const bestByMap = new Map(beatmapIds.map((id) => [id, 0]));
-for (const [key, score] of gameTotals) {
-  const beatmapId = Number(key.split(':', 1)[0]);
-  bestByMap.set(beatmapId, Math.max(bestByMap.get(beatmapId) ?? 0, score));
+for (const [beatmapId, gameTotals] of gameTotalsByMap) {
+  bestByMap.set(beatmapId, Math.max(...gameTotals.values()));
 }
 ```
 
@@ -601,10 +635,10 @@ calculateQualificationSeeds(params: { id: TournamentId }): Promise<Qualification
 
 Within one Drizzle transaction:
 
-1. Load the non-deleted qualification stage and its mappool beatmap osu IDs; throw `BadRequestException` if either is missing or empty.
+1. Load the non-deleted qualification stage and its mappool internal beatmap IDs; throw `BadRequestException` if either is missing or empty.
 2. Load all attempts belonging to matches in that stage.
-3. For solo, load active registrations joined to users, call the pure calculator with one osu ID per competitor, clear all tournament seeds, then write calculated seeds.
-4. For team, load active teams and every member joined to users without filtering member withdrawal, call the pure calculator with all member osu IDs, clear all tournament team seeds, then write calculated seeds.
+3. For solo, load active registrations and call the pure calculator with one internal user ID per competitor and the joined osu ID as `tieBreakId`; clear all tournament seeds, then write calculated seeds.
+4. For team, load active teams and every member without filtering member withdrawal, call the pure calculator with all internal member user IDs; clear all tournament team seeds, then write calculated seeds.
 5. Return `getQualificationRoster({ id })` after the transaction so the response matches the editor read model.
 
 Use one update per calculated row inside the transaction. A batched conditional update is unnecessary until profiling shows participant count makes these writes material.

@@ -367,19 +367,16 @@ const createTournamentSeed = async (
         name: `Team ${index + 1}`,
         captainId: captain.id,
         tournamentId: tournament,
+        seed: index + 1,
       });
       await db.insert(teamParticipants).values([
         {
           teamId: createdTeamId,
           userId: captain.id,
-          seed: params.seedUsers.find((user) => user.osuId === captainOsuId)
-            ?.seed,
         },
         {
           teamId: createdTeamId,
           userId: teammate.id,
-          seed: params.seedUsers.find((user) => user.osuId === teammateOsuId)
-            ?.seed,
         },
       ]);
     }
