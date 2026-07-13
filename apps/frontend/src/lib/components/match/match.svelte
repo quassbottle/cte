@@ -11,10 +11,7 @@
 
 <tr class="border-t border-border">
 	<td class="px-4 py-4 font-medium text-muted-foreground">
-		<div class="flex items-center gap-2">
-			<span>{match.number}</span>
-			<MatchStatusBadge status={match.status} />
-		</div>
+		{match.number}
 	</td>
 	<td class="px-4 py-4">
 		<p class="font-semibold">{match.date}</p>
@@ -28,13 +25,17 @@
 		{/if}
 	</td>
 	<td class="px-4 py-4 text-center">
-		<div class="flex items-center justify-center gap-3">
-			<span class="text-xl font-semibold">{match.redTeam?.score ?? match.player1?.score ?? ''}</span
-			>
-			<span class="text-xs font-semibold text-muted-foreground">vs</span>
-			<span class="text-xl font-semibold text-muted-foreground">
-				{match.blueTeam?.score ?? match.player2?.score ?? ''}
-			</span>
+		<div class="flex flex-col items-center gap-2">
+			<div class="flex items-center justify-center gap-3">
+				<span class="text-xl font-semibold"
+					>{match.redTeam?.score ?? match.player1?.score ?? ''}</span
+				>
+				<span class="text-xs font-semibold text-muted-foreground">vs</span>
+				<span class="text-xl font-semibold text-muted-foreground">
+					{match.blueTeam?.score ?? match.player2?.score ?? ''}
+				</span>
+			</div>
+			<MatchStatusBadge status={match.status} />
 		</div>
 	</td>
 	<td class="px-4 py-4">

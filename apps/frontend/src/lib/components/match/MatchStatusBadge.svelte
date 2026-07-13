@@ -13,7 +13,7 @@
 </script>
 
 <span
-	class={`inline-flex items-center gap-1.5 text-[10px] font-semibold tracking-wide before:h-1.5 before:w-1.5 before:rounded-full before:content-[''] ${colors}`}
+	class={`inline-flex items-center gap-1.5 text-[10px] font-semibold leading-none tracking-wide before:block before:h-1.5 before:w-1.5 before:shrink-0 before:rounded-full before:content-[''] ${colors}`}
 >
 	{label}
 </span>

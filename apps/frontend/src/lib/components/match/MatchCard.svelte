@@ -11,10 +11,7 @@
 <article class="flex flex-col gap-4 p-4">
 	<div class="flex items-start justify-between gap-3">
 		<div>
-			<div class="mb-1 flex items-center gap-2">
-				<p class="text-xs font-semibold text-muted-foreground">Match {match.number}</p>
-				<MatchStatusBadge status={match.status} />
-			</div>
+			<p class="mb-1 text-xs font-semibold text-muted-foreground">Match {match.number}</p>
 			<p class="font-semibold">{match.date}</p>
 			<p class="text-xs text-muted-foreground">{match.time} UTC+0</p>
 		</div>
@@ -35,7 +32,9 @@
 					match.player2?.score ??
 					'-'}
 			</p>
-			<p class="text-[11px] uppercase text-muted-foreground">score</p>
+			<div class="mt-1 flex justify-center">
+				<MatchStatusBadge status={match.status} />
+			</div>
 		</div>
 		<div class="min-w-0">
 			{#if match.blueTeam}

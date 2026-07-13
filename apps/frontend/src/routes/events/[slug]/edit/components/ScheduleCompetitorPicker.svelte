@@ -22,6 +22,9 @@
 	let error = '';
 	let controller: AbortController | undefined;
 	let lastSearchedInput = inputValue;
+	$: selectedOption =
+		options.find((option) => option.id === selected?.value) ??
+		(initial?.id === selected?.value ? initial : undefined);
 
 	const load = async (query: string) => {
 		controller?.abort();
@@ -61,8 +64,22 @@
 
 	$: if (open && inputValue !== lastSearchedInput) {
 		lastSearchedInput = inputValue;
+		loading = true;
 		search(inputValue);
 	}
+
+	const handleKeydown = (event: CustomEvent<{ originalEvent: KeyboardEvent }>) => {
+		const originalEvent = event.detail.originalEvent;
+		if (originalEvent.key !== 'Enter' || !open || loading || options.length === 0) return;
+
+		originalEvent.preventDefault();
+		const option = options[0];
+		selected = { value: option.id, label: option.label };
+		inputValue = option.label;
+		open = false;
+		search.cancel();
+		controller?.abort();
+	};
 
 	onDestroy(() => {
 		search.cancel();
@@ -87,6 +104,7 @@
 				id={`schedule-competitor-${name}`}
 				class="h-9 w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
 				placeholder={type === 'player' ? 'Search tournament player' : 'Search tournament team'}
+				on:keydown={handleKeydown}
 			/>
 		</div>
 
@@ -122,4 +140,20 @@
 			{/if}
 		</Combobox.Content>
 	</Combobox.Root>
+
+	{#if selectedOption}
+		<div class="flex items-center gap-2 rounded-md border border-border bg-muted/30 px-2 py-1.5">
+			{#if selectedOption.type === 'player'}
+				<Avatar class="h-7 w-7">
+					<AvatarImage src={selectedOption.avatarUrl} alt={selectedOption.label} />
+					<AvatarFallback>{selectedOption.label.slice(0, 2).toUpperCase()}</AvatarFallback>
+				</Avatar>
+			{:else}
+				<span class="flex h-7 w-7 items-center justify-center rounded-full bg-muted">
+					<Users class="h-4 w-4" />
+				</span>
+			{/if}
+			<span class="truncate text-sm font-medium">{selectedOption.label}</span>
+		</div>
+	{/if}
 </div>
