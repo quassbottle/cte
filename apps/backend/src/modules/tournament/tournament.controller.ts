@@ -12,7 +12,6 @@ import {
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { MatchIdPipe } from 'lib/common/pipes/match-id.pipe';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
-import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { MatchId } from 'lib/domain/match/match.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { DbUser } from 'lib/infrastructure/db';
@@ -31,11 +30,14 @@ import { ScheduleService } from 'modules/match/schedule.service';
 import { ZodResponse } from 'nestjs-zod';
 import {
   CreateTournamentDto,
+  FindTournamentParticipantsDto,
+  FindTournamentTeamsDto,
   FindTournamentsDto,
   RegisterTournamentDto,
   TournamentDto,
   TournamentParticipantDto,
   TournamentTeamDto,
+  TournamentTeamSummaryDto,
   UpdateTournamentDto,
 } from './dto';
 import { TournamentService } from './tournament.service';
@@ -92,12 +94,25 @@ export class TournamentController {
   })
   public async getParticipants(
     @Param('id', TournamentIdPipe) id: TournamentId,
-    @Query() query: PaginationDto,
+    @Query() query: FindTournamentParticipantsDto,
   ) {
     return this.tournamentService.getParticipants({
       id,
       ...query,
     });
+  }
+
+  @Get(':id/teams/search')
+  @ZodResponse({
+    status: 200,
+    description: 'Searches tournament teams.',
+    type: [TournamentTeamSummaryDto],
+  })
+  public async searchTeams(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Query() query: FindTournamentTeamsDto,
+  ) {
+    return this.tournamentService.searchTeams({ id, ...query });
   }
 
   @Get(':id/teams')

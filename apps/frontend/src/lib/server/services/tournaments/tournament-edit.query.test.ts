@@ -2,15 +2,7 @@ import { describe, expect, test } from 'bun:test';
 import { getTournamentEditPage } from './tournament-edit.query';
 
 describe('getTournamentEditPage', () => {
-	test('loads registered participants for solo match player selection', async () => {
-		const participants = [
-			{
-				id: 'player-id',
-				osuId: 42,
-				osuUsername: 'player',
-				avatarUrl: 'https://a.ppy.sh/42'
-			}
-		];
+	test('does not preload competitors for schedule editing', async () => {
 		const backend = {
 			tournaments: {
 				getById: async () => ({
@@ -21,7 +13,9 @@ describe('getTournamentEditPage', () => {
 						isTeam: false
 					}
 				}),
-				getParticipants: async () => ({ data: participants }),
+				getParticipants: async () => {
+					throw new Error('competitors must be searched on demand');
+				},
 				getSchedule: async () => ({ data: [] }),
 				getTeams: async () => ({ data: [] })
 			},
@@ -38,6 +32,7 @@ describe('getTournamentEditPage', () => {
 			role: 'default'
 		});
 
-		expect(result.participants).toEqual(participants);
+		expect(result).not.toHaveProperty('participants');
+		expect(result).not.toHaveProperty('teams');
 	});
 });

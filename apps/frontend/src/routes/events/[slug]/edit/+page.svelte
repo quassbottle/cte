@@ -1,10 +1,6 @@
 <script lang="ts">
 	import type { MappoolBeatmapDto, MappoolDto, StageDto, TournamentDto } from '$lib/api/types';
-	import type {
-		StageScheduleDtoOutput,
-		TournamentParticipantDtoOutput,
-		TournamentTeamDtoOutput
-	} from '$lib/api/generated/model';
+	import type { StageScheduleDtoOutput } from '$lib/api/generated/model';
 	import { Button } from '$lib/components/ui/button';
 	import { page } from '$app/stores';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
@@ -18,8 +14,6 @@
 		tournament: TournamentDto;
 		stages: StageDto[];
 		schedule: StageScheduleDtoOutput[];
-		participants: TournamentParticipantDtoOutput[];
-		teams: TournamentTeamDtoOutput[];
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 	};
@@ -108,10 +102,9 @@
 
 		<ContentItem value="schedule">
 			<ScheduleTab
+				tournamentId={data.tournament.id}
 				stages={data.stages}
 				schedule={data.schedule}
-				teams={data.teams}
-				participants={data.participants}
 				isTeam={data.tournament.isTeam}
 				{form}
 			/>

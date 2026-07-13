@@ -4,10 +4,8 @@
 	import type {
 		StageDtoOutput,
 		StageScheduleDtoOutput,
-		StageScheduleDtoOutputMatchesItem,
-		TournamentParticipantDtoOutput
+		StageScheduleDtoOutputMatchesItem
 	} from '$lib/api/generated/model';
-	import type { TournamentTeamDtoOutput } from '$lib/api/generated/model';
 	import Schedule from '$lib/components/schedule/schedule.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
@@ -18,8 +16,7 @@
 
 	export let stages: StageDtoOutput[];
 	export let schedule: StageScheduleDtoOutput[];
-	export let teams: TournamentTeamDtoOutput[];
-	export let participants: TournamentParticipantDtoOutput[];
+	export let tournamentId: string;
 	export let isTeam = false;
 	export let form: TournamentEditActionResult | undefined;
 
@@ -235,10 +232,9 @@
 			{#if dialog.mode === 'create'}
 				<ScheduleMatchForm
 					{stages}
+					{tournamentId}
 					stageId={dialog.stageId}
 					{form}
-					{teams}
-					{participants}
 					{isTeam}
 					mode="create"
 					defaultMatchNumber={getNextMatchNumber(dialogStage)}
@@ -247,11 +243,10 @@
 			{:else if dialog.mode === 'update'}
 				<ScheduleMatchForm
 					{stages}
+					{tournamentId}
 					stageId={dialog.stageId}
 					match={dialog.match}
 					{form}
-					{teams}
-					{participants}
 					{isTeam}
 					mode="update"
 					onCancel={() => (dialog = null)}

@@ -6,12 +6,13 @@
 	import { Label } from '$lib/components/ui/label';
 	import type { SelectedUser } from '$lib/schemas/user.schema';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
+	import type { CompetitorOption } from '$lib/utils/competitor-search';
 	import type { SubmitFunction } from '@sveltejs/kit';
+	import ScheduleCompetitorPicker from './ScheduleCompetitorPicker.svelte';
 	import ScheduleUserPicker from './ScheduleUserPicker.svelte';
 
 	export let stages: StageDtoOutput[];
-	export let teams: { id: string; name: string }[] = [];
-	export let participants: SelectedUser[] = [];
+	export let tournamentId: string;
 	export let isTeam = false;
 	export let match: StageScheduleDtoOutputMatchesItem | undefined = undefined;
 	export let stageId: string | undefined = undefined;
@@ -38,6 +39,23 @@
 		avatarUrl: user.avatarUrl
 	});
 
+	const toPlayerOption = (
+		player: StageScheduleDtoOutputMatchesItem['players'][number] | undefined
+	): CompetitorOption | undefined =>
+		player
+			? {
+					type: 'player',
+					id: player.id,
+					label: player.osuUsername,
+					avatarUrl: player.avatarUrl
+				}
+			: undefined;
+
+	const toTeamOption = (
+		team: StageScheduleDtoOutputMatchesItem['redTeam']
+	): CompetitorOption | undefined =>
+		team ? { type: 'team', id: team.id, label: team.name } : undefined;
+
 	const addHours = (value: Date | string, hours: number) =>
 		new Date(new Date(value).valueOf() + hours * 60 * 60 * 1000);
 
@@ -46,10 +64,6 @@
 		match?.startsAt ?? stages.find((stage) => stage.id === selectedStageId)?.startsAt ?? new Date();
 	$: defaultEnd = match?.endsAt ?? addHours(defaultStart, 1);
 
-	let player1Users = match?.players[0] ? [toSelectedUser(match.players[0])] : [];
-	let player2Users = match?.players[1] ? [toSelectedUser(match.players[1])] : [];
-	let redTeamId = match?.redTeam?.id ?? '';
-	let blueTeamId = match?.blueTeam?.id ?? '';
 	let refereeUsers =
 		match?.staff.filter((staff) => staff.role === 'referee').map(toSelectedUser) ?? [];
 	let streamerUsers =
@@ -143,19 +157,13 @@
 	{#if isTeam}
 		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<Label for={`match-red-team-${match?.id ?? 'new'}`}>Red team</Label>
-				<select
-					id={`match-red-team-${match?.id ?? 'new'}`}
+				<ScheduleCompetitorPicker
+					label="Red team"
 					name="redTeamId"
-					bind:value={redTeamId}
-					required
-					class="h-10 rounded-md border border-input bg-background px-3"
-				>
-					<option value="" disabled>Select team</option>
-					{#each teams as team}
-						<option value={team.id}>{team.name}</option>
-					{/each}
-				</select>
+					{tournamentId}
+					type="team"
+					initial={toTeamOption(match?.redTeam ?? null)}
+				/>
 				<Label for={`match-red-score-${match?.id ?? 'new'}`}>Score</Label>
 				<Input
 					id={`match-red-score-${match?.id ?? 'new'}`}
@@ -167,19 +175,13 @@
 				/>
 			</div>
 			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<Label for={`match-blue-team-${match?.id ?? 'new'}`}>Blue team</Label>
-				<select
-					id={`match-blue-team-${match?.id ?? 'new'}`}
+				<ScheduleCompetitorPicker
+					label="Blue team"
 					name="blueTeamId"
-					bind:value={blueTeamId}
-					required
-					class="h-10 rounded-md border border-input bg-background px-3"
-				>
-					<option value="" disabled>Select team</option>
-					{#each teams as team}
-						<option value={team.id}>{team.name}</option>
-					{/each}
-				</select>
+					{tournamentId}
+					type="team"
+					initial={toTeamOption(match?.blueTeam ?? null)}
+				/>
 				<Label for={`match-blue-score-${match?.id ?? 'new'}`}>Score</Label>
 				<Input
 					id={`match-blue-score-${match?.id ?? 'new'}`}
@@ -194,11 +196,12 @@
 	{:else}
 		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleUserPicker
+				<ScheduleCompetitorPicker
 					label="Player 1"
 					name="player1UserId"
-					options={participants}
-					bind:selectedUsers={player1Users}
+					{tournamentId}
+					type="player"
+					initial={toPlayerOption(match?.players[0])}
 				/>
 				<div class="flex max-w-[160px] flex-col gap-1.5">
 					<Label for={`match-score-1-${match?.id ?? 'new'}`}>Score</Label>
@@ -213,11 +216,12 @@
 				</div>
 			</div>
 			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleUserPicker
+				<ScheduleCompetitorPicker
 					label="Player 2"
 					name="player2UserId"
-					options={participants}
-					bind:selectedUsers={player2Users}
+					{tournamentId}
+					type="player"
+					initial={toPlayerOption(match?.players[1])}
 				/>
 				<div class="flex max-w-[160px] flex-col gap-1.5">
 					<Label for={`match-score-2-${match?.id ?? 'new'}`}>Score</Label>

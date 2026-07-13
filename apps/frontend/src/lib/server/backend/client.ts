@@ -6,6 +6,7 @@ import type {
 	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
+	TournamentParticipantDtoOutput,
 	UpdateMappoolBeatmapDto,
 	UpdateMappoolDto,
 	UpdateStageDto,
@@ -106,6 +107,16 @@ export function createBackendClient(input?: BackendClientInput) {
 			getById: (id: string) => tournamentControllerGetById(id, options),
 			getParticipants: (id: string, params?: TournamentControllerGetParticipantsParams) =>
 				tournamentControllerGetParticipants(id, params, options),
+			searchParticipants: (id: string, query: string, signal?: AbortSignal) =>
+				backendFetch<{ data: TournamentParticipantDtoOutput[] }>(
+					`/api/tournaments/${id}/participants?${new URLSearchParams({ query, limit: '20' })}`,
+					{ ...options, signal }
+				),
+			searchTeams: (id: string, query: string, signal?: AbortSignal) =>
+				backendFetch<{ data: { id: string; name: string }[] }>(
+					`/api/tournaments/${id}/teams/search?${new URLSearchParams({ query, limit: '20' })}`,
+					{ ...options, signal }
+				),
 			getSchedule: (id: string) => tournamentControllerGetSchedule(id, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
 			update: (id: string, input: UpdateTournamentDto) =>

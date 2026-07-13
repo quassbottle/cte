@@ -1,5 +1,15 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { and, asc, count, eq, inArray, isNotNull, isNull } from 'drizzle-orm';
+import {
+  and,
+  asc,
+  count,
+  eq,
+  ilike,
+  inArray,
+  isNotNull,
+  isNull,
+  or,
+} from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import { TeamId, teamId } from 'lib/domain/team/team.id';
 import {
@@ -117,11 +127,20 @@ export class TournamentService {
   }
 
   public async getParticipants(
-    params: { id: TournamentId } & PaginationParams,
+    params: { id: TournamentId; query?: string } & PaginationParams,
   ): Promise<DbUser[]> {
-    const { id, limit, offset } = params;
+    const { id, limit, offset, query } = params;
 
     const tournament = await this.getById({ id });
+    const parsedOsuId = Number(query);
+    const search = query
+      ? Number.isInteger(parsedOsuId)
+        ? or(
+            ilike(users.osuUsername, `%${query}%`),
+            eq(users.osuId, parsedOsuId),
+          )
+        : ilike(users.osuUsername, `%${query}%`)
+      : undefined;
 
     if (tournament.isTeam) {
       const found = await this.drizzle
@@ -129,7 +148,7 @@ export class TournamentService {
         .from(teamParticipants)
         .innerJoin(teams, eq(teams.id, teamParticipants.teamId))
         .innerJoin(users, eq(users.id, teamParticipants.userId))
-        .where(eq(teams.tournamentId, id))
+        .where(and(eq(teams.tournamentId, id), search))
         .limit(limit)
         .offset(offset);
 
@@ -140,11 +159,32 @@ export class TournamentService {
       .select({ user: users })
       .from(soloParticipants)
       .innerJoin(users, eq(users.id, soloParticipants.userId))
-      .where(eq(soloParticipants.tournamentId, id))
+      .where(and(eq(soloParticipants.tournamentId, id), search))
       .limit(limit)
       .offset(offset);
 
     return found.map(({ user }) => user);
+  }
+
+  public async searchTeams(
+    params: { id: TournamentId; query?: string } & PaginationParams,
+  ): Promise<{ id: TeamId; name: string }[]> {
+    const { id, query, limit, offset } = params;
+    const tournament = await this.getById({ id });
+    if (!tournament.isTeam) return [];
+
+    return this.drizzle
+      .select({ id: teams.id, name: teams.name })
+      .from(teams)
+      .where(
+        and(
+          eq(teams.tournamentId, id),
+          query ? ilike(teams.name, `%${query}%`) : undefined,
+        ),
+      )
+      .orderBy(asc(teams.name))
+      .limit(limit)
+      .offset(offset);
   }
 
   public async getTeams(params: { id: TournamentId }): Promise<

@@ -42,8 +42,7 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
     const route =
       request.originalUrl ?? request.url ?? request.path ?? request.baseUrl;
     const isMappoolRoute = /(^|\/)mappools(\/|$)/.test(route);
-    const isManagementRoute =
-      request.method === 'GET' && /\/mappools\/manage(?:\/|$)/.test(route);
+    const isManagementRoute = /\/mappools\/manage(?:\/|$)/.test(route);
 
     return (
       isMappoolRoute &&
@@ -69,25 +68,18 @@ export class MappoolPolicyContextResolver implements PolicyContextResolver {
   }
 
   private async resolveTournament(request: PolicyRequest) {
-    if (request.method === 'GET') {
-      return this.resolveTournamentById(
-        tournamentMappoolParamsSchema.parse(request.params).tournamentId,
-      );
-    }
-
     const mappoolId = mappoolParamsSchema.safeParse(request.params).data?.id;
+    if (mappoolId) return this.resolveTournamentByMappoolId(mappoolId);
 
-    if (mappoolId) {
-      return this.resolveTournamentByMappoolId(mappoolId);
-    }
+    const stageId = createMappoolBodySchema.safeParse(request.body).data
+      ?.stageId;
+    if (stageId) return this.resolveTournamentByStageId(stageId);
 
-    if (request.method === 'POST') {
-      return this.resolveTournamentByStageId(
-        createMappoolBodySchema.parse(request.body).stageId,
-      );
-    }
+    const tournamentId = tournamentMappoolParamsSchema.safeParse(request.params)
+      .data?.tournamentId;
+    if (tournamentId) return this.resolveTournamentById(tournamentId);
 
-    throw new Error('Mappool id is required');
+    throw new Error('Tournament, mappool, or stage id is required');
   }
 
   private async resolveTournamentById(tournamentId: TournamentId) {

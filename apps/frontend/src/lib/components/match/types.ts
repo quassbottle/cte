@@ -19,11 +19,14 @@ export type MatchStaffView = {
 	role: StageScheduleDtoOutputMatchesItemStaffItemRole;
 };
 
+export type MatchDisplayStatus = 'live' | 'finished' | 'unknown';
+
 export type MatchView = {
 	id: string;
 	number: number;
 	date: string;
 	time: string;
+	status: MatchDisplayStatus;
 	player1: MatchPlayerView | null;
 	player2: MatchPlayerView | null;
 	redTeam: { name: string; score: number | null } | null;

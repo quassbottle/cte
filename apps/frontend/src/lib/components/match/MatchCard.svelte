@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { MatchView } from './types';
 	import MatchLinks from './MatchLinks.svelte';
+	import MatchStatusBadge from './MatchStatusBadge.svelte';
 	import PlayerCell from './PlayerCell.svelte';
 	import StaffList from './StaffList.svelte';
 
@@ -10,7 +11,10 @@
 <article class="flex flex-col gap-4 p-4">
 	<div class="flex items-start justify-between gap-3">
 		<div>
-			<p class="text-xs font-semibold text-muted-foreground">Match {match.number}</p>
+			<div class="mb-1 flex items-center gap-2">
+				<p class="text-xs font-semibold text-muted-foreground">Match {match.number}</p>
+				<MatchStatusBadge status={match.status} />
+			</div>
 			<p class="font-semibold">{match.date}</p>
 			<p class="text-xs text-muted-foreground">{match.time} UTC+0</p>
 		</div>
@@ -27,7 +31,9 @@
 		</div>
 		<div class="text-center">
 			<p class="text-lg font-semibold">
-				{match.redTeam?.score ?? match.player1?.score ?? '-'} : {match.blueTeam?.score ?? match.player2?.score ?? '-'}
+				{match.redTeam?.score ?? match.player1?.score ?? '-'} : {match.blueTeam?.score ??
+					match.player2?.score ??
+					'-'}
 			</p>
 			<p class="text-[11px] uppercase text-muted-foreground">score</p>
 		</div>
