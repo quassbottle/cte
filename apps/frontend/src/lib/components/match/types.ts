@@ -19,7 +19,7 @@ export type MatchStaffView = {
 	role: StageScheduleDtoOutputMatchesItemStaffItemRole;
 };
 
-export type MatchDisplayStatus = 'live' | 'finished' | 'unknown';
+export type MatchDisplayStatus = 'live' | 'finished' | 'soon';
 
 export type MatchView = {
 	id: string;

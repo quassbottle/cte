@@ -4,6 +4,7 @@
 	import TournamentBanner from '$lib/components/tournamentBanner/tournamentBanner.svelte';
 	import BreadcrumbList from '$lib/components/ui/breadcrumbList/breadcrumbList.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import DateTimeInput from '$lib/components/ui/date-time-input/DateTimeInput.svelte';
 	import GameModeIcon from '$lib/components/gamemode/gameModeIcon.svelte';
 	import Group from '$lib/components/group/group.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
@@ -126,20 +127,18 @@
 				<div class="flex flex-col gap-4 md:flex-row">
 					<div class="flex w-full max-w-sm flex-col gap-1.5">
 						<Label for="starts-at">Starts at</Label>
-						<Input
+						<DateTimeInput
 							id="starts-at"
 							name="startsAt"
-							type="datetime-local"
 							required
 							value={toDateTimeLocalValue(tournament.startsAt)}
 						/>
 					</div>
 					<div class="flex w-full max-w-sm flex-col gap-1.5">
 						<Label for="ends-at">Ends at</Label>
-						<Input
+						<DateTimeInput
 							id="ends-at"
 							name="endsAt"
-							type="datetime-local"
 							required
 							value={toDateTimeLocalValue(tournament.endsAt)}
 						/>

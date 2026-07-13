@@ -6,7 +6,7 @@ describe('getMatchDisplayStatus', () => {
 		['active', 'live'],
 		['stopped', 'finished'],
 		['completed', 'finished'],
-		[null, 'unknown']
+		[null, 'soon']
 	] as const)('maps %s to %s', (status, expected) => {
 		expect(getMatchDisplayStatus(status)).toBe(expected);
 	});

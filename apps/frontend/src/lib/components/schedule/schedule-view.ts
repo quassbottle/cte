@@ -9,7 +9,7 @@ export const getMatchDisplayStatus = (
 ): MatchDisplayStatus => {
 	if (status === 'active') return 'live';
 	if (status === 'stopped' || status === 'completed') return 'finished';
-	return 'unknown';
+	return 'soon';
 };
 
 const formatDate = (value: string) =>

@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { StageDto, TournamentDto } from '$lib/api/types';
 	import { Button } from '$lib/components/ui/button';
+	import DateTimeInput from '$lib/components/ui/date-time-input/DateTimeInput.svelte';
 	import Group from '$lib/components/group/group.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Label } from '$lib/components/ui/label';
@@ -238,10 +239,9 @@
 					<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
 						<div class="flex flex-col gap-1.5">
 							<Label for="stage-dialog-starts-at">Starts at</Label>
-							<Input
+							<DateTimeInput
 								id="stage-dialog-starts-at"
 								name="startsAt"
-								type="datetime-local"
 								required
 								value={toDateTimeLocalValue(
 									dialog.mode === 'update' ? dialog.stage.startsAt : tournament.startsAt
@@ -250,10 +250,9 @@
 						</div>
 						<div class="flex flex-col gap-1.5">
 							<Label for="stage-dialog-ends-at">Ends at</Label>
-							<Input
+							<DateTimeInput
 								id="stage-dialog-ends-at"
 								name="endsAt"
-								type="datetime-local"
 								required
 								value={toDateTimeLocalValue(
 									dialog.mode === 'update' ? dialog.stage.endsAt : tournament.endsAt

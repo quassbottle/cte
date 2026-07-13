@@ -2,6 +2,7 @@
 	import { enhance } from '$app/forms';
 	import type { StageDtoOutput, StageScheduleDtoOutputMatchesItem } from '$lib/api/generated/model';
 	import { Button } from '$lib/components/ui/button';
+	import DateTimeInput from '$lib/components/ui/date-time-input/DateTimeInput.svelte';
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Label } from '$lib/components/ui/label';
 	import type { SelectedUser } from '$lib/schemas/user.schema';
@@ -123,20 +124,18 @@
 	<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 		<div class="flex flex-col gap-1.5">
 			<Label for={`match-start-${match?.id ?? 'new'}`}>Starts at</Label>
-			<Input
+			<DateTimeInput
 				id={`match-start-${match?.id ?? 'new'}`}
 				name="startsAt"
-				type="datetime-local"
 				value={toDateTimeLocalValue(defaultStart)}
 				required
 			/>
 		</div>
 		<div class="flex flex-col gap-1.5">
 			<Label for={`match-end-${match?.id ?? 'new'}`}>Ends at</Label>
-			<Input
+			<DateTimeInput
 				id={`match-end-${match?.id ?? 'new'}`}
 				name="endsAt"
-				type="datetime-local"
 				value={toDateTimeLocalValue(defaultEnd)}
 				required
 			/>
