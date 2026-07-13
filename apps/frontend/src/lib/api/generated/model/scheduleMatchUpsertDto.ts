@@ -27,13 +27,27 @@ export interface ScheduleMatchUpsertDto {
 	mpUrl?: string | null;
 	/** @nullable */
 	vodUrl?: string | null;
-	/** @nullable */
+	/**
+	 * @nullable
+	 * @pattern ^[0-9a-z]+$
+	 */
 	redTeamId?: string | null;
-	/** @nullable */
+	/**
+	 * @nullable
+	 * @pattern ^[0-9a-z]+$
+	 */
 	blueTeamId?: string | null;
-	/** @nullable */
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
 	redScore?: number | null;
-	/** @nullable */
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
 	blueScore?: number | null;
 	/** @maxItems 2 */
 	players?: ScheduleMatchUpsertDtoPlayersItem[];

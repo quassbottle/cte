@@ -5,10 +5,11 @@
  * Auth and user management API
  * OpenAPI spec version: 1.0
  */
+import type { StageScheduleDtoOutputMatchesItemBlueTeam } from './stageScheduleDtoOutputMatchesItemBlueTeam';
 import type { StageScheduleDtoOutputMatchesItemPlayersItem } from './stageScheduleDtoOutputMatchesItemPlayersItem';
+import type { StageScheduleDtoOutputMatchesItemRedTeam } from './stageScheduleDtoOutputMatchesItemRedTeam';
 import type { StageScheduleDtoOutputMatchesItemStaffItem } from './stageScheduleDtoOutputMatchesItemStaffItem';
-
-type ScheduleTeam = { id: string; name: string };
+import type { StageScheduleDtoOutputMatchesItemSyncStatus } from './stageScheduleDtoOutputMatchesItemSyncStatus';
 
 export type StageScheduleDtoOutputMatchesItem = {
 	/** @pattern ^[0-9a-z]+$ */
@@ -29,12 +30,27 @@ export type StageScheduleDtoOutputMatchesItem = {
 	/** @nullable */
 	vodUrl: string | null;
 	/** @nullable */
-	syncStatus: 'active' | 'stopped' | 'completed' | null;
-	/** @nullable */
+	syncStatus: StageScheduleDtoOutputMatchesItemSyncStatus;
+	/**
+	 * @nullable
+	 * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$
+	 */
 	lastSyncedAt: string | null;
-	redTeam: ScheduleTeam | null;
-	blueTeam: ScheduleTeam | null;
+	/** @nullable */
+	redTeam: StageScheduleDtoOutputMatchesItemRedTeam;
+	/** @nullable */
+	blueTeam: StageScheduleDtoOutputMatchesItemBlueTeam;
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
 	redScore: number | null;
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
 	blueScore: number | null;
 	players: StageScheduleDtoOutputMatchesItemPlayersItem[];
 	staff: StageScheduleDtoOutputMatchesItemStaffItem[];
