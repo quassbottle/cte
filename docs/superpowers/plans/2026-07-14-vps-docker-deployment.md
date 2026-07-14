@@ -617,3 +617,71 @@ git status --short
 ```
 
 Expected: only intentional deployment files and pre-existing user-owned `.superpowers` artifacts appear.
+
+---
+
+### Task 5: Remove replaced application images after deployment
+
+**Files:**
+- Modify: `apps/infra/deployment.test.ts`
+- Modify: `.github/workflows/deploy-backend.yml`
+- Modify: `.github/workflows/deploy-frontend.yml`
+
+**Interfaces:**
+- Consumes: successful backend/frontend deploy steps from Task 3.
+- Produces: post-deploy `docker image prune -f` cleanup without touching active images, containers, volumes, or build cache.
+
+- [ ] **Step 1: Write the failing workflow cleanup contract**
+
+Add inside `describe('independent deployment workflows', ...)` in `apps/infra/deployment.test.ts`:
+
+```ts
+for (const path of [backendPath, frontendPath]) {
+  it(`${path} prunes dangling images after deployment`, () => {
+    const workflow = file(path);
+    const deploy = workflow.indexOf('up -d --build --no-deps --wait');
+    const cleanup = workflow.indexOf('run: docker image prune -f');
+
+    expect(cleanup).toBeGreaterThan(deploy);
+  });
+}
+```
+
+- [ ] **Step 2: Run the test and verify RED**
+
+Run:
+
+```bash
+pnpm --filter infra test
+```
+
+Expected: two cleanup contract failures because both workflows lack `docker image prune -f`.
+
+- [ ] **Step 3: Add cleanup after each successful deploy**
+
+Append this step after `Build and deploy backend` in `.github/workflows/deploy-backend.yml` and after `Build and deploy frontend` in `.github/workflows/deploy-frontend.yml`:
+
+```yaml
+      - name: Remove old images
+        run: docker image prune -f
+```
+
+GitHub Actions runs the step only when the preceding deploy succeeds; do not add `if: always()`.
+
+- [ ] **Step 4: Run the contract and hygiene checks**
+
+Run:
+
+```bash
+pnpm --filter infra test
+git diff --check
+```
+
+Expected: all deployment contracts pass and diff check exits 0.
+
+- [ ] **Step 5: Commit the cleanup**
+
+```bash
+git add apps/infra/deployment.test.ts .github/workflows/deploy-backend.yml .github/workflows/deploy-frontend.yml
+git commit -m "ci: prune replaced deployment images"
+```
