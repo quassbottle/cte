@@ -68,7 +68,8 @@ describe('independent deployment workflows', () => {
   for (const path of [backendPath, frontendPath]) {
     it(`${path} targets the production self-hosted runner`, () => {
       const workflow = file(path);
-      expect(workflow).toContain('runs-on: [self-hosted, linux, cte-prod]');
+      expect(workflow).toContain('runs-on: [self-hosted, linux, x64]');
+      expect(workflow).not.toContain('cte-prod');
       expect(workflow).toContain('CTE_ENV_DIR: /opt/cte/env');
     });
   }

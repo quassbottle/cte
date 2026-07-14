@@ -12,7 +12,7 @@
 
 - A frontend-only change must not rebuild or restart backend, PostgreSQL, or NATS; the inverse applies to backend-only changes.
 - Use no new application or CI dependency.
-- Target GitHub runner labels `[self-hosted, linux, cte-prod]`.
+- Target GitHub runner labels `[self-hosted, linux, x64]`.
 - Deploy automatically only from pushes to `main`; retain `workflow_dispatch` for explicit redeploys.
 - Keep application secrets in VPS-owned files under `${CTE_ENV_DIR:-/opt/cte/env}` and never materialize or print them in GitHub Actions.
 - Bind application ports to loopback by default: backend `127.0.0.1:3000`, frontend `127.0.0.1:5173`.
@@ -436,7 +436,7 @@ describe('independent deployment workflows', () => {
 
 	for (const workflow of [backend, frontend]) {
 		it('targets the production self-hosted runner', () => {
-			expect(workflow).toContain('runs-on: [self-hosted, linux, cte-prod]');
+			expect(workflow).toContain('runs-on: [self-hosted, linux, x64]');
 			expect(workflow).toContain('CTE_ENV_DIR: /opt/cte/env');
 		});
 	}
@@ -485,7 +485,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, linux, cte-prod]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 30
     env:
       CTE_ENV_DIR: /opt/cte/env
@@ -529,7 +529,7 @@ concurrency:
 
 jobs:
   deploy:
-    runs-on: [self-hosted, linux, cte-prod]
+    runs-on: [self-hosted, linux, x64]
     timeout-minutes: 30
     env:
       CTE_ENV_DIR: /opt/cte/env

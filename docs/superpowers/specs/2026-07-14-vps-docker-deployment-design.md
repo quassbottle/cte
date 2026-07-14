@@ -17,7 +17,7 @@ PostgreSQL and NATS are provisioned once with Compose and remain running during 
 
 ## Workflows
 
-Create two workflows targeting `[self-hosted, linux, cte-prod]`:
+Create two workflows targeting `[self-hosted, linux, x64]`:
 
 1. `deploy-backend.yml` runs on pushes to `main` affecting backend code, shared contracts, workspace configuration, or the backend deployment files.
 2. `deploy-frontend.yml` runs on pushes to `main` affecting frontend code, workspace configuration, or the frontend deployment files.
