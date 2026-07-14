@@ -17,7 +17,10 @@ describe('getTournamentEditPage', () => {
 					throw new Error('competitors must be searched on demand');
 				},
 				getSchedule: async () => ({ data: [] }),
-				getTeams: async () => ({ data: [] })
+				getTeams: async () => ({ data: [] }),
+				qualification: {
+					getRoster: async () => ({ data: { kind: 'solo', participants: [] } })
+				}
 			},
 			stages: {
 				findByTournament: async () => ({ data: [] })
@@ -34,5 +37,6 @@ describe('getTournamentEditPage', () => {
 
 		expect(result).not.toHaveProperty('participants');
 		expect(result).not.toHaveProperty('teams');
+		expect(result.qualificationRoster).toEqual({ kind: 'solo', participants: [] });
 	});
 });

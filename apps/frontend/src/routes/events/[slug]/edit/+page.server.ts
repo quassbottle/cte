@@ -12,6 +12,9 @@ import {
 	mappoolBeatmapUpdateFormSchema,
 	mappoolCreateFormSchema,
 	mappoolVisibilityFormSchema,
+	qualificationSoloFormSchema,
+	qualificationTeamFormSchema,
+	qualificationTeamMemberFormSchema,
 	scheduleMatchFormSchema,
 	stageCreateFormSchema,
 	stageDeleteFormSchema,
@@ -36,6 +39,8 @@ type ActionContext = {
 	matchId?: string;
 	mappoolId?: string;
 	beatmapId?: string;
+	teamId?: string;
+	userId?: string;
 };
 
 const stringValue = (value: FormDataEntryValue | undefined) =>
@@ -279,6 +284,62 @@ export const actions: Actions = {
 				matchId
 			} satisfies TournamentEditActionResult);
 		}
+	},
+	updateQualificationSolo: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'updateQualificationSolo',
+				qualificationSoloFormSchema,
+				values,
+				{ userId: stringValue(values.userId) },
+				(backend, input) => commands.updateQualificationSolo(backend, event.params.slug, input)
+			)
+		),
+	updateQualificationTeam: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'updateQualificationTeam',
+				qualificationTeamFormSchema,
+				values,
+				{ teamId: stringValue(values.teamId) },
+				(backend, input) => commands.updateQualificationTeam(backend, event.params.slug, input)
+			)
+		),
+	updateQualificationTeamMember: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'updateQualificationTeamMember',
+				qualificationTeamMemberFormSchema,
+				values,
+				{
+					teamId: stringValue(values.teamId),
+					userId: stringValue(values.userId)
+				},
+				(backend, input) =>
+					commands.updateQualificationTeamMember(backend, event.params.slug, input)
+			)
+		),
+	calculateQualificationSeeds: async (event) => {
+		requireSession(event.locals);
+
+		try {
+			await commands.calculateQualificationSeeds(createBackendClient(event), event.params.slug);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				action: 'calculateQualificationSeeds',
+				ok: false,
+				message: backendErrorMessage(cause, 'Request failed'),
+				errors: {}
+			} satisfies TournamentEditActionResult);
+		}
+
+		return {
+			action: 'calculateQualificationSeeds',
+			ok: true
+		} satisfies TournamentEditActionResult;
 	},
 	createMappool: (event) =>
 		withFormValues(event, (values) =>
