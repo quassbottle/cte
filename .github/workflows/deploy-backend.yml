@@ -1,0 +1,37 @@
+name: Deploy backend
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'apps/backend/**'
+      - 'packages/contracts/**'
+      - 'patches/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'turbo.json'
+      - '.dockerignore'
+      - 'apps/infra/docker-compose.yml'
+      - '.github/workflows/deploy-backend.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-backend-production
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: [self-hosted, linux, cte-prod]
+    timeout-minutes: 30
+    env:
+      CTE_ENV_DIR: /opt/cte/env
+    steps:
+      - uses: actions/checkout@v7
+      - name: Build and deploy backend
+        run: >-
+          docker compose -f apps/infra/docker-compose.yml
+          up -d --build --no-deps --wait --wait-timeout 120 backend

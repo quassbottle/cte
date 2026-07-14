@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { and, asc, eq, gte, isNull, lte, or } from 'drizzle-orm';
+import { and, asc, eq, gte, inArray, isNull, lte, or, sql } from 'drizzle-orm';
 import { EnvService } from 'lib/common/env/env.service';
 import type { MatchId } from 'lib/domain/match/match.id';
 import {
@@ -10,11 +10,36 @@ import {
   matches,
   matchOsuSync,
   matchParticipants,
+  qualificationAttempts,
   Schema,
+  stages,
   users,
 } from 'lib/infrastructure/db';
 import { parseOsuMatchId } from './mp-url';
-import { MatchSyncInput, MatchSyncPoints, SyncLease } from './types';
+import {
+  MatchSyncInput,
+  MatchSyncPoints,
+  QualificationAttemptInput,
+  QualificationMatchSyncInput,
+  SoloMatchSyncInput,
+  SyncLease,
+  TeamMatchSyncInput,
+} from './types';
+
+type ApplySuccessParams = {
+  lease: SyncLease;
+  closedAt: Date | null;
+  background: boolean;
+} & (
+  | {
+      input: QualificationMatchSyncInput;
+      attempts: QualificationAttemptInput[];
+    }
+  | {
+      input: SoloMatchSyncInput | TeamMatchSyncInput;
+      points: MatchSyncPoints;
+    }
+);
 
 @Injectable()
 export class MatchSyncRepository {
@@ -184,10 +209,17 @@ export class MatchSyncRepository {
   }
 
   public async loadInput(matchId: MatchId): Promise<MatchSyncInput> {
-    const [match, players, mappoolBeatmaps] = await Promise.all([
-      this.drizzle.query.matches.findFirst({
-        where: eq(matches.id, matchId),
-      }),
+    const [matchRows, players, mappoolBeatmaps] = await Promise.all([
+      this.drizzle
+        .select({
+          redTeamId: matches.redTeamId,
+          blueTeamId: matches.blueTeamId,
+          type: stages.type,
+        })
+        .from(matches)
+        .innerJoin(stages, eq(stages.id, matches.stageId))
+        .where(eq(matches.id, matchId))
+        .limit(1),
       this.drizzle
         .select({ userId: users.id, osuId: users.osuId })
         .from(matchParticipants)
@@ -205,10 +237,15 @@ export class MatchSyncRepository {
         .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
         .where(eq(matches.id, matchId)),
     ]);
+    const match = matchRows[0];
     if (!match || mappoolBeatmaps.length === 0) {
-      throw new Error(
-        'Match sync requires a stage mappool',
-      );
+      throw new Error('Match sync requires a stage mappool');
+    }
+    const allowedBeatmapIds = new Set(
+      mappoolBeatmaps.map((row) => row.osuBeatmapId),
+    );
+    if (match.type === 'qualification') {
+      return { kind: 'qualification', allowedBeatmapIds };
     }
     if (match.redTeamId || match.blueTeamId) {
       if (!match.redTeamId || !match.blueTeamId) {
@@ -216,9 +253,7 @@ export class MatchSyncRepository {
       }
       return {
         kind: 'team',
-        allowedBeatmapIds: new Set(
-          mappoolBeatmaps.map((row) => row.osuBeatmapId),
-        ),
+        allowedBeatmapIds,
       };
     }
     const [firstPlayer, secondPlayer] = players;
@@ -228,19 +263,11 @@ export class MatchSyncRepository {
     return {
       kind: 'solo',
       players: [firstPlayer, secondPlayer],
-      allowedBeatmapIds: new Set(
-        mappoolBeatmaps.map((row) => row.osuBeatmapId),
-      ),
+      allowedBeatmapIds,
     };
   }
 
-  public async applySuccess(params: {
-    lease: SyncLease;
-    input: MatchSyncInput;
-    points: MatchSyncPoints;
-    closedAt: Date | null;
-    background: boolean;
-  }): Promise<boolean> {
+  public async applySuccess(params: ApplySuccessParams): Promise<boolean> {
     return this.drizzle.transaction(async (tx) => {
       const locked = await tx
         .select({ matchId: matchOsuSync.matchId })
@@ -256,7 +283,62 @@ export class MatchSyncRepository {
         .limit(1);
       if (!locked[0]) return false;
 
-      if (params.input.kind === 'team') {
+      if ('attempts' in params) {
+        if (params.attempts.length) {
+          const osuBeatmapIds = [
+            ...new Set(params.attempts.map((attempt) => attempt.osuBeatmapId)),
+          ];
+          const osuUserIds = [
+            ...new Set(params.attempts.map((attempt) => attempt.osuUserId)),
+          ];
+          const beatmapRows = await tx
+            .select({ id: beatmaps.id, osuBeatmapId: beatmaps.osuBeatmapId })
+            .from(beatmaps)
+            .where(inArray(beatmaps.osuBeatmapId, osuBeatmapIds));
+          const userRows = await tx
+            .select({ id: users.id, osuId: users.osuId })
+            .from(users)
+            .where(inArray(users.osuId, osuUserIds));
+          const beatmapIdsByOsuId = new Map(
+            beatmapRows.map((row) => [row.osuBeatmapId, row.id]),
+          );
+          const userIdsByOsuId = new Map(
+            userRows.map((row) => [row.osuId, row.id]),
+          );
+          const values = params.attempts.flatMap((attempt) => {
+            const beatmapId = beatmapIdsByOsuId.get(attempt.osuBeatmapId);
+            const userId = userIdsByOsuId.get(attempt.osuUserId);
+            return beatmapId && userId
+              ? [
+                  {
+                    matchId: params.lease.matchId,
+                    osuGameId: attempt.osuGameId,
+                    beatmapId,
+                    userId,
+                    score: attempt.score,
+                  },
+                ]
+              : [];
+          });
+          if (values.length) {
+            await tx
+              .insert(qualificationAttempts)
+              .values(values)
+              .onConflictDoUpdate({
+                target: [
+                  qualificationAttempts.matchId,
+                  qualificationAttempts.osuGameId,
+                  qualificationAttempts.userId,
+                ],
+                set: {
+                  beatmapId: sql`excluded.beatmap_id`,
+                  score: sql`excluded.score`,
+                  updatedAt: new Date(),
+                },
+              });
+          }
+        }
+      } else if (params.input.kind === 'team') {
         await tx
           .update(matches)
           .set({

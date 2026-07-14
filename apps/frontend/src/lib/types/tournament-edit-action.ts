@@ -11,6 +11,10 @@ export type EditAction =
 	| 'deleteScheduleMatch'
 	| 'syncScheduleMatch'
 	| 'stopScheduleMatch'
+	| 'updateQualificationSolo'
+	| 'updateQualificationTeam'
+	| 'updateQualificationTeamMember'
+	| 'calculateQualificationSeeds'
 	| 'createMappool'
 	| 'updateMappoolVisibility'
 	| 'addMappoolBeatmap'
@@ -23,6 +27,8 @@ type ActionContext = {
 	matchId?: string;
 	mappoolId?: string;
 	beatmapId?: string;
+	teamId?: string;
+	userId?: string;
 };
 
 export type TournamentEditActionResult =

@@ -22,6 +22,7 @@ export class ScheduleService {
       .select({
         id: stageRow.id,
         name: stageRow.name,
+        type: stageRow.type,
         startsAt: stageRow.startsAt,
         endsAt: stageRow.endsAt,
         matches: sql<StageScheduleInput['matches']>`
@@ -67,43 +68,23 @@ export class ScheduleService {
                           'osuUsername', player_user.osu_username,
                           'avatarUrl', concat('https://a.ppy.sh/', player_user.osu_id),
                           'countryCode', player_user.country_code,
-                          'seed', coalesce(
-                            (
-                              select solo_seed.seed
-                              from solo_participants solo_seed
-                              where solo_seed.tournament_id = ${stageRowTournamentId}
-                                and solo_seed.user_id = player_user.id
-                              limit 1
-                            ),
-                            (
-                              select team_seed.seed
-                              from team_participants team_seed
-                              inner join teams seed_team on seed_team.id = team_seed.team_id
-                              where seed_team.tournament_id = ${stageRowTournamentId}
-                                and team_seed.user_id = player_user.id
-                              limit 1
-                            )
+                          'seed', (
+                            select solo_seed.seed
+                            from solo_participants solo_seed
+                            where solo_seed.tournament_id = ${stageRowTournamentId}
+                              and solo_seed.user_id = player_user.id
+                            limit 1
                           ),
                           'score', match_player.score,
                           'isWinner', match_player.is_winner
                         )
                         order by
-                          coalesce(
-                            (
-                              select solo_seed.seed
-                              from solo_participants solo_seed
-                              where solo_seed.tournament_id = ${stageRowTournamentId}
-                                and solo_seed.user_id = player_user.id
-                              limit 1
-                            ),
-                            (
-                              select team_seed.seed
-                              from team_participants team_seed
-                              inner join teams seed_team on seed_team.id = team_seed.team_id
-                              where seed_team.tournament_id = ${stageRowTournamentId}
-                                and team_seed.user_id = player_user.id
-                              limit 1
-                            )
+                          (
+                            select solo_seed.seed
+                            from solo_participants solo_seed
+                            where solo_seed.tournament_id = ${stageRowTournamentId}
+                              and solo_seed.user_id = player_user.id
+                            limit 1
                           ) asc nulls last,
                           player_user.osu_username asc
                       )

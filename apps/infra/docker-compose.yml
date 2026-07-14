@@ -26,6 +26,43 @@ services:
     networks:
       - cte-network
 
+  backend:
+    image: cte-backend:local
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ${CTE_ENV_DIR:-/opt/cte/env}/backend.env
+    environment:
+      PORT: 3000
+    ports:
+      - "127.0.0.1:${BACKEND_PORT:-3000}:3000"
+    depends_on:
+      - postgres
+      - nats
+    networks:
+      - cte-network
+
+  frontend:
+    image: cte-frontend:local
+    build:
+      context: ../..
+      dockerfile: apps/frontend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ${CTE_ENV_DIR:-/opt/cte/env}/frontend.env
+    environment:
+      BACKEND_API_URL: http://backend:3000
+      HTTP_HOST: 0.0.0.0
+      HTTP_PORT: 3000
+    ports:
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:3000"
+    depends_on:
+      - backend
+    networks:
+      - cte-network
+
 volumes:
   postgres_data:
   nats_data:

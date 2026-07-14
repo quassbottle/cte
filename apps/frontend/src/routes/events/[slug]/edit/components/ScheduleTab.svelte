@@ -48,6 +48,7 @@
 		currentDialog && currentDialog.mode !== 'delete'
 			? sortedSchedule.find((stage) => stage.id === currentDialog.stageId)
 			: undefined;
+	$: isQualificationDialog = dialogStage?.type === 'qualification';
 
 	function getActiveStageId(value: string | null) {
 		if (value && sortedSchedule.some((stage) => stage.id === value)) {
@@ -201,9 +202,13 @@
 				<div>
 					<p class="text-lg font-semibold">
 						{dialog.mode === 'create'
-							? 'Add match'
+							? isQualificationDialog
+								? 'Add qualification lobby'
+								: 'Add match'
 							: dialog.mode === 'update'
-								? 'Edit match'
+								? isQualificationDialog
+									? 'Edit qualification lobby'
+									: 'Edit match'
 								: 'Delete match'}
 					</p>
 					<p class="text-sm text-muted-foreground">
@@ -217,7 +222,7 @@
 
 			{#if dialog.mode === 'create'}
 				<ScheduleMatchForm
-					{stages}
+					stage={dialogStage}
 					{tournamentId}
 					stageId={dialog.stageId}
 					{form}
@@ -241,7 +246,7 @@
 						{/if}
 					</div>
 					<ScheduleMatchForm
-						{stages}
+						stage={dialogStage}
 						{tournamentId}
 						stageId={dialog.stageId}
 						match={dialog.match}

@@ -12,6 +12,7 @@ import { UserId } from 'lib/domain/user/user.id';
 import {
   DbMatch,
   DbMatchParticipant,
+  DbStage,
   DbUser,
   matches,
   matchParticipants,
@@ -51,11 +52,11 @@ export class MatchService {
   }): Promise<DbMatch> {
     const { tournamentId, data } = params;
 
-    await this.assertStageBelongsToTournament({
+    const stage = await this.assertStageBelongsToTournament({
       stageId: data.stageId,
       tournamentId,
     });
-    await this.assertMatchCompetitors(tournamentId, data);
+    await this.assertMatchCompetitors(tournamentId, data, stage);
 
     const id = matchId();
 
@@ -105,12 +106,12 @@ export class MatchService {
       );
     }
 
-    await this.assertStageBelongsToTournament({
+    const stage = await this.assertStageBelongsToTournament({
       stageId: data.stageId,
       tournamentId,
     });
     await this.assertMatchBelongsToTournament({ matchId: id, tournamentId });
-    await this.assertMatchCompetitors(tournamentId, data);
+    await this.assertMatchCompetitors(tournamentId, data, stage);
 
     const current = await this.getById({ id });
     const updated = await this.drizzle.transaction(async (tx) => {
@@ -345,7 +346,7 @@ export class MatchService {
   private async assertStageBelongsToTournament(params: {
     stageId: StageId;
     tournamentId: TournamentId;
-  }): Promise<void> {
+  }): Promise<DbStage> {
     const { stageId, tournamentId } = params;
 
     const stage = await this.drizzle.query.stages.findFirst({
@@ -358,6 +359,8 @@ export class MatchService {
         MatchExceptionCode.MATCH_NOT_FOUND,
       );
     }
+
+    return stage;
   }
 
   private hasManualScore(data: ScheduleMatchUpsertInput): boolean {
@@ -371,7 +374,24 @@ export class MatchService {
   private async assertMatchCompetitors(
     tournamentId: TournamentId,
     data: ScheduleMatchUpsertInput,
+    stage: DbStage,
   ): Promise<void> {
+    if (stage.type === 'qualification') {
+      if (!data.mpUrl) {
+        throw new MatchException(
+          'Qualification lobby requires an mp URL',
+          MatchExceptionCode.MATCH_ACCESS_DENIED,
+        );
+      }
+      if (data.players.length || data.redTeamId || data.blueTeamId) {
+        throw new MatchException(
+          'Qualification lobby cannot select competitors',
+          MatchExceptionCode.MATCH_ACCESS_DENIED,
+        );
+      }
+      return;
+    }
+
     const tournament = await this.drizzle.query.tournaments.findFirst({
       where: eq(tournaments.id, tournamentId),
     });

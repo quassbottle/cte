@@ -45,7 +45,12 @@ describe('MatchSyncService', () => {
       ),
     ).resolves.toBe(true);
     expect(repository.applySuccess).toHaveBeenCalledWith(
-      expect.objectContaining({ lease, background: true }),
+      expect.objectContaining({
+        lease,
+        background: true,
+        input,
+        points: { redScore: 1, blueScore: 0 },
+      }),
     );
   });
 
@@ -111,6 +116,51 @@ describe('MatchSyncService', () => {
         points: { redScore: 1, blueScore: 0 },
       }),
     );
+  });
+
+  it('extracts qualification attempts instead of match points', async () => {
+    const lease = {
+      matchId: matchIdSchema.parse('ckm123456789012345678901'),
+      osuMatchId: 1,
+      leaseToken: 'token',
+      status: 'active' as const,
+    };
+    const input = {
+      kind: 'qualification' as const,
+      allowedBeatmapIds: new Set([10]),
+    };
+    const repository = {
+      loadInput: jest.fn().mockResolvedValue(input),
+      applySuccess: jest.fn().mockResolvedValue(true),
+      applyFailure: jest.fn(),
+    };
+    const snapshot = {
+      closedAt: null,
+      games: [
+        {
+          id: 4,
+          beatmapId: 10,
+          endedAt: new Date(),
+          scores: [{ userId: 7, score: 950_000, team: null }],
+        },
+      ],
+    };
+    const client = { get: jest.fn().mockResolvedValue(snapshot) };
+
+    await new MatchSyncService(repository as never, client as never).syncOnce(
+      lease,
+      true,
+    );
+
+    expect(repository.applySuccess).toHaveBeenCalledWith({
+      lease,
+      input,
+      attempts: [
+        { osuGameId: 4, osuBeatmapId: 10, osuUserId: 7, score: 950_000 },
+      ],
+      closedAt: null,
+      background: true,
+    });
   });
 });
 jest.mock('@paralleldrive/cuid2', () => ({

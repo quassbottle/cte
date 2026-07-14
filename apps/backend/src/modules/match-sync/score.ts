@@ -1,6 +1,6 @@
 import { MatchSyncPoints, OsuMatchSnapshot } from './types';
 
-type Params =
+type CalculateMatchPointsParams =
   | {
       kind: 'solo';
       snapshot: OsuMatchSnapshot;
@@ -13,7 +13,7 @@ type Params =
       allowedBeatmapIds: ReadonlySet<number>;
     };
 
-export function calculateMatchPoints(params: Params): MatchSyncPoints {
+export function calculateMatchPoints(params: CalculateMatchPointsParams): MatchSyncPoints {
   const points: MatchSyncPoints = { redScore: 0, blueScore: 0 };
 
   for (const game of params.snapshot.games) {

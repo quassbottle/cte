@@ -12,7 +12,7 @@
 	import ScheduleCompetitorPicker from './ScheduleCompetitorPicker.svelte';
 	import ScheduleUserPicker from './ScheduleUserPicker.svelte';
 
-	export let stages: StageDtoOutput[];
+	export let stage: Pick<StageDtoOutput, 'id' | 'startsAt' | 'type'> | undefined;
 	export let tournamentId: string;
 	export let isTeam = false;
 	export let match: StageScheduleDtoOutputMatchesItem | undefined = undefined;
@@ -60,9 +60,9 @@
 	const addHours = (value: Date | string, hours: number) =>
 		new Date(new Date(value).valueOf() + hours * 60 * 60 * 1000);
 
-	$: selectedStageId = stageId ?? stages[0]?.id ?? '';
-	$: defaultStart =
-		match?.startsAt ?? stages.find((stage) => stage.id === selectedStageId)?.startsAt ?? new Date();
+	$: selectedStageId = stageId ?? stage?.id ?? '';
+	$: isQualification = stage?.type === 'qualification';
+	$: defaultStart = match?.startsAt ?? stage?.startsAt ?? new Date();
 	$: defaultEnd = match?.endsAt ?? addHours(defaultStart, 1);
 
 	let refereeUsers =
@@ -74,7 +74,13 @@
 
 	$: actionName = mode === 'create' ? 'createScheduleMatch' : 'updateScheduleMatch';
 	$: action = mode === 'create' ? '?/createScheduleMatch' : '?/updateScheduleMatch';
-	$: submitLabel = mode === 'create' ? 'Add match' : 'Save match';
+	$: submitLabel = isQualification
+		? mode === 'create'
+			? 'Add qualification lobby'
+			: 'Save qualification lobby'
+		: mode === 'create'
+			? 'Add match'
+			: 'Save match';
 
 	const enhanceScheduleMatch: SubmitFunction = () => {
 		return async ({ result, update }) => {
@@ -101,11 +107,13 @@
 
 	<div class="grid grid-cols-1 gap-3 lg:grid-cols-[1fr_180px]">
 		<div class="flex flex-col gap-1.5">
-			<Label for={`match-name-${match?.id ?? 'new'}`}>Match name</Label>
+			<Label for={`match-name-${match?.id ?? 'new'}`}>
+				{isQualification ? 'Qualification lobby name' : 'Match name'}
+			</Label>
 			<Input
 				id={`match-name-${match?.id ?? 'new'}`}
 				name="name"
-				value={match?.name ?? 'Match'}
+				value={match?.name ?? (isQualification ? 'Qualification lobby' : 'Match')}
 				required
 			/>
 		</div>
@@ -145,7 +153,12 @@
 	<div class="grid grid-cols-1 gap-3 md:grid-cols-2">
 		<div class="flex flex-col gap-1.5">
 			<Label for={`match-mp-${match?.id ?? 'new'}`}>MP link</Label>
-			<Input id={`match-mp-${match?.id ?? 'new'}`} name="mpUrl" value={match?.mpUrl ?? ''} />
+			<Input
+				id={`match-mp-${match?.id ?? 'new'}`}
+				name="mpUrl"
+				value={match?.mpUrl ?? ''}
+				required={isQualification}
+			/>
 		</div>
 		<div class="flex flex-col gap-1.5">
 			<Label for={`match-vod-${match?.id ?? 'new'}`}>VOD link</Label>
@@ -153,88 +166,90 @@
 		</div>
 	</div>
 
-	{#if isTeam}
-		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleCompetitorPicker
-					label="Red team"
-					name="redTeamId"
-					{tournamentId}
-					type="team"
-					initial={toTeamOption(match?.redTeam ?? null)}
-				/>
-				<Label for={`match-red-score-${match?.id ?? 'new'}`}>Score</Label>
-				<Input
-					id={`match-red-score-${match?.id ?? 'new'}`}
-					name="redScore"
-					type="number"
-					min="0"
-					disabled={match?.syncStatus === 'active'}
-					value={match?.redScore ?? ''}
-				/>
-			</div>
-			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleCompetitorPicker
-					label="Blue team"
-					name="blueTeamId"
-					{tournamentId}
-					type="team"
-					initial={toTeamOption(match?.blueTeam ?? null)}
-				/>
-				<Label for={`match-blue-score-${match?.id ?? 'new'}`}>Score</Label>
-				<Input
-					id={`match-blue-score-${match?.id ?? 'new'}`}
-					name="blueScore"
-					type="number"
-					min="0"
-					disabled={match?.syncStatus === 'active'}
-					value={match?.blueScore ?? ''}
-				/>
-			</div>
-		</div>
-	{:else}
-		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
-			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleCompetitorPicker
-					label="Player 1"
-					name="player1UserId"
-					{tournamentId}
-					type="player"
-					initial={toPlayerOption(match?.players[0])}
-				/>
-				<div class="flex max-w-[160px] flex-col gap-1.5">
-					<Label for={`match-score-1-${match?.id ?? 'new'}`}>Score</Label>
+	{#if !isQualification}
+		{#if isTeam}
+			<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<div class="flex flex-col gap-2 rounded-md border border-border p-3">
+					<ScheduleCompetitorPicker
+						label="Red team"
+						name="redTeamId"
+						{tournamentId}
+						type="team"
+						initial={toTeamOption(match?.redTeam ?? null)}
+					/>
+					<Label for={`match-red-score-${match?.id ?? 'new'}`}>Score</Label>
 					<Input
-						id={`match-score-1-${match?.id ?? 'new'}`}
-						name="player1Score"
+						id={`match-red-score-${match?.id ?? 'new'}`}
+						name="redScore"
 						type="number"
 						min="0"
 						disabled={match?.syncStatus === 'active'}
-						value={match?.players[0]?.score ?? ''}
+						value={match?.redScore ?? ''}
 					/>
 				</div>
-			</div>
-			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleCompetitorPicker
-					label="Player 2"
-					name="player2UserId"
-					{tournamentId}
-					type="player"
-					initial={toPlayerOption(match?.players[1])}
-				/>
-				<div class="flex max-w-[160px] flex-col gap-1.5">
-					<Label for={`match-score-2-${match?.id ?? 'new'}`}>Score</Label>
+				<div class="flex flex-col gap-2 rounded-md border border-border p-3">
+					<ScheduleCompetitorPicker
+						label="Blue team"
+						name="blueTeamId"
+						{tournamentId}
+						type="team"
+						initial={toTeamOption(match?.blueTeam ?? null)}
+					/>
+					<Label for={`match-blue-score-${match?.id ?? 'new'}`}>Score</Label>
 					<Input
-						id={`match-score-2-${match?.id ?? 'new'}`}
-						name="player2Score"
+						id={`match-blue-score-${match?.id ?? 'new'}`}
+						name="blueScore"
 						type="number"
 						min="0"
 						disabled={match?.syncStatus === 'active'}
-						value={match?.players[1]?.score ?? ''}
+						value={match?.blueScore ?? ''}
 					/>
 				</div>
 			</div>
-		</div>
+		{:else}
+			<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+				<div class="flex flex-col gap-2 rounded-md border border-border p-3">
+					<ScheduleCompetitorPicker
+						label="Player 1"
+						name="player1UserId"
+						{tournamentId}
+						type="player"
+						initial={toPlayerOption(match?.players[0])}
+					/>
+					<div class="flex max-w-[160px] flex-col gap-1.5">
+						<Label for={`match-score-1-${match?.id ?? 'new'}`}>Score</Label>
+						<Input
+							id={`match-score-1-${match?.id ?? 'new'}`}
+							name="player1Score"
+							type="number"
+							min="0"
+							disabled={match?.syncStatus === 'active'}
+							value={match?.players[0]?.score ?? ''}
+						/>
+					</div>
+				</div>
+				<div class="flex flex-col gap-2 rounded-md border border-border p-3">
+					<ScheduleCompetitorPicker
+						label="Player 2"
+						name="player2UserId"
+						{tournamentId}
+						type="player"
+						initial={toPlayerOption(match?.players[1])}
+					/>
+					<div class="flex max-w-[160px] flex-col gap-1.5">
+						<Label for={`match-score-2-${match?.id ?? 'new'}`}>Score</Label>
+						<Input
+							id={`match-score-2-${match?.id ?? 'new'}`}
+							name="player2Score"
+							type="number"
+							min="0"
+							disabled={match?.syncStatus === 'active'}
+							value={match?.players[1]?.score ?? ''}
+						/>
+					</div>
+				</div>
+			</div>
+		{/if}
 	{/if}
 
 	<div class="grid grid-cols-1 gap-4 lg:grid-cols-3">

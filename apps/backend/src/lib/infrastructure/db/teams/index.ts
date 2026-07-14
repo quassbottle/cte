@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import { pgTable, text } from 'drizzle-orm/pg-core';
+import { boolean, integer, pgTable, text } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
 import { TeamId } from 'lib/domain/team/team.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
@@ -21,6 +21,10 @@ export const teams = pgTable('teams', {
     .notNull()
     .$type<TournamentId>()
     .references(() => tournaments.id, { onDelete: 'cascade' }),
+
+  seed: integer('seed'),
+  withdrawn: boolean('withdrawn').notNull().default(false),
+  withdrawalReason: text('withdrawal_reason'),
 
   createdAt,
   updatedAt,

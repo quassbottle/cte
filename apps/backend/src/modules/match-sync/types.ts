@@ -42,6 +42,21 @@ export type TeamMatchSyncInput = {
   allowedBeatmapIds: Set<number>;
 };
 
-export type MatchSyncInput = SoloMatchSyncInput | TeamMatchSyncInput;
+export type QualificationMatchSyncInput = {
+  kind: 'qualification';
+  allowedBeatmapIds: Set<number>;
+};
+
+export type MatchSyncInput =
+  | SoloMatchSyncInput
+  | TeamMatchSyncInput
+  | QualificationMatchSyncInput;
+
+export type QualificationAttemptInput = {
+  osuGameId: number;
+  osuBeatmapId: number;
+  osuUserId: number;
+  score: number;
+};
 
 export type MatchSyncPoints = { redScore: number; blueScore: number };

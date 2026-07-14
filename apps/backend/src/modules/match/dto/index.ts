@@ -1,6 +1,7 @@
 import { isoStringToDate } from 'lib/common/utils/zod/date';
 import { matchIdSchema } from 'lib/domain/match/match.id';
 import { stageIdSchema } from 'lib/domain/stage/stage.id';
+import { stageTypeSchema } from 'lib/domain/stage/stage.type';
 import { teamIdSchema } from 'lib/domain/team/team.id';
 import { userIdSchema } from 'lib/domain/user/user.id';
 import { parseOsuMatchId } from 'modules/match-sync/mp-url';
@@ -102,6 +103,7 @@ export class ScheduleMatchDto extends createZodDto(scheduleMatchDtoSchema) {}
 export const stageScheduleDtoSchema = z.object({
   id: stageIdSchema,
   name: z.string(),
+  type: stageTypeSchema,
   startsAt: scheduleDate,
   endsAt: scheduleDate,
   matches: z.array(scheduleMatchDtoSchema),

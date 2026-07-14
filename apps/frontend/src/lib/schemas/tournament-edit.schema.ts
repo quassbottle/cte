@@ -7,12 +7,14 @@ const checkbox = z.preprocess((value) => value === 'on' || value === 'true', z.b
 const positiveInt = z.coerce.number().int().positive();
 
 const optionalPositiveInt = z.preprocess(
-	(value) => (value === undefined || (typeof value === 'string' && value.trim() === '') ? null : value),
+	(value) =>
+		value === undefined || (typeof value === 'string' && value.trim() === '') ? null : value,
 	z.coerce.number().int().positive().nullable()
 );
 
 const optionalInt = z.preprocess(
-	(value) => (value === undefined || (typeof value === 'string' && value.trim() === '') ? null : value),
+	(value) =>
+		value === undefined || (typeof value === 'string' && value.trim() === '') ? null : value,
 	z.coerce.number().int().nullable()
 );
 
@@ -58,7 +60,8 @@ export const tournamentEditFormSchema = z
 
 export const stageCreateFormSchema = z
 	.object({
-		name: z.string().trim().min(1, 'Stage name is required')
+		name: z.string().trim().min(1, 'Stage name is required'),
+		type: z.enum(['regular', 'qualification'])
 	})
 	.and(dateRange);
 
@@ -71,6 +74,37 @@ export const stageUpdateFormSchema = stageCreateFormSchema.and(
 export const stageDeleteFormSchema = z.object({
 	stageId: z.string().trim().min(1, 'Stage id is required')
 });
+
+export const qualificationCompetitorFormSchema = z
+	.object({
+		seed: optionalPositiveInt,
+		withdrawn: checkbox.default(false),
+		withdrawalReason: optionalText.default('')
+	})
+	.transform((value) => ({
+		...value,
+		withdrawalReason: value.withdrawn ? value.withdrawalReason : null
+	}));
+
+export const qualificationSoloFormSchema = qualificationCompetitorFormSchema.and(
+	z.object({ userId: z.string().trim().min(1, 'User id is required') })
+);
+
+export const qualificationTeamFormSchema = qualificationCompetitorFormSchema.and(
+	z.object({ teamId: z.string().trim().min(1, 'Team id is required') })
+);
+
+export const qualificationTeamMemberFormSchema = z
+	.object({
+		teamId: z.string().trim().min(1, 'Team id is required'),
+		userId: z.string().trim().min(1, 'User id is required'),
+		withdrawn: checkbox.default(false),
+		withdrawalReason: optionalText.default('')
+	})
+	.transform((value) => ({
+		...value,
+		withdrawalReason: value.withdrawn ? value.withdrawalReason : null
+	}));
 
 export const mappoolCreateFormSchema = z
 	.object({
@@ -178,6 +212,10 @@ export type TournamentEditForm = z.infer<typeof tournamentEditFormSchema>;
 export type StageCreateForm = z.infer<typeof stageCreateFormSchema>;
 export type StageUpdateForm = z.infer<typeof stageUpdateFormSchema>;
 export type StageDeleteForm = z.infer<typeof stageDeleteFormSchema>;
+export type QualificationCompetitorForm = z.infer<typeof qualificationCompetitorFormSchema>;
+export type QualificationSoloForm = z.infer<typeof qualificationSoloFormSchema>;
+export type QualificationTeamForm = z.infer<typeof qualificationTeamFormSchema>;
+export type QualificationTeamMemberForm = z.infer<typeof qualificationTeamMemberFormSchema>;
 export type MappoolCreateForm = z.infer<typeof mappoolCreateFormSchema>;
 export type MappoolVisibilityForm = z.infer<typeof mappoolVisibilityFormSchema>;
 export type MappoolBeatmapAddForm = z.infer<typeof mappoolBeatmapAddFormSchema>;

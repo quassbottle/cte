@@ -5,6 +5,9 @@ import type {
 	MappoolBeatmapUpdateForm,
 	MappoolCreateForm,
 	MappoolVisibilityForm,
+	QualificationSoloForm,
+	QualificationTeamForm,
+	QualificationTeamMemberForm,
 	ScheduleMatchForm,
 	StageCreateForm,
 	StageDeleteForm,
@@ -61,6 +64,37 @@ export function updateScheduleMatch(
 
 export function deleteScheduleMatch(backend: BackendClient, tournamentId: string, matchId: string) {
 	return backend.matches.delete(tournamentId, matchId);
+}
+
+export function updateQualificationSolo(
+	backend: BackendClient,
+	tournamentId: string,
+	input: QualificationSoloForm
+) {
+	const { userId, ...payload } = input;
+	return backend.tournaments.qualification.updateSolo(tournamentId, userId, payload);
+}
+
+export function updateQualificationTeam(
+	backend: BackendClient,
+	tournamentId: string,
+	input: QualificationTeamForm
+) {
+	const { teamId, ...payload } = input;
+	return backend.tournaments.qualification.updateTeam(tournamentId, teamId, payload);
+}
+
+export function updateQualificationTeamMember(
+	backend: BackendClient,
+	tournamentId: string,
+	input: QualificationTeamMemberForm
+) {
+	const { teamId, userId, ...payload } = input;
+	return backend.tournaments.qualification.updateTeamMember(tournamentId, teamId, userId, payload);
+}
+
+export function calculateQualificationSeeds(backend: BackendClient, tournamentId: string) {
+	return backend.tournaments.qualification.calculate(tournamentId);
 }
 
 export function createMappool(backend: BackendClient, input: MappoolCreateForm) {

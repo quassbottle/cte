@@ -17,4 +17,5 @@ export type TournamentControllerGetParticipantsParams = {
 	 * @maximum 9007199254740991
 	 */
 	offset?: number;
+	query?: string;
 };

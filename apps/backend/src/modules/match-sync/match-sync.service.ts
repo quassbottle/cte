@@ -2,6 +2,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { MatchId } from 'lib/domain/match/match.id';
 import { MatchSyncRepository } from './match-sync.repository';
 import { OsuMatchClient } from './osu-match.client';
+import { extractQualificationAttempts } from './qualification-attempts';
 import { calculateMatchPoints } from './score';
 import { SyncLease } from './types';
 
@@ -19,26 +20,40 @@ export class MatchSyncService {
     try {
       const input = await this.repository.loadInput(lease.matchId);
       const snapshot = await this.client.get(lease.osuMatchId);
-      const points =
-        input.kind === 'solo'
-          ? calculateMatchPoints({
-              kind: 'solo',
-              snapshot,
-              allowedBeatmapIds: input.allowedBeatmapIds,
-              playerOsuIds: [input.players[0].osuId, input.players[1].osuId],
+      const written =
+        input.kind === 'qualification'
+          ? await this.repository.applySuccess({
+              lease,
+              input,
+              attempts: extractQualificationAttempts(
+                snapshot,
+                input.allowedBeatmapIds,
+              ),
+              closedAt: snapshot.closedAt,
+              background,
             })
-          : calculateMatchPoints({
-              kind: 'team',
-              snapshot,
-              allowedBeatmapIds: input.allowedBeatmapIds,
+          : await this.repository.applySuccess({
+              lease,
+              input,
+              points:
+                input.kind === 'solo'
+                  ? calculateMatchPoints({
+                      kind: 'solo',
+                      snapshot,
+                      allowedBeatmapIds: input.allowedBeatmapIds,
+                      playerOsuIds: [
+                        input.players[0].osuId,
+                        input.players[1].osuId,
+                      ],
+                    })
+                  : calculateMatchPoints({
+                      kind: 'team',
+                      snapshot,
+                      allowedBeatmapIds: input.allowedBeatmapIds,
+                    }),
+              closedAt: snapshot.closedAt,
+              background,
             });
-      const written = await this.repository.applySuccess({
-        lease,
-        input,
-        points,
-        closedAt: snapshot.closedAt,
-        background,
-      });
       if (!written) throw new ConflictException('Match sync lease expired');
       return true;
     } catch (error) {

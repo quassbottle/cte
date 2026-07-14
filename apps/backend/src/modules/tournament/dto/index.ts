@@ -174,3 +174,73 @@ export const tournamentTeamSummaryDtoSchema = z.object({
 export class TournamentTeamSummaryDto extends createZodDto(
   tournamentTeamSummaryDtoSchema,
 ) {}
+
+export const updateQualificationCompetitorDtoSchema = z
+  .object({
+    seed: z.number().int().positive().nullable().optional(),
+    withdrawn: z.boolean().optional(),
+    withdrawalReason: z.string().trim().max(1000).nullable().optional(),
+  })
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'At least one field is required',
+  });
+
+export class UpdateQualificationCompetitorDto extends createZodDto(
+  updateQualificationCompetitorDtoSchema,
+) {}
+
+export const updateQualificationTeamParticipantDtoSchema = z
+  .object({
+    withdrawn: z.boolean().optional(),
+    withdrawalReason: z.string().trim().max(1000).nullable().optional(),
+  })
+  .strict()
+  .refine((value) => Object.keys(value).length > 0, {
+    message: 'At least one field is required',
+  });
+
+export class UpdateQualificationTeamParticipantDto extends createZodDto(
+  updateQualificationTeamParticipantDtoSchema,
+) {}
+
+export type UpdateQualificationCompetitorInput = z.infer<
+  typeof updateQualificationCompetitorDtoSchema
+>;
+
+const managedUserSchema = z.object({
+  id: userIdSchema,
+  osuId: z.number(),
+  osuUsername: z.string(),
+  avatarUrl: z.url(),
+  withdrawn: z.boolean(),
+  withdrawalReason: z.string().nullable(),
+});
+
+const managedSoloSchema = managedUserSchema.extend({
+  seed: z.number().int().positive().nullable(),
+});
+
+const managedTeamSchema = z.object({
+  id: teamIdSchema,
+  name: z.string(),
+  seed: z.number().int().positive().nullable(),
+  withdrawn: z.boolean(),
+  withdrawalReason: z.string().nullable(),
+  participants: z.array(managedUserSchema),
+});
+
+export const qualificationRosterDtoSchema = z.discriminatedUnion('kind', [
+  z.object({
+    kind: z.literal('solo'),
+    participants: z.array(managedSoloSchema),
+  }),
+  z.object({ kind: z.literal('team'), teams: z.array(managedTeamSchema) }),
+]);
+
+export const QualificationRosterDto = createZodDto(
+  qualificationRosterDtoSchema,
+);
+
+export type QualificationRosterInput = z.infer<
+  typeof qualificationRosterDtoSchema
+>;

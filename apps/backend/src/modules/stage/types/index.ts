@@ -6,5 +6,5 @@ export type StageCreateParams = Omit<
 >;
 
 export type StageUpdateParams = Partial<
-  Pick<DbStageCreateParams, 'name' | 'startsAt' | 'endsAt'>
+  Pick<DbStageCreateParams, 'name' | 'type' | 'startsAt' | 'endsAt'>
 >;

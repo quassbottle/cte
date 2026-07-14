@@ -1,10 +1,10 @@
-import type { TournamentParticipantDtoOutput } from '$lib/api/generated/model';
+import type { TournamentParticipantDto } from '$lib/api/generated/model';
 
 export type CompetitorOption =
 	| { type: 'player'; id: string; label: string; avatarUrl: string }
 	| { type: 'team'; id: string; label: string };
 
-export const normalizePlayers = (players: TournamentParticipantDtoOutput[]): CompetitorOption[] =>
+export const normalizePlayers = (players: TournamentParticipantDto[]): CompetitorOption[] =>
 	players.map((player) => ({
 		type: 'player',
 		id: player.id,

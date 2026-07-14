@@ -1,10 +1,11 @@
 <script lang="ts">
 	import type { MappoolBeatmapDto, MappoolDto, StageDto, TournamentDto } from '$lib/api/types';
-	import type { StageScheduleDtoOutput } from '$lib/api/generated/model';
+	import type { AugmentedZodDtoOutput, StageScheduleDtoOutput } from '$lib/api/generated/model';
 	import { Button } from '$lib/components/ui/button';
 	import { page } from '$app/stores';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import MappoolsTab from './components/mappools/MappoolsTab.svelte';
+	import ParticipantsTab from './components/ParticipantsTab.svelte';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 	import ScheduleTab from './components/ScheduleTab.svelte';
 	import StagesTab from './components/StagesTab.svelte';
@@ -16,10 +17,11 @@
 		schedule: StageScheduleDtoOutput[];
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
+		qualificationRoster: AugmentedZodDtoOutput;
 	};
 	export let form: TournamentEditActionResult | undefined;
 
-	const editTabs = ['info', 'stages', 'schedule', 'mappools'] as const;
+	const editTabs = ['info', 'participants', 'stages', 'schedule', 'mappools'] as const;
 	type EditTab = (typeof editTabs)[number];
 	let activeTab: EditTab = 'info';
 	let lastTabParam: string | null = null;
@@ -82,6 +84,7 @@
 		<div class="mb-4 flex items-start justify-between">
 			<Head let:Item class="gap-4 text-[24px] font-semibold">
 				<Item value="info" href={getEditTabHref('info')}>Info</Item>
+				<Item value="participants" href={getEditTabHref('participants')}>Participants</Item>
 				<Item value="stages" href={getEditTabHref('stages')}>Stages</Item>
 				<Item value="schedule" href={getEditTabHref('schedule')}>Schedule</Item>
 				<Item value="mappools" href={getEditTabHref('mappools')}>Mappools</Item>
@@ -94,6 +97,10 @@
 
 		<ContentItem value="info">
 			<TournamentTab tournament={data.tournament} {form} />
+		</ContentItem>
+
+		<ContentItem value="participants">
+			<ParticipantsTab roster={data.qualificationRoster} {form} />
 		</ContentItem>
 
 		<ContentItem value="stages">

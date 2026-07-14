@@ -23,17 +23,20 @@ export async function getTournamentEditPage(
 		throw new TournamentEditAccessError("Archived tournaments can't be edited");
 	}
 
-	const [stagesResponse, scheduleResponse, mappoolsResponse] = await Promise.all([
-		backend.stages.findByTournament(tournamentId),
-		backend.tournaments.getSchedule(tournamentId),
-		backend.mappools.findByTournamentForManagement(tournamentId)
-	]);
+	const [stagesResponse, scheduleResponse, mappoolsResponse, qualificationRosterResponse] =
+		await Promise.all([
+			backend.stages.findByTournament(tournamentId),
+			backend.tournaments.getSchedule(tournamentId),
+			backend.mappools.findByTournamentForManagement(tournamentId),
+			backend.tournaments.qualification.getRoster(tournamentId)
+		]);
 	const mappools = mappoolsResponse.data;
 
 	return {
 		tournament,
 		stages: stagesResponse.data,
 		schedule: scheduleResponse.data,
+		qualificationRoster: qualificationRosterResponse.data,
 		mappools: mappools.map(({ beatmaps, ...mappool }) => mappool),
 		mappoolBeatmaps: mappools.map((mappool) => ({
 			mappoolId: mappool.id,

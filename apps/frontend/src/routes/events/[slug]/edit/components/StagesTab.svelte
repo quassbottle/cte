@@ -215,6 +215,9 @@
 					</div>
 				</div>
 			{:else}
+				{@const canSelectQualification =
+					(dialog.mode === 'update' && dialog.stage.type === 'qualification') ||
+					!stages.some((stage) => stage.type === 'qualification')}
 				<form
 					method="post"
 					action={dialog.mode === 'create' ? '?/createStage' : '?/updateStage'}
@@ -234,6 +237,21 @@
 							required
 							value={dialog.mode === 'update' ? dialog.stage.name : ''}
 						/>
+					</div>
+
+					<div class="flex flex-col gap-1.5">
+						<Label for="stage-dialog-type">Type</Label>
+						<select
+							id="stage-dialog-type"
+							name="type"
+							value={dialog.mode === 'update' ? dialog.stage.type : 'regular'}
+							class="h-10 rounded-md border bg-background px-3"
+						>
+							<option value="regular">Regular</option>
+							{#if canSelectQualification}
+								<option value="qualification">Qualification</option>
+							{/if}
+						</select>
 					</div>
 
 					<div class="grid grid-cols-1 gap-4 md:grid-cols-2">
