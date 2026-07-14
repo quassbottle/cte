@@ -29,3 +29,5 @@ jobs:
         run: >-
           docker compose -f apps/infra/docker-compose.yml
           up -d --build --no-deps --wait --wait-timeout 120 frontend
+      - name: Remove old images
+        run: docker image prune -f

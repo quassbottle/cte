@@ -72,5 +72,13 @@ describe('independent deployment workflows', () => {
       expect(workflow).not.toContain('cte-prod');
       expect(workflow).toContain('CTE_ENV_DIR: /opt/cte/env');
     });
+
+    it(`${path} prunes dangling images after deployment`, () => {
+      const workflow = file(path);
+      const deploy = workflow.indexOf('up -d --build --no-deps --wait');
+      const cleanup = workflow.indexOf('run: docker image prune -f');
+
+      expect(cleanup).toBeGreaterThan(deploy);
+    });
   }
 });
