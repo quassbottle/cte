@@ -22,7 +22,8 @@ export class TournamentPolicyContextResolver implements PolicyContextResolver {
       request.originalUrl ?? request.url ?? request.path ?? request.baseUrl;
     const isTournamentRoute = /(^|\/)tournaments(\/|$)/.test(route);
     const isManagementRead =
-      request.method === 'GET' && /\/participants\/manage(?:\/|$)/.test(route);
+      request.method === 'GET' &&
+      /\/participants\/manage(?:\/|\?|$)/.test(route);
 
     return (
       isTournamentRoute &&

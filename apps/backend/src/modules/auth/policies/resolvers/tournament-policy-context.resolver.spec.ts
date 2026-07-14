@@ -22,6 +22,12 @@ describe('TournamentPolicyContextResolver', () => {
     expect(
       resolver.supports({
         method: 'GET',
+        originalUrl: `/api/tournaments/${id}/participants/manage?view=all`,
+      } as PolicyRequest),
+    ).toBe(true);
+    expect(
+      resolver.supports({
+        method: 'GET',
         originalUrl: `/api/tournaments/${id}/participants`,
       } as PolicyRequest),
     ).toBe(false);

@@ -194,6 +194,7 @@ export const updateQualificationTeamParticipantDtoSchema = z
     withdrawn: z.boolean().optional(),
     withdrawalReason: z.string().trim().max(1000).nullable().optional(),
   })
+  .strict()
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field is required',
   });
@@ -235,6 +236,10 @@ export const qualificationRosterDtoSchema = z.discriminatedUnion('kind', [
   }),
   z.object({ kind: z.literal('team'), teams: z.array(managedTeamSchema) }),
 ]);
+
+export const QualificationRosterDto = createZodDto(
+  qualificationRosterDtoSchema,
+);
 
 export type QualificationRosterInput = z.infer<
   typeof qualificationRosterDtoSchema

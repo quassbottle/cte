@@ -37,6 +37,12 @@ describe('qualification management schemas', () => {
       updateQualificationTeamParticipantDtoSchema.safeParse({ seed: 1 })
         .success,
     ).toBe(false);
+    expect(
+      updateQualificationTeamParticipantDtoSchema.safeParse({
+        seed: 2,
+        withdrawn: true,
+      }).success,
+    ).toBe(false);
   });
 
   it('accepts discriminated solo and team rosters', () => {

@@ -46,8 +46,12 @@ describe('TournamentService', () => {
           },
         ],
       ];
+      const updateConditions: unknown[] = [];
       const set = jest.fn((value: unknown) => ({
-        where: jest.fn().mockResolvedValue(value),
+        where: jest.fn((condition: unknown) => {
+          updateConditions.push(condition);
+          return Promise.resolve(value);
+        }),
       }));
       const tx = {
         query: {
@@ -80,6 +84,7 @@ describe('TournamentService', () => {
         },
         tx,
         set,
+        updateConditions,
       };
     };
 
@@ -119,6 +124,16 @@ describe('TournamentService', () => {
       });
       expect(fake.set).toHaveBeenCalledWith({ seed: null });
       expect(fake.set).toHaveBeenCalledWith({ seed: 1 });
+      expect(fake.set.mock.calls.map(([value]) => value)).toEqual([
+        { seed: null },
+        { seed: 1 },
+      ]);
+      expect(fake.updateConditions).toHaveLength(2);
+      expect(
+        fake.updateConditions.every((condition) =>
+          containsValue(condition, tournamentId),
+        ),
+      ).toBe(true);
     });
 
     it('rejects a missing qualification stage before updating', async () => {
@@ -141,7 +156,7 @@ describe('TournamentService', () => {
       expect(fake.tx.update).not.toHaveBeenCalled();
     });
 
-    it('does not filter withdrawn members from active team scores', async () => {
+    it('excludes withdrawn teams but keeps withdrawn members of active teams', async () => {
       const conditions: unknown[] = [];
       const rows = [
         [{ beatmapId: 'map-1' }],
@@ -151,7 +166,13 @@ describe('TournamentService', () => {
           { teamId: 'team-1', userId: 'withdrawn-member' },
         ],
       ];
-      const set = jest.fn(() => ({ where: jest.fn().mockResolvedValue([]) }));
+      const updateConditions: unknown[] = [];
+      const set = jest.fn((value: unknown) => ({
+        where: jest.fn((condition: unknown) => {
+          updateConditions.push(condition);
+          return Promise.resolve(value);
+        }),
+      }));
       const tx = {
         query: {
           tournaments: {
@@ -179,7 +200,14 @@ describe('TournamentService', () => {
         .mockResolvedValue({ kind: 'team', teams: [] });
       const calculator = jest
         .spyOn(qualificationSeeding, 'calculateQualificationSeeds')
-        .mockReturnValue([]);
+        .mockReturnValue([
+          {
+            competitorId: 'team-1',
+            seed: 1,
+            averagePlace: 1,
+            totalScore: 0,
+          },
+        ]);
 
       await service.calculateQualificationSeeds({ id: tournamentId });
 
@@ -198,6 +226,16 @@ describe('TournamentService', () => {
       expect(containsValue(conditions.at(-1), teamParticipants.withdrawn)).toBe(
         false,
       );
+      expect(set.mock.calls.map(([value]) => value)).toEqual([
+        { seed: null },
+        { seed: 1 },
+      ]);
+      expect(updateConditions).toHaveLength(2);
+      expect(
+        updateConditions.every((condition) =>
+          containsValue(condition, tournamentId),
+        ),
+      ).toBe(true);
     });
   });
 

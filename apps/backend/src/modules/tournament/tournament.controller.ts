@@ -37,6 +37,7 @@ import {
   FindTournamentParticipantsDto,
   FindTournamentTeamsDto,
   FindTournamentsDto,
+  QualificationRosterDto,
   type QualificationRosterInput,
   RegisterTournamentDto,
   TournamentDto,
@@ -114,7 +115,11 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  @ApiResponse({ status: 200, description: 'Returns the managed roster.' })
+  @ZodResponse({
+    status: 200,
+    description: 'Returns the managed roster.',
+    type: QualificationRosterDto,
+  })
   public async getQualificationRoster(
     @Param('id', TournamentIdPipe) id: TournamentId,
   ): Promise<QualificationRosterInput> {
@@ -126,6 +131,11 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
+  @ZodResponse({
+    status: 200,
+    description: 'Updates a solo qualification participant.',
+    type: QualificationRosterDto,
+  })
   public async updateSoloQualificationParticipant(
     @Param('id', TournamentIdPipe) id: TournamentId,
     @Param('userId', UserIdPipe) userId: UserId,
@@ -144,6 +154,11 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
+  @ZodResponse({
+    status: 200,
+    description: 'Updates a qualification team.',
+    type: QualificationRosterDto,
+  })
   public async updateQualificationTeam(
     @Param('id', TournamentIdPipe) id: TournamentId,
     @Param('teamId', TeamIdPipe) teamId: TeamId,
@@ -162,6 +177,11 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
+  @ZodResponse({
+    status: 200,
+    description: 'Updates a qualification team participant.',
+    type: QualificationRosterDto,
+  })
   public async updateQualificationTeamParticipant(
     @Param('id', TournamentIdPipe) id: TournamentId,
     @Param('teamId', TeamIdPipe) teamId: TeamId,
@@ -182,6 +202,11 @@ export class TournamentController {
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
+  @ZodResponse({
+    status: 201,
+    description: 'Recalculates qualification seeds.',
+    type: QualificationRosterDto,
+  })
   public async calculateQualificationSeeds(
     @Param('id', TournamentIdPipe) id: TournamentId,
   ): Promise<QualificationRosterInput> {
