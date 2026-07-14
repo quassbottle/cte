@@ -28,7 +28,10 @@ Each workflow checks out the exact commit and runs only:
 
 ```sh
 docker compose -f apps/infra/docker-compose.yml up -d --build --no-deps --wait <service>
+docker image prune -f
 ```
+
+Image pruning runs only after a successful deployment. It removes dangling images left by the replaced tag without deleting active images, containers, volumes, or build cache.
 
 Per-service concurrency groups serialize deployments and cancel an obsolete queued/running deployment for the same service. Backend and frontend deployments may run independently.
 
@@ -39,6 +42,7 @@ Changes to `pnpm-lock.yaml`, root workspace/build configuration, the shared Dock
 - Docker multi-stage builds fail before replacing a running container when compilation fails.
 - Compose waits for the selected service healthcheck and returns a failing exit code if the replacement is unhealthy.
 - The other application and infrastructure services are excluded with `--no-deps` and are not restarted.
+- A failed deployment skips image pruning, preserving the previous image for diagnosis.
 - Automatic rollback, container registry publishing, database migrations, TLS, and reverse-proxy configuration are intentionally deferred.
 
 ## Kubernetes migration path
