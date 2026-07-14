@@ -31,9 +31,21 @@ jobs:
       CTE_ENV_DIR: /opt/cte/env
     steps:
       - uses: actions/checkout@v7
-      - name: Build and deploy backend
+      - name: Start infrastructure
         run: >-
-          docker compose -f apps/infra/docker-compose.yml
-          up -d --build --no-deps --wait --wait-timeout 120 backend
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.yml up -d --wait postgres nats
+      - name: Build backend and migrator
+        run: >-
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.yml build backend migrate
+      - name: Migrate backend database
+        run: >-
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.yml run --rm --no-deps migrate
+      - name: Deploy backend
+        run: >-
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.yml up -d --no-deps --wait --wait-timeout 120 backend
       - name: Remove old images
         run: docker image prune -f

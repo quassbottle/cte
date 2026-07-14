@@ -8,10 +8,15 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: postgres
     ports:
-      - "5765:5432"
+      - "127.0.0.1:${DB_PORT:-5765}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U cte -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
     networks:
       - cte-network
 
@@ -19,10 +24,26 @@ services:
     image: nats:2.10
     command: -js -m 8222 -sd /data/jetstream
     ports:
-      - "${NATS_PORT:-4222}:4222"
-      - "${NATS_MONITOR_PORT:-8222}:8222"
+      - "127.0.0.1:${NATS_PORT:-4222}:4222"
+      - "127.0.0.1:${NATS_MONITOR_PORT:-8222}:8222"
     volumes:
       - nats_data:/data/jetstream
+    networks:
+      - cte-network
+
+  migrate:
+    image: cte-backend-migrate:local
+    build:
+      context: ../..
+      dockerfile: apps/backend/Dockerfile
+      target: migrate
+    env_file:
+      - ${CTE_ENV_DIR:-/opt/cte/env}/backend.env
+    environment:
+      DATABASE_URL: postgresql://cte:${DB_PASSWORD:-password}@postgres:5432/cte_backend
+    depends_on:
+      postgres:
+        condition: service_healthy
     networks:
       - cte-network
 
@@ -36,11 +57,16 @@ services:
       - ${CTE_ENV_DIR:-/opt/cte/env}/backend.env
     environment:
       PORT: 3000
+      DATABASE_URL: postgresql://cte:${DB_PASSWORD:-password}@postgres:5432/cte_backend
+      NATS_HOST: nats
+      NATS_PORT: 4222
     ports:
       - "127.0.0.1:${BACKEND_PORT:-3000}:3000"
     depends_on:
-      - postgres
-      - nats
+      migrate:
+        condition: service_completed_successfully
+      nats:
+        condition: service_started
     networks:
       - cte-network
 
@@ -54,6 +80,7 @@ services:
       - ${CTE_ENV_DIR:-/opt/cte/env}/frontend.env
     environment:
       BACKEND_API_URL: http://backend:3000
+      BACKEND_OPENAPI_URL: http://backend:3000/docs-json
       HTTP_HOST: 0.0.0.0
       HTTP_PORT: 3000
     ports:

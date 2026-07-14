@@ -18,6 +18,12 @@ COPY apps/backend ./apps/backend
 
 RUN pnpm --filter backend build
 
+FROM build AS migrate
+
+WORKDIR /app/apps/backend
+
+CMD ["pnpm", "migration:push"]
+
 FROM node:22-bookworm-slim AS runtime
 
 ENV NODE_ENV=production

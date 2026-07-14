@@ -27,7 +27,8 @@ jobs:
       - uses: actions/checkout@v7
       - name: Build and deploy frontend
         run: >-
-          docker compose -f apps/infra/docker-compose.yml
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.yml
           up -d --build --no-deps --wait --wait-timeout 120 frontend
       - name: Remove old images
         run: docker image prune -f
