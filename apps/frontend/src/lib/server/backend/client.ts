@@ -6,9 +6,11 @@ import type {
 	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
-	TournamentParticipantDtoOutput,
+	TournamentParticipantDto,
 	UpdateMappoolBeatmapDto,
 	UpdateMappoolDto,
+	UpdateQualificationCompetitorDto,
+	UpdateQualificationTeamParticipantDto,
 	UpdateStageDto,
 	UpdateTournamentDto
 } from '$lib/api/generated/model';
@@ -33,10 +35,15 @@ import {
 	tournamentControllerArchive,
 	tournamentControllerGetById,
 	tournamentControllerGetParticipants,
+	tournamentControllerGetQualificationRoster,
 	tournamentControllerGetTeams,
 	tournamentControllerPatch,
 	tournamentControllerRegister,
+	tournamentControllerCalculateQualificationSeeds,
 	tournamentControllerUnregister,
+	tournamentControllerUpdateQualificationTeam,
+	tournamentControllerUpdateQualificationTeamParticipant,
+	tournamentControllerUpdateSoloQualificationParticipant,
 	tournamentControllerUpdateMatch,
 	tournamentMappoolControllerFindByTournament,
 	tournamentMappoolControllerFindByTournamentForManagement,
@@ -108,7 +115,7 @@ export function createBackendClient(input?: BackendClientInput) {
 			getParticipants: (id: string, params?: TournamentControllerGetParticipantsParams) =>
 				tournamentControllerGetParticipants(id, params, options),
 			searchParticipants: (id: string, query: string, signal?: AbortSignal) =>
-				backendFetch<{ data: TournamentParticipantDtoOutput[] }>(
+				backendFetch<{ data: TournamentParticipantDto[] }>(
 					`/api/tournaments/${id}/participants?${new URLSearchParams({ query, limit: '20' })}`,
 					{ ...options, signal }
 				),
@@ -123,7 +130,28 @@ export function createBackendClient(input?: BackendClientInput) {
 				tournamentControllerPatch(id, input, options),
 			register: (id: string, input: Parameters<typeof tournamentControllerRegister>[1]) =>
 				tournamentControllerRegister(id, input, options),
-			unregister: (id: string) => tournamentControllerUnregister(id, options)
+			unregister: (id: string) => tournamentControllerUnregister(id, options),
+			qualification: {
+				getRoster: (id: string) => tournamentControllerGetQualificationRoster(id, options),
+				updateSolo: (id: string, userId: string, input: UpdateQualificationCompetitorDto) =>
+					tournamentControllerUpdateSoloQualificationParticipant(id, userId, input, options),
+				updateTeam: (id: string, teamId: string, input: UpdateQualificationCompetitorDto) =>
+					tournamentControllerUpdateQualificationTeam(id, teamId, input, options),
+				updateTeamMember: (
+					id: string,
+					teamId: string,
+					userId: string,
+					input: UpdateQualificationTeamParticipantDto
+				) =>
+					tournamentControllerUpdateQualificationTeamParticipant(
+						id,
+						teamId,
+						userId,
+						input,
+						options
+					),
+				calculate: (id: string) => tournamentControllerCalculateQualificationSeeds(id, options)
+			}
 		},
 		matches: {
 			create: (tournamentId: string, input: ScheduleMatchUpsertDto) =>

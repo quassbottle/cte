@@ -5,13 +5,13 @@
  * Auth and user management API
  * OpenAPI spec version: 1.0
  */
-import type { TournamentTeamDtoOutputParticipantsItem } from './tournamentTeamDtoOutputParticipantsItem';
+import type { TournamentTeamDtoParticipantsItem } from './tournamentTeamDtoParticipantsItem';
 
-export interface TournamentTeamDtoOutput {
+export interface TournamentTeamDto {
 	/** @pattern ^[0-9a-z]+$ */
 	id: string;
 	name: string;
 	/** @pattern ^[0-9a-z]+$ */
 	captainId: string;
-	participants: TournamentTeamDtoOutputParticipantsItem[];
+	participants: TournamentTeamDtoParticipantsItem[];
 }

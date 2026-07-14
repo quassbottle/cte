@@ -6,10 +6,8 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface TournamentParticipantDtoOutput {
+export interface TournamentTeamSummaryDtoOutput {
 	/** @pattern ^[0-9a-z]+$ */
 	id: string;
-	osuId: number;
-	osuUsername: string;
-	avatarUrl: string;
+	name: string;
 }

@@ -22,7 +22,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthTokenDto"
+                  "$ref": "#/components/schemas/AuthTokenDto_Output"
                 }
               }
             }
@@ -43,7 +43,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/AuthUrlDto"
+                  "$ref": "#/components/schemas/AuthUrlDto_Output"
                 }
               }
             }
@@ -437,6 +437,14 @@
               "default": 0,
               "type": "integer"
             }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -447,7 +455,312 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/TournamentParticipantDto_Output"
+                    "$ref": "#/components/schemas/TournamentParticipantDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/participants/manage": {
+      "get": {
+        "operationId": "TournamentController_getQualificationRoster",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns the managed roster.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AugmentedZodDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/participants/{userId}/manage": {
+      "patch": {
+        "operationId": "TournamentController_updateSoloQualificationParticipant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQualificationCompetitorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updates a solo qualification participant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AugmentedZodDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/teams/{teamId}/manage": {
+      "patch": {
+        "operationId": "TournamentController_updateQualificationTeam",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQualificationCompetitorDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updates a qualification team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AugmentedZodDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/teams/{teamId}/participants/{userId}/manage": {
+      "patch": {
+        "operationId": "TournamentController_updateQualificationTeamParticipant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateQualificationTeamParticipantDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Updates a qualification team participant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AugmentedZodDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/qualification/calculate-seeds": {
+      "post": {
+        "operationId": "TournamentController_calculateQualificationSeeds",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Recalculates qualification seeds.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AugmentedZodDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/teams/search": {
+      "get": {
+        "operationId": "TournamentController_searchTeams",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "limit",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 1,
+              "maximum": 100,
+              "default": 20,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "offset",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "minimum": 0,
+              "maximum": 9007199254740991,
+              "default": 0,
+              "type": "integer"
+            }
+          },
+          {
+            "name": "query",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Searches tournament teams.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TournamentTeamSummaryDto_Output"
                   }
                 }
               }
@@ -485,7 +798,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "$ref": "#/components/schemas/TournamentTeamDto_Output"
+                    "$ref": "#/components/schemas/TournamentTeamDto"
                   }
                 }
               }
@@ -1524,7 +1837,7 @@
       }
     },
     "schemas": {
-      "AuthTokenDto": {
+      "AuthTokenDto_Output": {
         "type": "object",
         "properties": {
           "token": {
@@ -1534,9 +1847,10 @@
         },
         "required": [
           "token"
-        ]
+        ],
+        "additionalProperties": false
       },
-      "AuthUrlDto": {
+      "AuthUrlDto_Output": {
         "type": "object",
         "properties": {
           "url": {
@@ -1546,7 +1860,8 @@
         },
         "required": [
           "url"
-        ]
+        ],
+        "additionalProperties": false
       },
       "UserDto": {
         "type": "object",
@@ -1768,7 +2083,7 @@
         ],
         "additionalProperties": false
       },
-      "TournamentParticipantDto_Output": {
+      "TournamentParticipantDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -1792,10 +2107,222 @@
           "osuId",
           "osuUsername",
           "avatarUrl"
+        ]
+      },
+      "AugmentedZodDto_Output": {
+        "oneOf": [
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "solo"
+                ]
+              },
+              "participants": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "cuid2",
+                      "pattern": "^[0-9a-z]+$"
+                    },
+                    "osuId": {
+                      "type": "number"
+                    },
+                    "osuUsername": {
+                      "type": "string"
+                    },
+                    "avatarUrl": {
+                      "type": "string",
+                      "format": "uri"
+                    },
+                    "withdrawn": {
+                      "type": "boolean"
+                    },
+                    "withdrawalReason": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "seed": {
+                      "type": "integer",
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991,
+                      "nullable": true,
+                      "minimum": 0
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "osuId",
+                    "osuUsername",
+                    "avatarUrl",
+                    "withdrawn",
+                    "withdrawalReason",
+                    "seed"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "kind",
+              "participants"
+            ],
+            "additionalProperties": false
+          },
+          {
+            "type": "object",
+            "properties": {
+              "kind": {
+                "type": "string",
+                "enum": [
+                  "team"
+                ]
+              },
+              "teams": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "cuid2",
+                      "pattern": "^[0-9a-z]+$"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "seed": {
+                      "type": "integer",
+                      "exclusiveMinimum": true,
+                      "maximum": 9007199254740991,
+                      "nullable": true,
+                      "minimum": 0
+                    },
+                    "withdrawn": {
+                      "type": "boolean"
+                    },
+                    "withdrawalReason": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "participants": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "cuid2",
+                            "pattern": "^[0-9a-z]+$"
+                          },
+                          "osuId": {
+                            "type": "number"
+                          },
+                          "osuUsername": {
+                            "type": "string"
+                          },
+                          "avatarUrl": {
+                            "type": "string",
+                            "format": "uri"
+                          },
+                          "withdrawn": {
+                            "type": "boolean"
+                          },
+                          "withdrawalReason": {
+                            "type": "string",
+                            "nullable": true
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "osuId",
+                          "osuUsername",
+                          "avatarUrl",
+                          "withdrawn",
+                          "withdrawalReason"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "name",
+                    "seed",
+                    "withdrawn",
+                    "withdrawalReason",
+                    "participants"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            },
+            "required": [
+              "kind",
+              "teams"
+            ],
+            "additionalProperties": false
+          }
+        ]
+      },
+      "UpdateQualificationCompetitorDto": {
+        "type": "object",
+        "properties": {
+          "seed": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "nullable": true,
+            "minimum": 0
+          },
+          "withdrawn": {
+            "type": "boolean"
+          },
+          "withdrawalReason": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          }
+        }
+      },
+      "UpdateQualificationTeamParticipantDto": {
+        "type": "object",
+        "properties": {
+          "withdrawn": {
+            "type": "boolean"
+          },
+          "withdrawalReason": {
+            "type": "string",
+            "maxLength": 1000,
+            "nullable": true
+          }
+        },
+        "additionalProperties": false
+      },
+      "TournamentTeamSummaryDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name"
         ],
         "additionalProperties": false
       },
-      "TournamentTeamDto_Output": {
+      "TournamentTeamDto": {
         "type": "object",
         "properties": {
           "id": {
@@ -1837,8 +2364,7 @@
                 "osuId",
                 "osuUsername",
                 "avatarUrl"
-              ],
-              "additionalProperties": false
+              ]
             }
           }
         },
@@ -1847,8 +2373,7 @@
           "name",
           "captainId",
           "participants"
-        ],
-        "additionalProperties": false
+        ]
       },
       "StageScheduleDto_Output": {
         "type": "object",
@@ -1860,6 +2385,13 @@
           },
           "name": {
             "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "qualification"
+            ]
           },
           "startsAt": {
             "type": "string",
@@ -2096,6 +2628,7 @@
         "required": [
           "id",
           "name",
+          "type",
           "startsAt",
           "endsAt",
           "matches"
@@ -2451,6 +2984,13 @@
           "name": {
             "type": "string"
           },
+          "type": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "qualification"
+            ]
+          },
           "tournamentId": {
             "type": "string",
             "format": "cuid2",
@@ -2486,6 +3026,7 @@
         "required": [
           "id",
           "name",
+          "type",
           "tournamentId",
           "startsAt",
           "endsAt",
@@ -2501,6 +3042,14 @@
           "name": {
             "type": "string",
             "minLength": 1
+          },
+          "type": {
+            "default": "regular",
+            "type": "string",
+            "enum": [
+              "regular",
+              "qualification"
+            ]
           },
           "startsAt": {
             "type": "string",
@@ -2525,6 +3074,13 @@
           "name": {
             "type": "string",
             "minLength": 1
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "regular",
+              "qualification"
+            ]
           },
           "startsAt": {
             "type": "string",

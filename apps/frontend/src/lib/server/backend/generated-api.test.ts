@@ -20,10 +20,10 @@ describe('generated backend API', () => {
 				.schema;
 
 		expect(callbackResponse).toEqual({
-			$ref: '#/components/schemas/AuthTokenDto'
+			$ref: '#/components/schemas/AuthTokenDto_Output'
 		});
 		expect(initLoginResponse).toEqual({
-			$ref: '#/components/schemas/AuthUrlDto'
+			$ref: '#/components/schemas/AuthUrlDto_Output'
 		});
 	});
 });

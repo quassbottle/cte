@@ -6,6 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export interface AuthUrlDto {
-	url: string;
+export interface AuthTokenDtoOutput {
+	/** @minLength 1 */
+	token: string;
 }

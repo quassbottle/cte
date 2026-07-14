@@ -7,9 +7,10 @@
  */
 import type {
 	AddMappoolBeatmapDto,
+	AugmentedZodDtoOutput,
 	AuthControllerAuthCallbackParams,
-	AuthTokenDto,
-	AuthUrlDto,
+	AuthTokenDtoOutput,
+	AuthUrlDtoOutput,
 	CreateMappoolDto,
 	CreateStageDto,
 	CreateTournamentDto,
@@ -25,11 +26,15 @@ import type {
 	StageScheduleDtoOutput,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
+	TournamentControllerSearchTeamsParams,
 	TournamentDtoOutput,
-	TournamentParticipantDtoOutput,
-	TournamentTeamDtoOutput,
+	TournamentParticipantDto,
+	TournamentTeamDto,
+	TournamentTeamSummaryDtoOutput,
 	UpdateMappoolBeatmapDto,
 	UpdateMappoolDto,
+	UpdateQualificationCompetitorDto,
+	UpdateQualificationTeamParticipantDto,
 	UpdateStageDto,
 	UpdateTournamentDto,
 	UserControllerGetByLookupParams,
@@ -39,7 +44,7 @@ import type {
 import { backendFetch } from '../fetcher';
 
 export type authControllerAuthCallbackResponse200 = {
-	data: AuthTokenDto;
+	data: AuthTokenDtoOutput;
 	status: 200;
 };
 
@@ -78,7 +83,7 @@ export const authControllerAuthCallback = async (
 };
 
 export type authControllerInitLoginResponse200 = {
-	data: AuthUrlDto;
+	data: AuthUrlDtoOutput;
 	status: 200;
 };
 
@@ -358,7 +363,7 @@ export const tournamentControllerSoftDelete = async (
 };
 
 export type tournamentControllerGetParticipantsResponse200 = {
-	data: TournamentParticipantDtoOutput[];
+	data: TournamentParticipantDto[];
 	status: 200;
 };
 
@@ -402,8 +407,218 @@ export const tournamentControllerGetParticipants = async (
 	);
 };
 
+export type tournamentControllerGetQualificationRosterResponse200 = {
+	data: AugmentedZodDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerGetQualificationRosterResponseSuccess =
+	tournamentControllerGetQualificationRosterResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerGetQualificationRosterResponse =
+	tournamentControllerGetQualificationRosterResponseSuccess;
+
+export const getTournamentControllerGetQualificationRosterUrl = (id: string) => {
+	return `/api/tournaments/${id}/participants/manage`;
+};
+
+export const tournamentControllerGetQualificationRoster = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerGetQualificationRosterResponse> => {
+	return backendFetch<tournamentControllerGetQualificationRosterResponse>(
+		getTournamentControllerGetQualificationRosterUrl(id),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
+
+export type tournamentControllerUpdateSoloQualificationParticipantResponse200 = {
+	data: AugmentedZodDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerUpdateSoloQualificationParticipantResponseSuccess =
+	tournamentControllerUpdateSoloQualificationParticipantResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerUpdateSoloQualificationParticipantResponse =
+	tournamentControllerUpdateSoloQualificationParticipantResponseSuccess;
+
+export const getTournamentControllerUpdateSoloQualificationParticipantUrl = (
+	id: string,
+	userId: string
+) => {
+	return `/api/tournaments/${id}/participants/${userId}/manage`;
+};
+
+export const tournamentControllerUpdateSoloQualificationParticipant = async (
+	id: string,
+	userId: string,
+	updateQualificationCompetitorDto: UpdateQualificationCompetitorDto,
+	options?: RequestInit
+): Promise<tournamentControllerUpdateSoloQualificationParticipantResponse> => {
+	return backendFetch<tournamentControllerUpdateSoloQualificationParticipantResponse>(
+		getTournamentControllerUpdateSoloQualificationParticipantUrl(id, userId),
+		{
+			...options,
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(updateQualificationCompetitorDto)
+		}
+	);
+};
+
+export type tournamentControllerUpdateQualificationTeamResponse200 = {
+	data: AugmentedZodDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerUpdateQualificationTeamResponseSuccess =
+	tournamentControllerUpdateQualificationTeamResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerUpdateQualificationTeamResponse =
+	tournamentControllerUpdateQualificationTeamResponseSuccess;
+
+export const getTournamentControllerUpdateQualificationTeamUrl = (id: string, teamId: string) => {
+	return `/api/tournaments/${id}/teams/${teamId}/manage`;
+};
+
+export const tournamentControllerUpdateQualificationTeam = async (
+	id: string,
+	teamId: string,
+	updateQualificationCompetitorDto: UpdateQualificationCompetitorDto,
+	options?: RequestInit
+): Promise<tournamentControllerUpdateQualificationTeamResponse> => {
+	return backendFetch<tournamentControllerUpdateQualificationTeamResponse>(
+		getTournamentControllerUpdateQualificationTeamUrl(id, teamId),
+		{
+			...options,
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(updateQualificationCompetitorDto)
+		}
+	);
+};
+
+export type tournamentControllerUpdateQualificationTeamParticipantResponse200 = {
+	data: AugmentedZodDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerUpdateQualificationTeamParticipantResponseSuccess =
+	tournamentControllerUpdateQualificationTeamParticipantResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerUpdateQualificationTeamParticipantResponse =
+	tournamentControllerUpdateQualificationTeamParticipantResponseSuccess;
+
+export const getTournamentControllerUpdateQualificationTeamParticipantUrl = (
+	id: string,
+	teamId: string,
+	userId: string
+) => {
+	return `/api/tournaments/${id}/teams/${teamId}/participants/${userId}/manage`;
+};
+
+export const tournamentControllerUpdateQualificationTeamParticipant = async (
+	id: string,
+	teamId: string,
+	userId: string,
+	updateQualificationTeamParticipantDto: UpdateQualificationTeamParticipantDto,
+	options?: RequestInit
+): Promise<tournamentControllerUpdateQualificationTeamParticipantResponse> => {
+	return backendFetch<tournamentControllerUpdateQualificationTeamParticipantResponse>(
+		getTournamentControllerUpdateQualificationTeamParticipantUrl(id, teamId, userId),
+		{
+			...options,
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(updateQualificationTeamParticipantDto)
+		}
+	);
+};
+
+export type tournamentControllerCalculateQualificationSeedsResponse201 = {
+	data: AugmentedZodDtoOutput;
+	status: 201;
+};
+
+export type tournamentControllerCalculateQualificationSeedsResponseSuccess =
+	tournamentControllerCalculateQualificationSeedsResponse201 & {
+		headers: Headers;
+	};
+export type tournamentControllerCalculateQualificationSeedsResponse =
+	tournamentControllerCalculateQualificationSeedsResponseSuccess;
+
+export const getTournamentControllerCalculateQualificationSeedsUrl = (id: string) => {
+	return `/api/tournaments/${id}/qualification/calculate-seeds`;
+};
+
+export const tournamentControllerCalculateQualificationSeeds = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerCalculateQualificationSeedsResponse> => {
+	return backendFetch<tournamentControllerCalculateQualificationSeedsResponse>(
+		getTournamentControllerCalculateQualificationSeedsUrl(id),
+		{
+			...options,
+			method: 'POST'
+		}
+	);
+};
+
+export type tournamentControllerSearchTeamsResponse200 = {
+	data: TournamentTeamSummaryDtoOutput[];
+	status: 200;
+};
+
+export type tournamentControllerSearchTeamsResponseSuccess =
+	tournamentControllerSearchTeamsResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerSearchTeamsResponse =
+	tournamentControllerSearchTeamsResponseSuccess;
+
+export const getTournamentControllerSearchTeamsUrl = (
+	id: string,
+	params?: TournamentControllerSearchTeamsParams
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? 'null' : String(value));
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/api/tournaments/${id}/teams/search?${stringifiedParams}`
+		: `/api/tournaments/${id}/teams/search`;
+};
+
+export const tournamentControllerSearchTeams = async (
+	id: string,
+	params?: TournamentControllerSearchTeamsParams,
+	options?: RequestInit
+): Promise<tournamentControllerSearchTeamsResponse> => {
+	return backendFetch<tournamentControllerSearchTeamsResponse>(
+		getTournamentControllerSearchTeamsUrl(id, params),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
+
 export type tournamentControllerGetTeamsResponse200 = {
-	data: TournamentTeamDtoOutput[];
+	data: TournamentTeamDto[];
 	status: 200;
 };
 

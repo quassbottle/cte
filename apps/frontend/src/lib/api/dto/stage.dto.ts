@@ -1,6 +1,7 @@
 export interface StageDto {
 	id: string;
 	name: string;
+	type: 'regular' | 'qualification';
 	tournamentId: string;
 	startsAt: string;
 	endsAt: string;
