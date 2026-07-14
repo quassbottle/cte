@@ -162,29 +162,17 @@ CMD ["node", "dist/src/main.js"]
 Create `apps/frontend/Dockerfile`:
 
 ```dockerfile
-FROM oven/bun:1.3.14 AS bun
-
-FROM node:22-bookworm-slim AS build
-
-ENV PNPM_HOME=/pnpm
-ENV PATH=$PNPM_HOME:$PATH
-
-COPY --from=bun /usr/local/bin/bun /usr/local/bin/bun
-
-RUN corepack enable && corepack prepare pnpm@10.12.1 --activate
+FROM oven/bun:1.3.14 AS build
 
 WORKDIR /app
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml turbo.json ./
-COPY patches ./patches
-COPY packages ./packages
-COPY apps/frontend/package.json ./apps/frontend/package.json
+COPY apps/frontend/package.json ./package.json
 
-RUN pnpm install --filter frontend... --frozen-lockfile
+RUN bun install --no-save
 
-COPY apps/frontend ./apps/frontend
+COPY apps/frontend ./
 
-RUN pnpm --filter frontend build
+RUN bun run build
 
 FROM oven/bun:1.3.14 AS runtime
 
@@ -194,7 +182,7 @@ ENV HTTP_PORT=3000
 
 WORKDIR /app
 
-COPY --from=build /app/apps/frontend/build ./build
+COPY --from=build /app/build ./build
 
 EXPOSE 3000
 

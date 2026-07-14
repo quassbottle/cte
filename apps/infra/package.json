@@ -7,6 +7,7 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "start:dev": "docker compose up --build -d --wait"
+    "start:dev": "docker compose up --build -d --wait",
+    "test": "bun test deployment.test.ts"
   }
 }
