@@ -114,6 +114,7 @@
 			participants={data.participants}
 			host={data.host}
 			{form}
+			staff={data.staff}
 		/>
 	</ContentItem>
 

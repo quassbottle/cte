@@ -116,11 +116,13 @@ describe('tournament response codecs', () => {
       z.encode(tournamentStaffRoleDtoSchema, {
         id: staffRoleIdSchema.parse('ckm123456789012345678903'),
         name: 'Host',
+        canParticipate: false,
         members: [participant],
       }),
     ).toEqual({
       id: 'ckm123456789012345678903',
       name: 'Host',
+      canParticipate: false,
       members: [{ ...participant, avatarUrl: 'https://a.ppy.sh/42' }],
     });
   });

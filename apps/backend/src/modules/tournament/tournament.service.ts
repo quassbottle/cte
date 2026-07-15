@@ -58,13 +58,13 @@ export class TournamentService {
 
   public async create(params: TournamentCreateParams): Promise<DbTournament> {
     const id = tournamentId();
-
-    const [created] = await this.drizzle
-      .insert(tournaments)
-      .values({ id, ...params })
-      .returning();
-
-    return created;
+    return this.drizzle.transaction(async (tx) => {
+      const [created] = await tx.insert(tournaments).values({ id, ...params }).returning();
+      const host = await tx.query.staffRoles.findFirst({ where: eq(staffRoles.name, 'Host') });
+      if (!host) throw new Error('Host staff role is missing');
+      await tx.insert(tournamentStaffMembers).values({ tournamentId: id, roleId: host.id, userId: params.creatorId });
+      return created;
+    });
   }
 
   public async getById(params: { id: TournamentId }): Promise<DbTournament> {
@@ -185,7 +185,7 @@ export class TournamentService {
   > {
     await this.getById({ id: params.id });
     const rows = await this.drizzle
-      .select({ roleId: staffRoles.id, roleName: staffRoles.name, user: users })
+      .select({ roleId: staffRoles.id, roleName: staffRoles.name, canParticipate: staffRoles.canParticipate, user: users })
       .from(staffRoles)
       .leftJoin(
         tournamentStaffMembers,
@@ -198,12 +198,13 @@ export class TournamentService {
       .orderBy(asc(staffRoles.name), asc(users.osuUsername));
     const result = new Map<
       StaffRoleId,
-      { id: StaffRoleId; name: string; members: DbUser[] }
+      { id: StaffRoleId; name: string; canParticipate: boolean; members: DbUser[] }
     >();
     for (const row of rows) {
       const role = result.get(row.roleId) ?? {
         id: row.roleId,
         name: row.roleName,
+        canParticipate: row.canParticipate,
         members: [],
       };
       if (row.user) role.members.push(row.user);
@@ -736,6 +737,13 @@ export class TournamentService {
       );
     }
 
+    await this.assertCanParticipate({
+      tournamentId: id,
+      userIds: tournament.isTeam
+        ? Array.from(new Set<UserId>([userId, ...(data.team?.participants ?? [])]))
+        : [userId],
+    });
+
     if (tournament.isTeam) {
       await this.registerTeam({ tournamentId: id, captainId: userId, data });
       return;
@@ -835,6 +843,18 @@ export class TournamentService {
         })),
       );
     });
+  }
+
+  private async assertCanParticipate(params: { tournamentId: TournamentId; userIds: UserId[] }) {
+    const blocked = await this.drizzle
+      .select({ userId: tournamentStaffMembers.userId })
+      .from(tournamentStaffMembers)
+      .innerJoin(staffRoles, eq(staffRoles.id, tournamentStaffMembers.roleId))
+      .where(and(eq(tournamentStaffMembers.tournamentId, params.tournamentId), inArray(tournamentStaffMembers.userId, params.userIds), eq(staffRoles.canParticipate, false)))
+      .limit(1);
+    if (blocked.length) {
+      throw new TournamentException('Tournament staff with this role cannot participate', TournamentExceptionCode.TOURNAMENT_STAFF_CANNOT_PARTICIPATE);
+    }
   }
 
   private async registerSolo(params: {

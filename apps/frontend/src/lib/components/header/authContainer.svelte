@@ -21,9 +21,9 @@
 	</RoundButton>
 
 	{#if user}
-		<RoundButton>
+		<!-- <RoundButton>
 			<Bell size="16" />
-		</RoundButton>
+		</RoundButton> -->
 		<a href="/users/{user.id}">
 			<Avatar class="cursor-pointer">
 				<AvatarImage src={user.avatarUrl} />

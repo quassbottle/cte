@@ -6,11 +6,14 @@
 	import TeamRegistrationDialog from './TeamRegistrationDialog.svelte';
 	import UnregisterDialog from './UnregisterDialog.svelte';
 	import type { TournamentRegistrationForm } from './types';
+	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 
 	export let tournament: TournamentDto;
 	export let user: Viewer | null;
 	export let participants: TournamentParticipantDto[];
 	export let form: TournamentRegistrationForm;
+	export let staff: TournamentStaffRole[];
+	$: isBlockedStaff = Boolean(user?.id && staff.some((role) => !role.canParticipate && role.members.some((member) => member.id === user?.id)));
 
 	$: isLoggedIn = Boolean(user?.id);
 	$: isRegistered = Boolean(
@@ -51,6 +54,7 @@
 					class="w-[140px] bg-accept text-[12px]"
 					variant="accept"
 					on:click={() => (isRegistrationModalOpen = true)}
+					disabled={isBlockedStaff}
 				>
 					{registerButtonText}
 				</Button>
@@ -87,6 +91,7 @@
 						variant="accept"
 						type="button"
 						on:click={() => (isSoloRegisterModalOpen = true)}
+						disabled={isBlockedStaff}
 					>
 						{registerButtonText}
 					</Button>

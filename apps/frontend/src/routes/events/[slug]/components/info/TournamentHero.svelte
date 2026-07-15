@@ -9,12 +9,14 @@
 	import { Calendar, UserRound } from 'lucide-svelte';
 	import RegistrationControls from './RegistrationControls.svelte';
 	import type { TournamentRegistrationForm } from './types';
+	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 
 	export let tournament: TournamentDto;
 	export let user: Viewer | null;
 	export let participants: TournamentParticipantDto[];
 	export let host: UserDto;
 	export let form: TournamentRegistrationForm | undefined;
+	export let staff: TournamentStaffRole[];
 
 	$: participantsCount = tournament.participantsCount ?? participants.length;
 </script>
@@ -61,7 +63,7 @@
 				</BreadcrumbList>
 			</div>
 
-			<RegistrationControls {tournament} {user} {participants} {form} />
+			<RegistrationControls {tournament} {user} {participants} {form} {staff} />
 		</Content>
 	</TournamentBanner>
 

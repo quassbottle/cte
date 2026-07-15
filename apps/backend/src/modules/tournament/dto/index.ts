@@ -170,6 +170,7 @@ export class TournamentTeamDto extends createZodDto(tournamentTeamDtoSchema, {
 export const tournamentStaffRoleDtoSchema = z.object({
   id: staffRoleIdSchema,
   name: z.string(),
+  canParticipate: z.boolean(),
   members: z.array(tournamentParticipantDtoSchema),
 });
 

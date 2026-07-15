@@ -5,16 +5,18 @@
 	import RulesSection from './info/RulesSection.svelte';
 	import TournamentHero from './info/TournamentHero.svelte';
 	import type { TournamentRegistrationForm } from './info/types';
+	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 
 	export let tournament: TournamentDto;
 	export let user: Viewer | null;
 	export let participants: TournamentParticipantDto[];
 	export let host: UserDto;
 	export let form: TournamentRegistrationForm;
+	export let staff: TournamentStaffRole[];
 </script>
 
 <div class="flex flex-col gap-8">
-	<TournamentHero {tournament} {user} {participants} {host} {form} />
+	<TournamentHero {tournament} {user} {participants} {host} {form} {staff} />
 	<DescriptionSection value={tournament.description} />
 	<RulesSection value={tournament.rules} />
 </div>
