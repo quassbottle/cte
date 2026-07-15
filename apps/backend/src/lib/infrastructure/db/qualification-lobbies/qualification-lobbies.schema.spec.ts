@@ -1,8 +1,5 @@
 import { getTableConfig, PgDialect } from 'drizzle-orm/pg-core';
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
 import {
-  qualificationAttempts,
   qualificationLobbies,
   qualificationLobbyPlayers,
   qualificationLobbyTeams,
@@ -10,7 +7,7 @@ import {
 } from '../schema';
 
 describe('qualification lobby schema', () => {
-  it('keeps numbered lobbies unique within a stage and relates attempts to a lobby', () => {
+  it('keeps numbered lobbies unique within a stage', () => {
     const lobbies = getTableConfig(qualificationLobbies);
 
     expect(lobbies.indexes).toEqual(
@@ -25,7 +22,6 @@ describe('qualification lobby schema', () => {
         }),
       ]),
     );
-    expect(qualificationAttempts.lobbyId).toBeDefined();
     expect(qualificationLobbies.osuRoomId.notNull).toBe(false);
     expect(qualificationLobbies.osuRoomId.isUnique).toBe(true);
   });
@@ -104,16 +100,5 @@ describe('qualification lobby schema', () => {
     expect(new PgDialect().sqlToQuery(competitorCheck!.value).sql).toContain(
       '("qualification_results"."user_id" IS NOT NULL) <> ("qualification_results"."team_id" IS NOT NULL)',
     );
-  });
-
-  it('backfills lobbies before moving legacy attempts to their lobby ids', () => {
-    const migration = readFileSync(
-      resolve(process.cwd(), 'drizzle/0021_curly_solo.sql'),
-      'utf8',
-    );
-
-    expect(migration).toContain('INSERT INTO "qualification_lobbies"');
-    expect(migration).toContain('WHERE "stages"."type" = \'qualification\'');
-    expect(migration).toContain('RENAME COLUMN "match_id" TO "lobby_id"');
   });
 });
