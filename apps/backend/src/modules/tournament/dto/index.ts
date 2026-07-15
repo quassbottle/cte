@@ -1,6 +1,7 @@
 import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
 import { paginationSchema } from 'lib/common/utils/zod/pagination';
 import { teamIdSchema } from 'lib/domain/team/team.id';
+import { staffRoleIdSchema } from 'lib/domain/staff-role/staff-role.id';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
 import { tournamentModeSchema } from 'lib/domain/tournament/tournament.mode';
 import { userIdSchema } from 'lib/domain/user/user.id';
@@ -165,6 +166,26 @@ export const tournamentTeamDtoSchema = z.object({
 export class TournamentTeamDto extends createZodDto(tournamentTeamDtoSchema, {
   codec: true,
 }) {}
+
+export const tournamentStaffRoleDtoSchema = z.object({
+  id: staffRoleIdSchema,
+  name: z.string(),
+  members: z.array(tournamentParticipantDtoSchema),
+});
+
+export class TournamentStaffRoleDto extends createZodDto(
+  tournamentStaffRoleDtoSchema,
+  { codec: true },
+) {}
+
+export const assignTournamentStaffDtoSchema = z.object({
+  roleId: staffRoleIdSchema,
+  userId: userIdSchema,
+});
+
+export class AssignTournamentStaffDto extends createZodDto(
+  assignTournamentStaffDtoSchema,
+) {}
 
 export const tournamentTeamSummaryDtoSchema = z.object({
   id: teamIdSchema,

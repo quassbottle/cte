@@ -12,6 +12,7 @@ import {
 } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import { TeamId, teamId } from 'lib/domain/team/team.id';
+import { StaffRoleId } from 'lib/domain/staff-role/staff-role.id';
 import {
   TournamentException,
   TournamentExceptionCode,
@@ -31,14 +32,17 @@ import {
   qualificationAttempts,
   Schema,
   soloParticipants,
+  staffRoles,
   stages,
   teamParticipants,
   teams,
   tournaments,
+  tournamentStaffMembers,
   users,
 } from 'lib/infrastructure/db';
 import {
   QualificationRosterInput,
+  type TournamentStaffRoleDto,
   UpdateQualificationCompetitorInput,
 } from './dto';
 import { calculateQualificationSeeds as calculateSeeds } from './qualification-seeding';
@@ -174,6 +178,69 @@ export class TournamentService {
       .offset(offset);
 
     return found.map(({ user }) => user);
+  }
+
+  public async getStaff(params: { id: TournamentId }): Promise<
+    InstanceType<typeof TournamentStaffRoleDto>[]
+  > {
+    await this.getById({ id: params.id });
+    const rows = await this.drizzle
+      .select({ roleId: staffRoles.id, roleName: staffRoles.name, user: users })
+      .from(staffRoles)
+      .leftJoin(
+        tournamentStaffMembers,
+        and(
+          eq(tournamentStaffMembers.roleId, staffRoles.id),
+          eq(tournamentStaffMembers.tournamentId, params.id),
+        ),
+      )
+      .leftJoin(users, eq(users.id, tournamentStaffMembers.userId))
+      .orderBy(asc(staffRoles.name), asc(users.osuUsername));
+    const result = new Map<
+      StaffRoleId,
+      { id: StaffRoleId; name: string; members: DbUser[] }
+    >();
+    for (const row of rows) {
+      const role = result.get(row.roleId) ?? {
+        id: row.roleId,
+        name: row.roleName,
+        members: [],
+      };
+      if (row.user) role.members.push(row.user);
+      result.set(row.roleId, role);
+    }
+    return [...result.values()];
+  }
+
+  public async assignStaff(params: {
+    id: TournamentId;
+    roleId: StaffRoleId;
+    userId: UserId;
+  }) {
+    await this.getById({ id: params.id });
+    await this.drizzle.insert(tournamentStaffMembers).values({
+      tournamentId: params.id,
+      roleId: params.roleId,
+      userId: params.userId,
+    });
+  }
+
+  public async removeStaff(params: {
+    id: TournamentId;
+    roleId: StaffRoleId;
+    userId: UserId;
+  }) {
+    const [removed] = await this.drizzle
+      .delete(tournamentStaffMembers)
+      .where(
+        and(
+          eq(tournamentStaffMembers.tournamentId, params.id),
+          eq(tournamentStaffMembers.roleId, params.roleId),
+          eq(tournamentStaffMembers.userId, params.userId),
+        ),
+      )
+      .returning();
+    if (!removed) this.throwScopedQualificationNotFound('Staff assignment');
   }
 
   public async getQualificationRoster(params: {

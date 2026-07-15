@@ -74,6 +74,10 @@ export const stageUpdateFormSchema = stageCreateFormSchema.and(
 export const stageDeleteFormSchema = z.object({
 	stageId: z.string().trim().min(1, 'Stage id is required')
 });
+export const tournamentStaffFormSchema = z.object({
+	roleId: z.string().trim().min(1, 'Role is required'),
+	userId: z.string().trim().min(1, 'User is required')
+});
 
 export const qualificationCompetitorFormSchema = z
 	.object({
@@ -212,6 +216,7 @@ export type TournamentEditForm = z.infer<typeof tournamentEditFormSchema>;
 export type StageCreateForm = z.infer<typeof stageCreateFormSchema>;
 export type StageUpdateForm = z.infer<typeof stageUpdateFormSchema>;
 export type StageDeleteForm = z.infer<typeof stageDeleteFormSchema>;
+export type TournamentStaffForm = z.infer<typeof tournamentStaffFormSchema>;
 export type QualificationCompetitorForm = z.infer<typeof qualificationCompetitorFormSchema>;
 export type QualificationSoloForm = z.infer<typeof qualificationSoloFormSchema>;
 export type QualificationTeamForm = z.infer<typeof qualificationTeamFormSchema>;

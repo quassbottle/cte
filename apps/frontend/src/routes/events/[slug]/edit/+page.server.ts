@@ -20,6 +20,7 @@ import {
 	stageDeleteFormSchema,
 	stageUpdateFormSchema,
 	tournamentEditFormSchema
+	, tournamentStaffFormSchema
 } from '$lib/schemas/tournament-edit.schema';
 import type { EditAction, TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 import { error, fail, redirect } from '@sveltejs/kit';
@@ -41,6 +42,7 @@ type ActionContext = {
 	beatmapId?: string;
 	teamId?: string;
 	userId?: string;
+	roleId?: string;
 };
 
 const stringValue = (value: FormDataEntryValue | undefined) =>
@@ -341,6 +343,8 @@ export const actions: Actions = {
 			ok: true
 		} satisfies TournamentEditActionResult;
 	},
+	assignTournamentStaff: (event) => withFormValues(event, (values) => submitForm(event, 'assignTournamentStaff', tournamentStaffFormSchema, values, { roleId: stringValue(values.roleId), userId: stringValue(values.userId) }, (backend, input) => commands.assignTournamentStaff(backend, event.params.slug, input))),
+	removeTournamentStaff: (event) => withFormValues(event, (values) => submitForm(event, 'removeTournamentStaff', tournamentStaffFormSchema, values, { roleId: stringValue(values.roleId), userId: stringValue(values.userId) }, (backend, input) => commands.removeTournamentStaff(backend, event.params.slug, input))),
 	createMappool: (event) =>
 		withFormValues(event, (values) =>
 			submitForm(

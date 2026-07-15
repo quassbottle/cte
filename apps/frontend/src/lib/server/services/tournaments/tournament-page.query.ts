@@ -9,6 +9,7 @@ export async function getTournamentPage(
 		tournamentResponse,
 		participantsResponse,
 		teamsResponse,
+		staffResponse,
 		stagesResponse,
 		scheduleResponse,
 		mappoolsResponse
@@ -16,6 +17,7 @@ export async function getTournamentPage(
 		backend.tournaments.getById(tournamentId),
 		backend.tournaments.getParticipants(tournamentId),
 		backend.tournaments.getTeams(tournamentId),
+		backend.tournaments.staff.get(tournamentId),
 		backend.stages.findByTournament(tournamentId),
 		backend.tournaments.getSchedule(tournamentId),
 		backend.mappools.findByTournament(tournamentId)
@@ -29,6 +31,7 @@ export async function getTournamentPage(
 		tournament,
 		participants: participantsResponse.data,
 		teams: teamsResponse.data,
+		staff: staffResponse.data,
 		host,
 		stages: stagesResponse.data,
 		schedule: scheduleResponse.data,

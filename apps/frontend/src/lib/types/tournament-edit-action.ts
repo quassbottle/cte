@@ -20,7 +20,9 @@ export type EditAction =
 	| 'addMappoolBeatmap'
 	| 'updateMappoolBeatmap'
 	| 'replaceMappoolBeatmap'
-	| 'deleteMappoolBeatmap';
+	| 'deleteMappoolBeatmap'
+	| 'assignTournamentStaff'
+	| 'removeTournamentStaff';
 
 type ActionContext = {
 	stageId?: string;
@@ -29,6 +31,7 @@ type ActionContext = {
 	beatmapId?: string;
 	teamId?: string;
 	userId?: string;
+	roleId?: string;
 };
 
 export type TournamentEditActionResult =

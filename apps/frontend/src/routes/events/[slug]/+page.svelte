@@ -17,6 +17,8 @@
 	import ParticipantsTab from './components/ParticipantsTab.svelte';
 	import ScheduleTab from './components/ScheduleTab.svelte';
 	import MappoolsTab from './components/MappoolsTab.svelte';
+	import StaffTab from './components/StaffTab.svelte';
+	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 	import type { TournamentRegistrationForm } from './components/info/types';
 
 	export let data: {
@@ -24,6 +26,7 @@
 		user: Viewer | null;
 		participants: TournamentParticipantDto[];
 		teams: TournamentTeamDto[];
+		staff: TournamentStaffRole[];
 		host: UserDto;
 		stages: StageDto[];
 		schedule: StageScheduleDtoOutput[];
@@ -33,7 +36,7 @@
 	};
 	export let form: TournamentRegistrationForm;
 
-	const tournamentTabs = ['info', 'participants', 'schedule', 'mappools'] as const;
+	const tournamentTabs = ['info', 'participants', 'staff', 'schedule', 'mappools'] as const;
 	type TournamentTab = (typeof tournamentTabs)[number];
 	let activeTab: TournamentTab = 'info';
 	let lastTabParam: string | null = null;
@@ -92,6 +95,7 @@
 		<Head let:Item class="gap-4 text-[24px] font-semibold">
 			<Item value="info" href={getTournamentTabHref('info')}>Info</Item>
 			<Item value="participants" href={getTournamentTabHref('participants')}>Participants</Item>
+			<Item value="staff" href={getTournamentTabHref('staff')}>Staff</Item>
 			<Item value="schedule" href={getTournamentTabHref('schedule')}>Schedule</Item>
 			<Item value="mappools" href={getTournamentTabHref('mappools')}>Mappools</Item>
 		</Head>
@@ -120,6 +124,8 @@
 			teams={data.teams}
 		/>
 	</ContentItem>
+
+	<ContentItem value="staff"><StaffTab staff={data.staff} /></ContentItem>
 
 	<ContentItem value="schedule">
 		<ScheduleTab schedule={data.schedule} />

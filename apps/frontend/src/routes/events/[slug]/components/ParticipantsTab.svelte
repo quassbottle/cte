@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { TournamentDto, TournamentParticipantDto, TournamentTeamDto } from '$lib/api/types';
-	import Group from '$lib/components/group/group.svelte';
 	import PlayerCard from '$lib/components/playerCard/playerCard.svelte';
+	import RosterGroups from './RosterGroups.svelte';
 
 	export let tournament: TournamentDto;
 	export let participants: TournamentParticipantDto[];
@@ -13,22 +13,7 @@
 		{#if teams.length === 0}
 			<p>Be the first team to register ;)</p>
 		{:else}
-			{#each teams as team}
-				<Group let:Title let:Content>
-					<Title>{team.name}</Title>
-					<Content class="flex flex-wrap gap-3">
-						{#each team.participants as participant}
-							<a href="/users/{participant.id}">
-								<PlayerCard
-									avatarUrl={participant.avatarUrl}
-									username={participant.osuUsername}
-									isCaptain={participant.id === team.captainId}
-								/>
-							</a>
-						{/each}
-					</Content>
-				</Group>
-			{/each}
+			<RosterGroups groups={teams.map((team) => ({ id: team.id, name: team.name, members: team.participants }))} />
 		{/if}
 	{:else}
 		<div class="flex flex-grow flex-wrap gap-3">

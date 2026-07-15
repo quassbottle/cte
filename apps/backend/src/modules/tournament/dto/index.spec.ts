@@ -4,12 +4,14 @@ jest.mock('@paralleldrive/cuid2', () => ({
 }));
 
 import { teamIdSchema } from 'lib/domain/team/team.id';
+import { staffRoleIdSchema } from 'lib/domain/staff-role/staff-role.id';
 import { userIdSchema } from 'lib/domain/user/user.id';
 import z from 'zod';
 import {
   qualificationRosterDtoSchema,
   tournamentParticipantDtoSchema,
   tournamentTeamDtoSchema,
+  tournamentStaffRoleDtoSchema,
   updateQualificationCompetitorDtoSchema,
   updateQualificationTeamParticipantDtoSchema,
 } from './index';
@@ -106,6 +108,20 @@ describe('tournament response codecs', () => {
       name: 'Team',
       captainId: participant.id,
       participants: [{ ...participant, avatarUrl: 'https://a.ppy.sh/42' }],
+    });
+  });
+
+  it('encodes staff members grouped by role', () => {
+    expect(
+      z.encode(tournamentStaffRoleDtoSchema, {
+        id: staffRoleIdSchema.parse('ckm123456789012345678903'),
+        name: 'Host',
+        members: [participant],
+      }),
+    ).toEqual({
+      id: 'ckm123456789012345678903',
+      name: 'Host',
+      members: [{ ...participant, avatarUrl: 'https://a.ppy.sh/42' }],
     });
   });
 });

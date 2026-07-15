@@ -13,6 +13,7 @@ import type {
 	StageDeleteForm,
 	StageUpdateForm,
 	TournamentEditForm
+	, TournamentStaffForm
 } from '$lib/schemas/tournament-edit.schema';
 import type { BackendClient } from '$lib/server/backend/client';
 
@@ -95,6 +96,14 @@ export function updateQualificationTeamMember(
 
 export function calculateQualificationSeeds(backend: BackendClient, tournamentId: string) {
 	return backend.tournaments.qualification.calculate(tournamentId);
+}
+
+export function assignTournamentStaff(backend: BackendClient, tournamentId: string, input: TournamentStaffForm) {
+	return backend.tournaments.staff.assign(tournamentId, input);
+}
+
+export function removeTournamentStaff(backend: BackendClient, tournamentId: string, input: TournamentStaffForm) {
+	return backend.tournaments.staff.remove(tournamentId, input.roleId, input.userId);
 }
 
 export function createMappool(backend: BackendClient, input: MappoolCreateForm) {

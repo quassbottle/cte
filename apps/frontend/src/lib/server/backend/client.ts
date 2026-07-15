@@ -53,6 +53,7 @@ import {
 	tournamentControllerGetSchedule
 } from '$lib/server/backend/generated/endpoints';
 import type { ServerSession } from '$lib/server/auth/session';
+import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 import { backendFetch } from './fetcher';
 
 type BackendClientInput =
@@ -126,6 +127,13 @@ export function createBackendClient(input?: BackendClientInput) {
 				),
 			getSchedule: (id: string) => tournamentControllerGetSchedule(id, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
+			staff: {
+				get: (id: string) => backendFetch<{ data: TournamentStaffRole[] }>(`/api/tournaments/${id}/staff`, options),
+				assign: (id: string, input: { roleId: string; userId: string }) =>
+					backendFetch(`/api/tournaments/${id}/staff`, { ...options, method: 'POST', body: JSON.stringify(input) }),
+				remove: (id: string, roleId: string, userId: string) =>
+					backendFetch(`/api/tournaments/${id}/staff/${roleId}/${userId}`, { ...options, method: 'DELETE' })
+			},
 			update: (id: string, input: UpdateTournamentDto) =>
 				tournamentControllerPatch(id, input, options),
 			register: (id: string, input: Parameters<typeof tournamentControllerRegister>[1]) =>

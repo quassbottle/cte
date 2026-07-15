@@ -10,6 +10,8 @@
 	import ScheduleTab from './components/ScheduleTab.svelte';
 	import StagesTab from './components/StagesTab.svelte';
 	import TournamentTab from './components/TournamentTab.svelte';
+	import StaffTab from './components/StaffTab.svelte';
+	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 
 	export let data: {
 		tournament: TournamentDto;
@@ -18,10 +20,11 @@
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		qualificationRoster: AugmentedZodDtoOutput;
+		staff: TournamentStaffRole[];
 	};
 	export let form: TournamentEditActionResult | undefined;
 
-	const editTabs = ['info', 'participants', 'stages', 'schedule', 'mappools'] as const;
+	const editTabs = ['info', 'participants', 'staff', 'stages', 'schedule', 'mappools'] as const;
 	type EditTab = (typeof editTabs)[number];
 	let activeTab: EditTab = 'info';
 	let lastTabParam: string | null = null;
@@ -85,6 +88,7 @@
 			<Head let:Item class="gap-4 text-[24px] font-semibold">
 				<Item value="info" href={getEditTabHref('info')}>Info</Item>
 				<Item value="participants" href={getEditTabHref('participants')}>Participants</Item>
+				<Item value="staff" href={getEditTabHref('staff')}>Staff</Item>
 				<Item value="stages" href={getEditTabHref('stages')}>Stages</Item>
 				<Item value="schedule" href={getEditTabHref('schedule')}>Schedule</Item>
 				<Item value="mappools" href={getEditTabHref('mappools')}>Mappools</Item>
@@ -102,6 +106,7 @@
 		<ContentItem value="participants">
 			<ParticipantsTab roster={data.qualificationRoster} {form} />
 		</ContentItem>
+		<ContentItem value="staff"><StaffTab staff={data.staff} {form} /></ContentItem>
 
 		<ContentItem value="stages">
 			<StagesTab tournament={data.tournament} stages={data.stages} {form} />

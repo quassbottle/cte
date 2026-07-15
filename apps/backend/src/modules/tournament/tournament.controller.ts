@@ -12,10 +12,12 @@ import {
 import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
 import { MatchIdPipe } from 'lib/common/pipes/match-id.pipe';
 import { TeamIdPipe } from 'lib/common/pipes/team-id.pipe';
+import { StaffRoleIdPipe } from 'lib/common/pipes/staff-role-id.pipe';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
 import { UserIdPipe } from 'lib/common/pipes/user-id.pipe';
 import { MatchId } from 'lib/domain/match/match.id';
 import { TeamId } from 'lib/domain/team/team.id';
+import { StaffRoleId } from 'lib/domain/staff-role/staff-role.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import { DbUser } from 'lib/infrastructure/db';
@@ -40,9 +42,11 @@ import {
   QualificationRosterDto,
   type QualificationRosterInput,
   RegisterTournamentDto,
+  AssignTournamentStaffDto,
   TournamentDto,
   TournamentParticipantDto,
   TournamentTeamDto,
+  TournamentStaffRoleDto,
   TournamentTeamSummaryDto,
   UpdateQualificationCompetitorDto,
   UpdateQualificationTeamParticipantDto,
@@ -236,6 +240,30 @@ export class TournamentController {
     const teams = await this.tournamentService.getTeams({ id });
 
     return teams;
+  }
+
+  @Get(':id/staff')
+  @ZodResponse({ status: 200, description: 'Returns tournament staff.', type: [TournamentStaffRoleDto] })
+  public async getStaff(@Param('id', TournamentIdPipe) id: TournamentId) {
+    return this.tournamentService.getStaff({ id });
+  }
+
+  @Post(':id/staff')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) => ability.can('update', context.subjectData))
+  @ZodResponse({ status: 201, description: 'Assigns tournament staff.', type: [TournamentStaffRoleDto] })
+  public async assignStaff(@Param('id', TournamentIdPipe) id: TournamentId, @Body() body: AssignTournamentStaffDto) {
+    await this.tournamentService.assignStaff({ id, ...body });
+    return this.tournamentService.getStaff({ id });
+  }
+
+  @Delete(':id/staff/:roleId/:userId')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) => ability.can('update', context.subjectData))
+  @ZodResponse({ status: 200, description: 'Removes tournament staff.', type: [TournamentStaffRoleDto] })
+  public async removeStaff(@Param('id', TournamentIdPipe) id: TournamentId, @Param('roleId', StaffRoleIdPipe) roleId: StaffRoleId, @Param('userId', UserIdPipe) userId: UserId) {
+    await this.tournamentService.removeStaff({ id, roleId, userId });
+    return this.tournamentService.getStaff({ id });
   }
 
   @Get(':id/matches')
