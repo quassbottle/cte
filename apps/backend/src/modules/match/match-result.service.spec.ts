@@ -4,31 +4,36 @@ describe('MatchResultService', () => {
   const matchId = 'ckm123456789012345678901' as never;
 
   const service = (input: {
-    match?: Record<string, unknown>;
-    players?: { userId: string; osuId: number }[];
+    matches?: Record<string, unknown>[];
+    players?: {
+      matchId: string;
+      userId: string;
+      osuId: number;
+      seed: number | null;
+      osuUsername: string;
+    }[];
     beatmaps?: { osuBeatmapId: number }[];
     games?: { osuGameId: number; osuBeatmapId: number; endedAt: Date | null }[];
-    scores?: { osuGameId: number; osuUserId: number; score: number; team: 'red' | 'blue' | null }[];
+    scores?: {
+      osuGameId: number;
+      osuUserId: number;
+      score: number;
+      team: 'red' | 'blue' | null;
+    }[];
   }) => {
     const rows = [
+      input.matches ?? [],
       input.players ?? [],
-      input.beatmaps ?? [],
-      input.games ?? [],
-      input.scores ?? [],
+      (input.beatmaps ?? []).map((row) => ({ matchId, ...row })),
+      (input.games ?? []).map((row) => ({ roomId: 'room', ...row })),
+      (input.scores ?? []).map((row) => ({ roomId: 'room', ...row })),
     ];
     const db = {
-      query: {
-        matches: { findFirst: jest.fn().mockResolvedValue(input.match) },
-        osuMultiplayerRooms: {
-          findFirst: jest.fn().mockResolvedValue(
-            (input.match?.room as Record<string, unknown> | undefined) ?? null,
-          ),
-        },
-      },
       select: jest.fn(() => ({
         from: jest.fn(() => {
           const query = {
             innerJoin: jest.fn(() => query),
+            leftJoin: jest.fn(() => query),
             where: jest.fn().mockResolvedValue(rows.shift()),
           };
           return query;
@@ -40,7 +45,16 @@ describe('MatchResultService', () => {
 
   it('derives team points from raw scores on allowed mappool beatmaps', async () => {
     const result = await service({
-      match: { osuRoomId: 'room', redTeamId: 'red', blueTeamId: 'blue', room: { status: 'active', lastSyncedAt: new Date() } },
+      matches: [
+        {
+          matchId,
+          osuRoomId: 'room',
+          redTeamId: 'red',
+          blueTeamId: 'blue',
+          status: 'active',
+          lastSyncedAt: new Date(),
+        },
+      ],
       beatmaps: [{ osuBeatmapId: 10 }],
       games: [{ osuGameId: 1, osuBeatmapId: 10, endedAt: new Date() }],
       scores: [
@@ -54,8 +68,26 @@ describe('MatchResultService', () => {
 
   it('maps solo osu user ids to the two scheduled participants', async () => {
     const result = await service({
-      match: { osuRoomId: 'room', redTeamId: null, blueTeamId: null, room: { status: 'completed', lastSyncedAt: new Date() } },
-      players: [{ userId: 'first', osuId: 11 }, { userId: 'second', osuId: 22 }],
+      matches: [
+        {
+          matchId,
+          osuRoomId: 'room',
+          redTeamId: null,
+          blueTeamId: null,
+          status: 'completed',
+          lastSyncedAt: new Date(),
+        },
+      ],
+      players: [
+        { matchId, userId: 'first', osuId: 11, seed: 1, osuUsername: 'First' },
+        {
+          matchId,
+          userId: 'second',
+          osuId: 22,
+          seed: 2,
+          osuUsername: 'Second',
+        },
+      ],
       beatmaps: [{ osuBeatmapId: 10 }],
       games: [{ osuGameId: 1, osuBeatmapId: 10, endedAt: new Date() }],
       scores: [
@@ -70,8 +102,47 @@ describe('MatchResultService', () => {
     ]);
   });
 
+  it('keeps scheduled solo order when database rows are reversed', async () => {
+    const result = await service({
+      matches: [
+        {
+          matchId,
+          osuRoomId: 'room',
+          redTeamId: null,
+          blueTeamId: null,
+          status: 'completed',
+          lastSyncedAt: new Date(),
+        },
+      ],
+      players: [
+        {
+          matchId,
+          userId: 'second',
+          osuId: 22,
+          seed: 2,
+          osuUsername: 'Second',
+        },
+        { matchId, userId: 'first', osuId: 11, seed: 1, osuUsername: 'First' },
+      ],
+      beatmaps: [{ osuBeatmapId: 10 }],
+      games: [{ osuGameId: 1, osuBeatmapId: 10, endedAt: new Date() }],
+      scores: [
+        { osuGameId: 1, osuUserId: 11, score: 100, team: null },
+        { osuGameId: 1, osuUserId: 22, score: 90, team: null },
+      ],
+    }).get(matchId);
+
+    expect(result.players[0]).toMatchObject({
+      userId: 'first',
+      score: 1,
+      isWinner: true,
+    });
+  });
+
   it('returns a pending result without synchronized room data', async () => {
-    await expect(service({ match: { osuRoomId: null } }).get(matchId)).resolves.toEqual({
+    await expect(
+      service({ matches: [{ matchId, osuRoomId: null }] }).get(matchId),
+    ).resolves.toEqual({
       syncStatus: null,
       lastSyncedAt: null,
       redScore: null,

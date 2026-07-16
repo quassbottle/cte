@@ -1,8 +1,8 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { aliasedTable } from 'drizzle-orm/alias';
-import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { MatchId } from 'lib/domain/match/match.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { Schema, stages } from 'lib/infrastructure/db';
 import { StageScheduleInput } from './dto';
 import { MatchResultService } from './match-result.service';
@@ -135,27 +135,28 @@ export class ScheduleService {
       )
       .orderBy(asc(stageRow.startsAt));
 
-    return Promise.all(
-      schedule.map(async (stage) => ({
-        ...stage,
-        matches: await Promise.all(
-          stage.matches.map(async (match) => {
-            const result = await this.matchResults.get(match.id as MatchId);
-            const players = new Map(
-              result.players.map((player) => [player.userId, player]),
-            );
-            return {
-              ...match,
-              ...result,
-              players: match.players.map((player) => ({
-                ...player,
-                score: players.get(player.id)?.score ?? null,
-                isWinner: players.get(player.id)?.isWinner ?? null,
-              })),
-            };
-          }),
-        ),
-      })),
+    const matchIds = schedule.flatMap((stage) =>
+      stage.matches.map((match) => match.id as MatchId),
     );
+    const results = await this.matchResults.getMany(matchIds);
+
+    return schedule.map((stage) => ({
+      ...stage,
+      matches: stage.matches.map((match) => {
+        const result = results.get(match.id as MatchId)!;
+        const players = new Map(
+          result.players.map((player) => [player.userId, player]),
+        );
+        return {
+          ...match,
+          ...result,
+          players: match.players.map((player) => ({
+            ...player,
+            score: players.get(player.id)?.score ?? null,
+            isWinner: players.get(player.id)?.isWinner ?? null,
+          })),
+        };
+      }),
+    }));
   }
 }
