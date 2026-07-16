@@ -1,11 +1,10 @@
 import {
   Inject,
   Injectable,
-  InternalServerErrorException,
-  NotFoundException,
 } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { beatmapId } from 'lib/domain/beatmap/beatmap.id';
+import { OsuException, OsuExceptionCode } from 'lib/domain/osu/osu.exception';
 import { Schema, beatmaps } from 'lib/infrastructure/db';
 import { OsuService as OsuApiService } from 'lib/infrastructure/osu/osu.service';
 
@@ -115,11 +114,15 @@ export class OsuBeatmapService {
         }
       }
 
-      throw new NotFoundException(`Beatmap ${osuBeatmapId} was not found`);
+      throw new OsuException(
+        `Beatmap ${osuBeatmapId} was not found`,
+        OsuExceptionCode.BEATMAP_NOT_FOUND,
+      );
     }
 
-    throw new InternalServerErrorException(
+    throw new OsuException(
       `Failed to persist beatmap ${osuBeatmapId}`,
+      OsuExceptionCode.BEATMAP_PERSISTENCE_FAILED,
     );
   }
 

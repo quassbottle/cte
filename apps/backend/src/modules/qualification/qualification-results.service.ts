@@ -1,6 +1,10 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, min, sql } from 'drizzle-orm';
 import { StageId } from 'lib/domain/stage/stage.id';
+import {
+  StageException,
+  StageExceptionCode,
+} from 'lib/domain/stage/stage.exception';
 import {
   beatmaps,
   mappools,
@@ -34,7 +38,10 @@ export class QualificationResultsRepository {
       .where(and(eq(stages.id, stageId), eq(stages.type, 'qualification')))
       .limit(1);
     if (!stage[0])
-      throw new BadRequestException('Qualification stage not found');
+      throw new StageException(
+        'Qualification stage not found',
+        StageExceptionCode.STAGE_NOT_FOUND,
+      );
 
     const [maps, attempts] = await Promise.all([
       db

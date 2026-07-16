@@ -1,4 +1,4 @@
-import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, eq, isNull } from 'drizzle-orm';
 import {
   StageException,
@@ -51,7 +51,10 @@ export class StagePolicyContextResolver implements PolicyContextResolver {
     }
 
     if (tournament.archivedAt) {
-      throw new ForbiddenException('Archived tournaments cannot be changed');
+      throw new TournamentException(
+        'Archived tournaments cannot be changed',
+        TournamentExceptionCode.TOURNAMENT_ACCESS_DENIED,
+      );
     }
 
     return {

@@ -1,6 +1,10 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, count, eq, inArray } from 'drizzle-orm';
 import { QualificationLobbyId } from 'lib/domain/qualification-lobby/qualification-lobby.id';
+import {
+  QualificationLobbyException,
+  QualificationLobbyExceptionCode,
+} from 'lib/domain/qualification-lobby/qualification-lobby.exception';
 import { StageId } from 'lib/domain/stage/stage.id';
 import { TeamId } from 'lib/domain/team/team.id';
 import { UserId } from 'lib/domain/user/user.id';
@@ -109,7 +113,10 @@ export class QualificationLobbyRepository {
           )
       : [{ value: 0 }];
     if ((players?.value ?? 0) + (members?.value ?? 0) + needed > CAPACITY) {
-      throw new BadRequestException('Qualification lobby is full');
+      throw new QualificationLobbyException(
+        'Qualification lobby is full',
+        QualificationLobbyExceptionCode.LOBBY_FULL,
+      );
     }
   }
 }

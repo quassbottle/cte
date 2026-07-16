@@ -1,11 +1,9 @@
-import {
-  BadRequestException,
-  ForbiddenException,
-  Inject,
-  Injectable,
-  NotFoundException,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, count, eq, inArray, notInArray } from 'drizzle-orm';
+import {
+  QualificationLobbyException,
+  QualificationLobbyExceptionCode,
+} from 'lib/domain/qualification-lobby/qualification-lobby.exception';
 import {
   QualificationLobbyId,
   qualificationLobbyId,
@@ -189,7 +187,10 @@ export class QualificationLobbyService {
   }) {
     const lobby = await this.getScoped(input.tournamentId, input.lobbyId);
     if (!lobby.osuRoomId)
-      throw new BadRequestException('Lobby has no osu room');
+      throw new QualificationLobbyException(
+        'Lobby has no osu room',
+        QualificationLobbyExceptionCode.LOBBY_ROOM_REQUIRED,
+      );
     await this.syncService.sync(lobby.osuRoomId, true);
     await this.results.recalculate(lobby.stageId);
   }
@@ -200,7 +201,10 @@ export class QualificationLobbyService {
   }) {
     const lobby = await this.getScoped(input.tournamentId, input.lobbyId);
     if (!lobby.osuRoomId)
-      throw new BadRequestException('Lobby has no osu room');
+      throw new QualificationLobbyException(
+        'Lobby has no osu room',
+        QualificationLobbyExceptionCode.LOBBY_ROOM_REQUIRED,
+      );
     await this.syncService.stop(lobby.osuRoomId);
   }
 
@@ -218,8 +222,9 @@ export class QualificationLobbyService {
       ),
     });
     if (!participant)
-      throw new BadRequestException(
+      throw new QualificationLobbyException(
         'User is not an active tournament participant',
+        QualificationLobbyExceptionCode.LOBBY_PARTICIPANT_INACTIVE,
       );
     await this.assertCanParticipate(input.tournamentId, [input.userId]);
     await this.repository.selectSolo({ ...input, stageId: lobby.stageId });
@@ -241,11 +246,15 @@ export class QualificationLobbyService {
       ),
     });
     if (!team)
-      throw new BadRequestException(
+      throw new QualificationLobbyException(
         'Team is not an active tournament participant',
+        QualificationLobbyExceptionCode.LOBBY_TEAM_INACTIVE,
       );
     if (team.captainId !== input.userId)
-      throw new ForbiddenException('Only team captain can select a team');
+      throw new QualificationLobbyException(
+        'Only team captain can select a team',
+        QualificationLobbyExceptionCode.LOBBY_TEAM_CAPTAIN_REQUIRED,
+      );
     const members = await this.db
       .select({ userId: teamParticipants.userId })
       .from(teamParticipants)
@@ -256,7 +265,10 @@ export class QualificationLobbyService {
         ),
       );
     if (!members.length)
-      throw new BadRequestException('Team has no active members');
+      throw new QualificationLobbyException(
+        'Team has no active members',
+        QualificationLobbyExceptionCode.LOBBY_TEAM_EMPTY,
+      );
     await this.assertCanParticipate(
       input.tournamentId,
       members.map(({ userId }) => userId),
@@ -286,7 +298,11 @@ export class QualificationLobbyService {
         ),
       )
       .limit(1);
-    if (!lobby) throw new NotFoundException('Qualification lobby not found');
+    if (!lobby)
+      throw new QualificationLobbyException(
+        'Qualification lobby not found',
+        QualificationLobbyExceptionCode.LOBBY_NOT_FOUND,
+      );
     return lobby.lobby;
   }
 
@@ -302,8 +318,9 @@ export class QualificationLobbyService {
       ),
     });
     if (!stage)
-      throw new BadRequestException(
+      throw new QualificationLobbyException(
         'Stage must be this tournament qualification stage',
+        QualificationLobbyExceptionCode.LOBBY_STAGE_INVALID,
       );
   }
 
@@ -320,8 +337,9 @@ export class QualificationLobbyService {
         ),
       );
     if (!rows.length)
-      throw new BadRequestException(
+      throw new QualificationLobbyException(
         'Referee must be assigned to the tournament',
+        QualificationLobbyExceptionCode.LOBBY_REFEREE_INVALID,
       );
   }
 
@@ -341,8 +359,9 @@ export class QualificationLobbyService {
         ),
       );
     if (blocked.length)
-      throw new BadRequestException(
+      throw new QualificationLobbyException(
         'Only Commentator or Streamer staff may participate',
+        QualificationLobbyExceptionCode.LOBBY_STAFF_CANNOT_PARTICIPATE,
       );
   }
 }

@@ -161,7 +161,11 @@ export class StageService {
       ),
     });
 
-    if (existing) this.throwQualificationConflict();
+    if (existing)
+      throw new StageException(
+        'Tournament already has a qualification stage',
+        StageExceptionCode.STAGE_QUALIFICATION_EXISTS,
+      );
   }
 
   private translateQualificationConflict(error: unknown): never {
@@ -173,16 +177,12 @@ export class StageService {
       'constraint' in error &&
       error.constraint === 'stages_one_qualification_per_tournament'
     ) {
-      this.throwQualificationConflict();
+      throw new StageException(
+        'Tournament already has a qualification stage',
+        StageExceptionCode.STAGE_QUALIFICATION_EXISTS,
+      );
     }
 
     throw error;
-  }
-
-  private throwQualificationConflict(): never {
-    throw new StageException(
-      'Tournament already has a qualification stage',
-      StageExceptionCode.STAGE_QUALIFICATION_EXISTS,
-    );
   }
 }

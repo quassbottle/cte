@@ -1,4 +1,4 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import {
   and,
   asc,
@@ -12,6 +12,10 @@ import {
 } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import { StaffRoleId } from 'lib/domain/staff-role/staff-role.id';
+import {
+  StageException,
+  StageExceptionCode,
+} from 'lib/domain/stage/stage.exception';
 import { TeamId, teamId } from 'lib/domain/team/team.id';
 import {
   TournamentException,
@@ -262,7 +266,11 @@ export class TournamentService {
         ),
       )
       .returning();
-    if (!removed) this.throwScopedQualificationNotFound('Staff assignment');
+    if (!removed)
+      throw new TournamentException(
+        'Staff assignment not found in tournament',
+        TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+      );
   }
 
   public async getQualificationRoster(params: {
@@ -398,7 +406,11 @@ export class TournamentService {
       )
       .returning();
 
-    if (!updated) this.throwScopedQualificationNotFound('Participant');
+    if (!updated)
+      throw new TournamentException(
+        'Participant not found in tournament',
+        TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+      );
     await this.invalidateQualification(id);
   }
 
@@ -418,7 +430,11 @@ export class TournamentService {
       .where(and(eq(teams.tournamentId, id), eq(teams.id, teamId)))
       .returning();
 
-    if (!updated) this.throwScopedQualificationNotFound('Team');
+    if (!updated)
+      throw new TournamentException(
+        'Team not found in tournament',
+        TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+      );
     await this.invalidateQualification(id);
   }
 
@@ -439,7 +455,10 @@ export class TournamentService {
           ),
         });
         if (!stage)
-          throw new BadRequestException('Qualification stage not found');
+          throw new StageException(
+            'Qualification stage not found',
+            StageExceptionCode.STAGE_NOT_FOUND,
+          );
         const [updated] = await tx
           .update(teamParticipants)
           .set({ ...data, withdrawalReason: null })
@@ -453,7 +472,11 @@ export class TournamentService {
             ),
           )
           .returning();
-        if (!updated) this.throwScopedQualificationNotFound('Team participant');
+        if (!updated)
+          throw new TournamentException(
+            'Team participant not found in tournament',
+            TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+          );
         await this.qualificationLobbies.assertAssignedTeamCapacity(
           tx as Schema,
           stage.id,
@@ -480,7 +503,11 @@ export class TournamentService {
       )
       .returning();
 
-    if (!updated) this.throwScopedQualificationNotFound('Team participant');
+    if (!updated)
+      throw new TournamentException(
+        'Team participant not found in tournament',
+        TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+      );
     await this.invalidateQualification(id);
   }
 
@@ -633,7 +660,10 @@ export class TournamentService {
     const nextEndsAt = endsAt ?? current.endsAt;
 
     if (nextEndsAt <= nextStartsAt) {
-      throw new BadRequestException('endsAt must be greater than startsAt');
+      throw new TournamentException(
+        'endsAt must be greater than startsAt',
+        TournamentExceptionCode.TOURNAMENT_INVALID_DATES,
+      );
     }
 
     const [updated] = await this.drizzle
@@ -939,7 +969,10 @@ export class TournamentService {
 
   private assertMutable(tournament: Pick<DbTournament, 'archivedAt'>): void {
     if (tournament.archivedAt) {
-      throw new BadRequestException('Archived tournaments cannot be changed');
+      throw new TournamentException(
+        'Archived tournaments cannot be changed',
+        TournamentExceptionCode.TOURNAMENT_ARCHIVED,
+      );
     }
   }
 
@@ -954,10 +987,4 @@ export class TournamentService {
     if (stage) await this.qualificationResults.invalidate(stage.id);
   }
 
-  private throwScopedQualificationNotFound(subject: string): never {
-    throw new TournamentException(
-      `${subject} not found in tournament`,
-      TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
-    );
-  }
 }
