@@ -1,4 +1,4 @@
-import { NotFoundException } from '@nestjs/common';
+import { OsuException, OsuExceptionCode } from 'lib/domain/osu/osu.exception';
 import type { Schema } from 'lib/infrastructure/db';
 import { OsuService as OsuApiService } from 'lib/infrastructure/osu/osu.service';
 import { OsuBeatmapService } from './osu.service';
@@ -32,8 +32,13 @@ describe('OsuBeatmapService', () => {
   it('returns 404 instead of placeholder metadata when the beatmap does not exist', async () => {
     getBeatmapDetails.mockRejectedValue(new Error('404: Not Found'));
 
-    await expect(service.getBeatmapMetadata({ beatmapId: 442231 })).rejects.toThrow(
-      new NotFoundException('Beatmap 442231 was not found'),
+    await expect(
+      service.getBeatmapMetadata({ beatmapId: 442231 }),
+    ).rejects.toEqual(
+      new OsuException(
+        'Beatmap 442231 was not found',
+        OsuExceptionCode.BEATMAP_NOT_FOUND,
+      ),
     );
   });
 

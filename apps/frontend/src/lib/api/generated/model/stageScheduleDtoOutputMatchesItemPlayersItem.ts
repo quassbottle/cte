@@ -23,12 +23,6 @@ export type StageScheduleDtoOutputMatchesItemPlayersItem = {
 	 * @maximum 9007199254740991
 	 * @nullable
 	 */
-	seed: number | null;
-	/**
-	 * @minimum -9007199254740991
-	 * @maximum 9007199254740991
-	 * @nullable
-	 */
 	score: number | null;
 	/** @nullable */
 	isWinner: boolean | null;

@@ -1,17 +1,21 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { aliasedTable } from 'drizzle-orm/alias';
+import { MatchId } from 'lib/domain/match/match.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { Schema, stages } from 'lib/infrastructure/db';
 import { StageScheduleInput } from './dto';
+import { MatchResultService } from './match-result.service';
 
 const stageRow = aliasedTable(stages, 'stage_row');
 const stageRowId = sql.raw('"stage_row"."id"');
-const stageRowTournamentId = sql.raw('"stage_row"."tournament_id"');
 
 @Injectable()
 export class ScheduleService {
-  constructor(@Inject('DB') private readonly drizzle: Schema) {}
+  constructor(
+    @Inject('DB') private readonly drizzle: Schema,
+    private readonly matchResults: MatchResultService,
+  ) {}
 
   public async findByTournament(params: {
     tournamentId: TournamentId;
@@ -35,18 +39,16 @@ export class ScheduleService {
                   'matchNumber', match_row.match_number,
                   'startsAt', match_row.starts_at,
                   'endsAt', match_row.ends_at,
-                  'mpUrl', match_row.mp_url,
+                  'mpUrl', case
+                    when match_room.osu_match_id is null then null
+                    else concat(
+                      'https://osu.ppy.sh/community/matches/',
+                      match_room.osu_match_id
+                    )
+                  end,
                   'vodUrl', match_row.vod_url,
-                  'syncStatus', (
-                    select sync_row.status
-                    from match_osu_sync sync_row
-                    where sync_row.match_id = match_row.id
-                  ),
-                  'lastSyncedAt', (
-                    select sync_row.last_synced_at
-                    from match_osu_sync sync_row
-                    where sync_row.match_id = match_row.id
-                  ),
+                  'syncStatus', null,
+                  'lastSyncedAt', null,
                   'redTeam', (
                     select json_build_object('id', red_team.id, 'name', red_team.name)
                     from teams red_team
@@ -57,8 +59,8 @@ export class ScheduleService {
                     from teams blue_team
                     where blue_team.id = match_row.blue_team_id
                   ),
-                  'redScore', match_row.red_score,
-                  'blueScore', match_row.blue_score,
+                  'redScore', null,
+                  'blueScore', null,
                   'players', coalesce(
                     (
                       select json_agg(
@@ -68,25 +70,12 @@ export class ScheduleService {
                           'osuUsername', player_user.osu_username,
                           'avatarUrl', concat('https://a.ppy.sh/', player_user.osu_id),
                           'countryCode', player_user.country_code,
-                          'seed', (
-                            select solo_seed.seed
-                            from solo_participants solo_seed
-                            where solo_seed.tournament_id = ${stageRowTournamentId}
-                              and solo_seed.user_id = player_user.id
-                            limit 1
-                          ),
-                          'score', match_player.score,
-                          'isWinner', match_player.is_winner
+                          'score', null,
+                          'isWinner', null
                         )
                         order by
-                          (
-                            select solo_seed.seed
-                            from solo_participants solo_seed
-                            where solo_seed.tournament_id = ${stageRowTournamentId}
-                              and solo_seed.user_id = player_user.id
-                            limit 1
-                          ) asc nulls last,
-                          player_user.osu_username asc
+                          player_user.osu_username asc,
+                          player_user.id asc
                       )
                       from match_participants match_player
                       inner join users player_user on player_user.id = match_player.user_id
@@ -123,6 +112,8 @@ export class ScheduleService {
                 order by match_row.starts_at asc, match_row.match_number asc nulls last
               )
               from matches match_row
+              left join osu_multiplayer_rooms match_room
+                on match_room.id = match_row.osu_room_id
               where match_row.stage_id = ${stageRowId}
             ),
             '[]'::json
@@ -138,6 +129,28 @@ export class ScheduleService {
       )
       .orderBy(asc(stageRow.startsAt));
 
-    return schedule;
+    const matchIds = schedule.flatMap((stage) =>
+      stage.matches.map((match) => match.id as MatchId),
+    );
+    const results = await this.matchResults.getMany(matchIds);
+
+    return schedule.map((stage) => ({
+      ...stage,
+      matches: stage.matches.map((match) => {
+        const result = results.get(match.id as MatchId)!;
+        const players = new Map(
+          result.players.map((player) => [player.userId, player]),
+        );
+        return {
+          ...match,
+          ...result,
+          players: match.players.map((player) => ({
+            ...player,
+            score: players.get(player.id)?.score ?? null,
+            isWinner: players.get(player.id)?.isWinner ?? null,
+          })),
+        };
+      }),
+    }));
   }
 }

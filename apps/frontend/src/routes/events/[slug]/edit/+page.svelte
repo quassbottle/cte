@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { MappoolBeatmapDto, MappoolDto, StageDto, TournamentDto } from '$lib/api/types';
-	import type { AugmentedZodDtoOutput, StageScheduleDtoOutput } from '$lib/api/generated/model';
+	import type {
+		AugmentedZodDtoOutput,
+		QualificationLobbyDtoOutput,
+		StageScheduleDtoOutput,
+		TournamentStaffRoleDto
+	} from '$lib/api/generated/model';
 	import { Button } from '$lib/components/ui/button';
 	import { page } from '$app/stores';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
@@ -8,20 +13,32 @@
 	import ParticipantsTab from './components/ParticipantsTab.svelte';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 	import ScheduleTab from './components/ScheduleTab.svelte';
+	import QualificationLobbiesTab from './components/QualificationLobbiesTab.svelte';
 	import StagesTab from './components/StagesTab.svelte';
 	import TournamentTab from './components/TournamentTab.svelte';
+	import StaffTab from './components/StaffTab.svelte';
 
 	export let data: {
 		tournament: TournamentDto;
 		stages: StageDto[];
 		schedule: StageScheduleDtoOutput[];
+		qualificationLobbies: QualificationLobbyDtoOutput[];
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		qualificationRoster: AugmentedZodDtoOutput;
+		staff: TournamentStaffRoleDto[];
 	};
 	export let form: TournamentEditActionResult | undefined;
 
-	const editTabs = ['info', 'participants', 'stages', 'schedule', 'mappools'] as const;
+	const editTabs = [
+		'info',
+		'participants',
+		'staff',
+		'stages',
+		'schedule',
+		'lobbies',
+		'mappools'
+	] as const;
 	type EditTab = (typeof editTabs)[number];
 	let activeTab: EditTab = 'info';
 	let lastTabParam: string | null = null;
@@ -47,10 +64,10 @@
 
 	function getViewHref(tab: EditTab) {
 		const params = new URLSearchParams($page.url.searchParams);
-		const viewTab = tab === 'schedule' || tab === 'mappools' ? tab : 'info';
+		const viewTab = tab === 'schedule' || tab === 'lobbies' || tab === 'mappools' ? tab : 'info';
 		params.set('tab', viewTab);
 
-		if (viewTab !== 'schedule' && viewTab !== 'mappools') {
+		if (viewTab !== 'schedule' && viewTab !== 'lobbies' && viewTab !== 'mappools') {
 			params.delete('stage');
 		}
 
@@ -85,8 +102,10 @@
 			<Head let:Item class="gap-4 text-[24px] font-semibold">
 				<Item value="info" href={getEditTabHref('info')}>Info</Item>
 				<Item value="participants" href={getEditTabHref('participants')}>Participants</Item>
+				<Item value="staff" href={getEditTabHref('staff')}>Staff</Item>
 				<Item value="stages" href={getEditTabHref('stages')}>Stages</Item>
 				<Item value="schedule" href={getEditTabHref('schedule')}>Schedule</Item>
+				<Item value="lobbies" href={getEditTabHref('lobbies')}>Lobbies</Item>
 				<Item value="mappools" href={getEditTabHref('mappools')}>Mappools</Item>
 			</Head>
 
@@ -102,6 +121,7 @@
 		<ContentItem value="participants">
 			<ParticipantsTab roster={data.qualificationRoster} {form} />
 		</ContentItem>
+		<ContentItem value="staff"><StaffTab staff={data.staff} {form} /></ContentItem>
 
 		<ContentItem value="stages">
 			<StagesTab tournament={data.tournament} stages={data.stages} {form} />
@@ -116,6 +136,13 @@
 				{form}
 			/>
 		</ContentItem>
+		<ContentItem value="lobbies"
+			><QualificationLobbiesTab
+				stages={data.stages}
+				lobbies={data.qualificationLobbies}
+				staff={data.staff}
+			/></ContentItem
+		>
 
 		<ContentItem value="mappools">
 			<MappoolsTab

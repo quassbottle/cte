@@ -3,7 +3,10 @@ jest.mock('@paralleldrive/cuid2', () => ({
   init: jest.fn(() => jest.fn(() => 'test-id')),
 }));
 
-import { ForbiddenException } from '@nestjs/common';
+import {
+  TournamentException,
+  TournamentExceptionCode,
+} from 'lib/domain/tournament/tournament.exception';
 import { PolicyRequest } from '../types';
 import { TournamentPolicyContextResolver } from './tournament-policy-context.resolver';
 
@@ -50,7 +53,7 @@ describe('TournamentPolicyContextResolver', () => {
       },
       {
         method: 'POST',
-        originalUrl: `/api/tournaments/${id}/qualification/calculate-seeds`,
+        originalUrl: `/api/tournaments/${id}/qualification/participants/user`,
         params: { id },
       },
     ]) {
@@ -104,6 +107,11 @@ describe('TournamentPolicyContextResolver', () => {
         originalUrl: `/api/tournaments/${id}/participants/manage`,
         params: { id },
       } as unknown as PolicyRequest),
-    ).rejects.toBeInstanceOf(ForbiddenException);
+    ).rejects.toEqual(
+      new TournamentException(
+        'Archived tournaments cannot be changed',
+        TournamentExceptionCode.TOURNAMENT_ACCESS_DENIED,
+      ),
+    );
   });
 });

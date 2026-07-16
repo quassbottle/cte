@@ -19,6 +19,8 @@
 	export let tournamentId: string;
 	export let isTeam = false;
 	export let form: TournamentEditActionResult | undefined;
+	$: regularStages = stages.filter((stage) => stage.type !== 'qualification');
+	$: regularSchedule = schedule.filter((stage) => stage.type !== 'qualification');
 
 	let dialog:
 		| {
@@ -36,7 +38,7 @@
 		  }
 		| null = null;
 
-	$: sortedSchedule = [...schedule].sort(
+	$: sortedSchedule = [...regularSchedule].sort(
 		(left, right) => new Date(left.startsAt).valueOf() - new Date(right.startsAt).valueOf()
 	);
 	$: matchesCount = sortedSchedule.reduce((total, stage) => total + stage.matches.length, 0);
@@ -48,14 +50,13 @@
 		currentDialog && currentDialog.mode !== 'delete'
 			? sortedSchedule.find((stage) => stage.id === currentDialog.stageId)
 			: undefined;
-	$: isQualificationDialog = dialogStage?.type === 'qualification';
 
 	function getActiveStageId(value: string | null) {
 		if (value && sortedSchedule.some((stage) => stage.id === value)) {
 			return value;
 		}
 
-		return sortedSchedule[0]?.id ?? stages[0]?.id ?? '';
+		return sortedSchedule[0]?.id ?? regularStages[0]?.id ?? '';
 	}
 
 	function getStageTabHref(stageId: string) {
@@ -96,14 +97,14 @@
 			type="button"
 			class="w-full gap-1 text-[12px] sm:w-[140px]"
 			on:click={() => activeStageId && (dialog = { mode: 'create', stageId: activeStageId })}
-			disabled={stages.length === 0 || !activeStageId}
+			disabled={regularStages.length === 0 || !activeStageId}
 		>
 			<Plus class="h-4 w-4" />
 			Add match
 		</Button>
 	</div>
 
-	{#if stages.length === 0 || sortedSchedule.length === 0}
+	{#if regularStages.length === 0 || sortedSchedule.length === 0}
 		<div class="rounded-md border border-border p-6 text-sm text-muted-foreground">
 			Add at least one stage before creating schedule matches.
 		</div>
@@ -202,13 +203,9 @@
 				<div>
 					<p class="text-lg font-semibold">
 						{dialog.mode === 'create'
-							? isQualificationDialog
-								? 'Add qualification lobby'
-								: 'Add match'
+							? 'Add match'
 							: dialog.mode === 'update'
-								? isQualificationDialog
-									? 'Edit qualification lobby'
-									: 'Edit match'
+								? 'Edit match'
 								: 'Delete match'}
 					</p>
 					<p class="text-sm text-muted-foreground">
@@ -232,30 +229,16 @@
 					onCancel={() => (dialog = null)}
 				/>
 			{:else if dialog.mode === 'update'}
-				<div class="flex flex-col gap-3">
-					<div class="flex justify-end gap-2">
-						<form method="post" action="?/syncScheduleMatch" use:enhance={enhanceDeleteMatch}>
-							<input type="hidden" name="matchId" value={dialog.match.id} />
-							<Button type="submit" variant="outline" class="text-[12px]">Sync</Button>
-						</form>
-						{#if dialog.match.syncStatus === 'active'}
-							<form method="post" action="?/stopScheduleMatch" use:enhance={enhanceDeleteMatch}>
-								<input type="hidden" name="matchId" value={dialog.match.id} />
-								<Button type="submit" variant="outline" class="text-[12px]">Stop sync</Button>
-							</form>
-						{/if}
-					</div>
-					<ScheduleMatchForm
-						stage={dialogStage}
-						{tournamentId}
-						stageId={dialog.stageId}
-						match={dialog.match}
-						{form}
-						{isTeam}
-						mode="update"
-						onCancel={() => (dialog = null)}
-					/>
-				</div>
+				<ScheduleMatchForm
+					stage={dialogStage}
+					{tournamentId}
+					stageId={dialog.stageId}
+					match={dialog.match}
+					{form}
+					{isTeam}
+					mode="update"
+					onCancel={() => (dialog = null)}
+				/>
 			{:else}
 				<div class="flex flex-col gap-4">
 					<p class="text-sm text-muted-foreground">

@@ -1,4 +1,8 @@
 import type {
+	AssignTournamentStaffDto,
+	QualificationLobbyUpsertDto
+} from '$lib/api/generated/model';
+import type {
 	MappoolBeatmapAddForm,
 	MappoolBeatmapDeleteForm,
 	MappoolBeatmapReplaceForm,
@@ -12,7 +16,8 @@ import type {
 	StageCreateForm,
 	StageDeleteForm,
 	StageUpdateForm,
-	TournamentEditForm
+	TournamentEditForm,
+	TournamentStaffForm
 } from '$lib/schemas/tournament-edit.schema';
 import type { BackendClient } from '$lib/server/backend/client';
 
@@ -66,6 +71,23 @@ export function deleteScheduleMatch(backend: BackendClient, tournamentId: string
 	return backend.matches.delete(tournamentId, matchId);
 }
 
+export function createQualificationLobby(
+	backend: BackendClient,
+	tournamentId: string,
+	input: QualificationLobbyUpsertDto
+) {
+	return backend.qualificationLobbies.create(tournamentId, input);
+}
+
+export function updateQualificationLobby(
+	backend: BackendClient,
+	tournamentId: string,
+	lobbyId: string,
+	input: QualificationLobbyUpsertDto
+) {
+	return backend.qualificationLobbies.update(tournamentId, lobbyId, input);
+}
+
 export function updateQualificationSolo(
 	backend: BackendClient,
 	tournamentId: string,
@@ -93,8 +115,20 @@ export function updateQualificationTeamMember(
 	return backend.tournaments.qualification.updateTeamMember(tournamentId, teamId, userId, payload);
 }
 
-export function calculateQualificationSeeds(backend: BackendClient, tournamentId: string) {
-	return backend.tournaments.qualification.calculate(tournamentId);
+export function assignTournamentStaff(
+	backend: BackendClient,
+	tournamentId: string,
+	input: AssignTournamentStaffDto
+) {
+	return backend.tournaments.staff.assign(tournamentId, input);
+}
+
+export function removeTournamentStaff(
+	backend: BackendClient,
+	tournamentId: string,
+	input: TournamentStaffForm
+) {
+	return backend.tournaments.staff.remove(tournamentId, input.roleId, input.userId);
 }
 
 export function createMappool(backend: BackendClient, input: MappoolCreateForm) {

@@ -37,18 +37,6 @@ export interface ScheduleMatchUpsertDto {
 	 * @pattern ^[0-9a-z]+$
 	 */
 	blueTeamId?: string | null;
-	/**
-	 * @minimum -9007199254740991
-	 * @maximum 9007199254740991
-	 * @nullable
-	 */
-	redScore?: number | null;
-	/**
-	 * @minimum -9007199254740991
-	 * @maximum 9007199254740991
-	 * @nullable
-	 */
-	blueScore?: number | null;
 	/** @maxItems 2 */
 	players?: ScheduleMatchUpsertDtoPlayersItem[];
 	staff?: ScheduleMatchUpsertDtoStaffItem[];

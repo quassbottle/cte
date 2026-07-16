@@ -47,7 +47,7 @@ const toPlayerView = (
 		osuId: player.osuId,
 		avatarUrl: player.avatarUrl,
 		country: player.countryCode,
-		seed: player.seed,
+		seed: null,
 		score: player.score
 	};
 };

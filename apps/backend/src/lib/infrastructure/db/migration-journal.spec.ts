@@ -32,4 +32,18 @@ describe('migration journal', () => {
       ),
     ).toBe(true);
   });
+
+  it('seeds the global staff roles in the staff migration', () => {
+    const sql = readFileSync(
+      resolve(process.cwd(), 'drizzle/0019_tearful_the_phantom.sql'),
+      'utf8',
+    );
+
+    expect(sql).toContain("'Host'");
+    expect(sql).toContain("'Referee'");
+    expect(sql).toContain("'Mapper'");
+    expect(sql).toContain("'Commentator'");
+    expect(sql).toContain("'Streamer'");
+    expect(sql).toContain("'Playtester'");
+  });
 });

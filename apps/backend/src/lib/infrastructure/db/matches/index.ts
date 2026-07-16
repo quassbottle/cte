@@ -2,9 +2,11 @@ import { InferInsertModel, InferSelectModel, sql } from 'drizzle-orm';
 import { check, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
 import { MatchId } from 'lib/domain/match/match.id';
+import { OsuRoomId } from 'lib/domain/osu-multiplayer/osu-room.id';
 import { StageId } from 'lib/domain/stage/stage.id';
 import { TeamId } from 'lib/domain/team/team.id';
 import { UserId } from 'lib/domain/user/user.id';
+import { osuMultiplayerRooms } from '../osu-multiplayer/rooms';
 import { stages } from '../stages';
 import { teams } from '../teams';
 import { users } from '../users';
@@ -27,13 +29,17 @@ export const matches = pgTable(
 
     startsAt: timestamp('starts_at').notNull(),
     endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
-    mpUrl: text('mp_url'),
+    osuRoomId: text('osu_room_id')
+      .$type<OsuRoomId>()
+      .unique()
+      .references(() => osuMultiplayerRooms.id),
     vodUrl: text('vod_url'),
-    redTeamId: text('red_team_id').$type<TeamId>().references(() => teams.id),
-    blueTeamId: text('blue_team_id').$type<TeamId>().references(() => teams.id),
-    redScore: integer('red_score'),
-    blueScore: integer('blue_score'),
-
+    redTeamId: text('red_team_id')
+      .$type<TeamId>()
+      .references(() => teams.id),
+    blueTeamId: text('blue_team_id')
+      .$type<TeamId>()
+      .references(() => teams.id),
     createdAt,
     updatedAt,
   },

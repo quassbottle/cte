@@ -100,6 +100,38 @@ export const actions: Actions = {
 		}
 
 		redirect(303, `/events/${params.slug}`);
+	},
+	selectQualificationLobbySolo: async (event) => {
+		if (!event.locals.session) return fail(401, { message: 'You must be logged in.' });
+		const lobbyId = String((await event.request.formData()).get('lobbyId') ?? '');
+		if (!lobbyId) return fail(400, { message: 'Lobby is required.' });
+		try {
+			await createBackendClient(event).qualificationLobbies.selectSolo(event.params.slug, lobbyId);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				message: backendErrorMessage(cause, 'Selection failed.')
+			});
+		}
+		return { ok: true };
+	},
+	selectQualificationLobbyTeam: async (event) => {
+		if (!event.locals.session) return fail(401, { message: 'You must be logged in.' });
+		const values = Object.fromEntries(await event.request.formData());
+		const lobbyId = String(values.lobbyId ?? '');
+		const teamId = String(values.teamId ?? '');
+		if (!lobbyId || !teamId) return fail(400, { message: 'Lobby and team are required.' });
+		try {
+			await createBackendClient(event).qualificationLobbies.selectTeam(
+				event.params.slug,
+				lobbyId,
+				teamId
+			);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				message: backendErrorMessage(cause, 'Selection failed.')
+			});
+		}
+		return { ok: true };
 	}
 };
 

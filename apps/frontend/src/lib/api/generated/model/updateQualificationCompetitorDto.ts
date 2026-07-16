@@ -7,12 +7,6 @@
  */
 
 export interface UpdateQualificationCompetitorDto {
-	/**
-	 * @maximum 9007199254740991
-	 * @exclusiveMinimum 0
-	 * @nullable
-	 */
-	seed?: number | null;
 	withdrawn?: boolean;
 	/**
 	 * @maxLength 1000

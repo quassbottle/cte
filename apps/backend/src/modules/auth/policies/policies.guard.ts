@@ -60,7 +60,28 @@ export class PoliciesGuard implements CanActivate {
     );
 
     if (!isAllowed) {
-      this.throwAccessDenied(policyContext);
+      if (policyContext.subject === 'Mappool') {
+        throw new MappoolException(
+          'Only tournament creator or admin can manage mappools',
+          MappoolExceptionCode.MAPPOOL_ACCESS_DENIED,
+        );
+      }
+      if (policyContext.subject === 'Stage') {
+        throw new StageException(
+          'Only tournament creator or admin can manage stages',
+          StageExceptionCode.STAGE_ACCESS_DENIED,
+        );
+      }
+      if (policyContext.subject === 'Match') {
+        throw new MatchException(
+          'Only tournament creator or admin can manage matches',
+          MatchExceptionCode.MATCH_ACCESS_DENIED,
+        );
+      }
+      throw new TournamentException(
+        'Only admin can manage tournaments',
+        TournamentExceptionCode.TOURNAMENT_ACCESS_DENIED,
+      );
     }
 
     return true;
@@ -82,33 +103,5 @@ export class PoliciesGuard implements CanActivate {
     }
 
     return resolver.resolve(request);
-  }
-
-  private throwAccessDenied(context: PolicyContext): never {
-    if (context.subject === 'Mappool') {
-      throw new MappoolException(
-        'Only tournament creator or admin can manage mappools',
-        MappoolExceptionCode.MAPPOOL_ACCESS_DENIED,
-      );
-    }
-
-    if (context.subject === 'Stage') {
-      throw new StageException(
-        'Only tournament creator or admin can manage stages',
-        StageExceptionCode.STAGE_ACCESS_DENIED,
-      );
-    }
-
-    if (context.subject === 'Match') {
-      throw new MatchException(
-        'Only tournament creator or admin can manage matches',
-        MatchExceptionCode.MATCH_ACCESS_DENIED,
-      );
-    }
-
-    throw new TournamentException(
-      'Only admin can manage tournaments',
-      TournamentExceptionCode.TOURNAMENT_ACCESS_DENIED,
-    );
   }
 }

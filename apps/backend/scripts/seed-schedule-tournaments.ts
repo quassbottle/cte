@@ -4,6 +4,7 @@ import { AppModule } from '../src/app.module';
 import { BeatmapId, beatmapId } from '../src/lib/domain/beatmap/beatmap.id';
 import { mappoolId } from '../src/lib/domain/mappool/mappool.id';
 import { matchId } from '../src/lib/domain/match/match.id';
+import { StaffRoleId } from '../src/lib/domain/staff-role/staff-role.id';
 import { stageId } from '../src/lib/domain/stage/stage.id';
 import { teamId } from '../src/lib/domain/team/team.id';
 import { tournamentId } from '../src/lib/domain/tournament/tournament.id';
@@ -17,10 +18,12 @@ import {
   matchStaff,
   Schema,
   soloParticipants,
+  staffRoles,
   stages,
   teamParticipants,
   teams,
   tournaments,
+  tournamentStaffMembers,
   users,
 } from '../src/lib/infrastructure/db';
 import { OsuService } from '../src/lib/infrastructure/osu/osu.service';
@@ -53,6 +56,16 @@ type OsuBeatmapResponse = {
 };
 
 const seedTournamentNames = ['Solo Tournament', 'Team Tournament'];
+const staffRoleNames = [
+  'Host',
+  'Referee',
+  'Mapper',
+  'Commentator',
+  'Streamer',
+  'Playtester',
+] as const;
+
+type StaffRoleName = (typeof staffRoleNames)[number];
 
 const seedUserCandidates = [
   124493, 7562902, 1047883, 3103765, 1601717, 7151382, 458681, 854752, 596170,
@@ -259,6 +272,20 @@ const requireSeedUser = (
   return user;
 };
 
+const getStaffRoles = async (db: SeedDb) => {
+  const roles = await db
+    .select({ id: staffRoles.id, name: staffRoles.name })
+    .from(staffRoles)
+    .where(inArray(staffRoles.name, staffRoleNames));
+  const rolesByName = new Map(roles.map((role) => [role.name, role.id]));
+
+  if (rolesByName.size !== staffRoleNames.length) {
+    throw new Error('Seed staff roles are incomplete');
+  }
+
+  return rolesByName as Map<StaffRoleName, StaffRoleId>;
+};
+
 const createTournamentSeed = async (
   db: SeedDb,
   params: {
@@ -266,6 +293,7 @@ const createTournamentSeed = async (
     isTeam: boolean;
     hostId: UserId;
     seedUsers: SeedUser[];
+    staffRolesByName: Map<StaffRoleName, StaffRoleId>;
     seedBeatmaps: SeedBeatmap[];
     usersByOsuId: Map<number, { id: UserId; osuUsername: string }>;
     beatmapsByOsuBeatmapId: Map<number, BeatmapId>;
@@ -355,6 +383,39 @@ const createTournamentSeed = async (
     ),
   };
 
+  await db.insert(tournamentStaffMembers).values([
+    {
+      tournamentId: tournament,
+      roleId: params.staffRolesByName.get('Host')!,
+      userId: params.hostId,
+    },
+    {
+      tournamentId: tournament,
+      roleId: params.staffRolesByName.get('Referee')!,
+      userId: staffUsers.referee.id,
+    },
+    {
+      tournamentId: tournament,
+      roleId: params.staffRolesByName.get('Mapper')!,
+      userId: staffUsers.commentatorA.id,
+    },
+    {
+      tournamentId: tournament,
+      roleId: params.staffRolesByName.get('Commentator')!,
+      userId: staffUsers.commentatorA.id,
+    },
+    {
+      tournamentId: tournament,
+      roleId: params.staffRolesByName.get('Streamer')!,
+      userId: staffUsers.streamer.id,
+    },
+    {
+      tournamentId: tournament,
+      roleId: params.staffRolesByName.get('Playtester')!,
+      userId: staffUsers.commentatorB.id,
+    },
+  ]);
+
   if (params.isTeam) {
     for (let index = 0; index < matchPairs.length; index += 1) {
       const [captainOsuId, teammateOsuId] = matchPairs[index];
@@ -367,7 +428,6 @@ const createTournamentSeed = async (
         name: `Team ${index + 1}`,
         captainId: captain.id,
         tournamentId: tournament,
-        seed: index + 1,
       });
       await db.insert(teamParticipants).values([
         {
@@ -385,7 +445,6 @@ const createTournamentSeed = async (
       params.seedUsers.slice(0, 8).map((seedUser) => ({
         tournamentId: tournament,
         userId: requireSeedUser(params.usersByOsuId, seedUser.osuId).id,
-        seed: seedUser.seed,
       })),
     );
   }
@@ -395,17 +454,14 @@ const createTournamentSeed = async (
     const left = requireSeedUser(params.usersByOsuId, leftOsuId);
     const right = requireSeedUser(params.usersByOsuId, rightOsuId);
     const currentMatchId = matchId();
-    const stage = index < 3 ? qualifier : finals;
-
     await db.insert(matches).values({
       id: currentMatchId,
       name: `Match ${index + 1}`,
-      stageId: stage,
+      stageId: finals,
       matchNumber: index + 1,
       creatorId: params.hostId,
       startsAt: new Date(Date.UTC(2026, 6, 10 + index, 16, 0, 0)),
       endsAt: new Date(Date.UTC(2026, 6, 10 + index, 17, 30, 0)),
-      mpUrl: `https://osu.ppy.sh/community/matches/${1000000 + index}`,
       vodUrl: `https://www.twitch.tv/videos/${1000000 + index}`,
     });
 
@@ -413,14 +469,10 @@ const createTournamentSeed = async (
       {
         matchId: currentMatchId,
         userId: left.id,
-        score: index === 3 ? null : 6,
-        isWinner: index === 3 ? null : true,
       },
       {
         matchId: currentMatchId,
         userId: right.id,
-        score: index === 3 ? null : index + 1,
-        isWinner: index === 3 ? null : false,
       },
     ]);
 
@@ -467,6 +519,7 @@ const main = async () => {
     const hostId = requireSeedUser(usersByOsuId, seedUsers[0].osuId).id;
 
     await db.transaction(async (tx) => {
+      const staffRolesByName = await getStaffRoles(tx);
       const existing = await tx
         .select({ id: tournaments.id })
         .from(tournaments)
@@ -485,6 +538,7 @@ const main = async () => {
         name: 'Solo Tournament',
         isTeam: false,
         hostId,
+        staffRolesByName,
         seedUsers,
         seedBeatmaps,
         usersByOsuId,
@@ -495,6 +549,7 @@ const main = async () => {
         name: 'Team Tournament',
         isTeam: true,
         hostId,
+        staffRolesByName,
         seedUsers,
         seedBeatmaps,
         usersByOsuId,

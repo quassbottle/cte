@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TournamentDto, TournamentParticipantDto } from '$lib/api/types';
+	import type { TournamentStaffRoleDto } from '$lib/api/generated/model';
 	import type { Viewer } from '$lib/types/viewer';
 	import { Button } from '$lib/components/ui/button';
 	import RegisterDialog from './RegisterDialog.svelte';
@@ -11,6 +12,13 @@
 	export let user: Viewer | null;
 	export let participants: TournamentParticipantDto[];
 	export let form: TournamentRegistrationForm;
+	export let staff: TournamentStaffRoleDto[];
+	$: isBlockedStaff = Boolean(
+		user?.id &&
+		staff.some(
+			(role) => !role.canParticipate && role.members.some((member) => member.id === user?.id)
+		)
+	);
 
 	$: isLoggedIn = Boolean(user?.id);
 	$: isRegistered = Boolean(
@@ -51,6 +59,7 @@
 					class="w-[140px] bg-accept text-[12px]"
 					variant="accept"
 					on:click={() => (isRegistrationModalOpen = true)}
+					disabled={isBlockedStaff}
 				>
 					{registerButtonText}
 				</Button>
@@ -87,6 +96,7 @@
 						variant="accept"
 						type="button"
 						on:click={() => (isSoloRegisterModalOpen = true)}
+						disabled={isBlockedStaff}
 					>
 						{registerButtonText}
 					</Button>

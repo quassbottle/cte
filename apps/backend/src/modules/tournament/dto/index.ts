@@ -1,5 +1,6 @@
 import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
 import { paginationSchema } from 'lib/common/utils/zod/pagination';
+import { staffRoleIdSchema } from 'lib/domain/staff-role/staff-role.id';
 import { teamIdSchema } from 'lib/domain/team/team.id';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
 import { tournamentModeSchema } from 'lib/domain/tournament/tournament.mode';
@@ -166,6 +167,27 @@ export class TournamentTeamDto extends createZodDto(tournamentTeamDtoSchema, {
   codec: true,
 }) {}
 
+export const tournamentStaffRoleDtoSchema = z.object({
+  id: staffRoleIdSchema,
+  name: z.string(),
+  canParticipate: z.boolean(),
+  members: z.array(tournamentParticipantDtoSchema),
+});
+
+export class TournamentStaffRoleDto extends createZodDto(
+  tournamentStaffRoleDtoSchema,
+  { codec: true },
+) {}
+
+export const assignTournamentStaffDtoSchema = z.object({
+  roleId: staffRoleIdSchema,
+  userId: userIdSchema,
+});
+
+export class AssignTournamentStaffDto extends createZodDto(
+  assignTournamentStaffDtoSchema,
+) {}
+
 export const tournamentTeamSummaryDtoSchema = z.object({
   id: teamIdSchema,
   name: z.string(),
@@ -177,10 +199,10 @@ export class TournamentTeamSummaryDto extends createZodDto(
 
 export const updateQualificationCompetitorDtoSchema = z
   .object({
-    seed: z.number().int().positive().nullable().optional(),
     withdrawn: z.boolean().optional(),
     withdrawalReason: z.string().trim().max(1000).nullable().optional(),
   })
+  .strict()
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field is required',
   });

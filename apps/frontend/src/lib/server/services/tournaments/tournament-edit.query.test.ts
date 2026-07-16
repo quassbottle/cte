@@ -20,9 +20,13 @@ describe('getTournamentEditPage', () => {
 				getTeams: async () => ({ data: [] }),
 				qualification: {
 					getRoster: async () => ({ data: { kind: 'solo', participants: [] } })
-				}
+				},
+				staff: { get: async () => ({ data: [] }) }
 			},
 			stages: {
+				findByTournament: async () => ({ data: [] })
+			},
+			qualificationLobbies: {
 				findByTournament: async () => ({ data: [] })
 			},
 			mappools: {

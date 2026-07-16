@@ -3,7 +3,13 @@ jest.mock('@paralleldrive/cuid2', () => ({
   init: jest.fn(() => jest.fn(() => 'test-id')),
 }));
 
-import { scheduleMatchUpsertDtoSchema } from './index';
+import { matchDtoSchema, scheduleMatchUpsertDtoSchema } from './index';
+
+it('does not expose persisted score compatibility fields on a match', () => {
+  expect(matchDtoSchema.keyof().options).not.toEqual(
+    expect.arrayContaining(['redScore', 'blueScore']),
+  );
+});
 
 describe('scheduleMatchUpsertDtoSchema', () => {
   it('accepts a complete schedule match payload', () => {
@@ -16,8 +22,8 @@ describe('scheduleMatchUpsertDtoSchema', () => {
       mpUrl: null,
       vodUrl: 'https://example.com/vod',
       players: [
-        { userId: 'cku123456789012345678901', score: 6 },
-        { userId: 'cku123456789012345678902', score: 4 },
+        { userId: 'cku123456789012345678901' },
+        { userId: 'cku123456789012345678902' },
       ],
       staff: [
         { userId: 'cku123456789012345678903', role: 'referee' },
@@ -27,6 +33,10 @@ describe('scheduleMatchUpsertDtoSchema', () => {
 
     expect(parsed.players).toHaveLength(2);
     expect(parsed.staff).toHaveLength(2);
+    expect(parsed).not.toHaveProperty('redScore');
+    expect(parsed).not.toHaveProperty('blueScore');
+    expect(parsed.players[0]).not.toHaveProperty('score');
+    expect(parsed.players[0]).not.toHaveProperty('isWinner');
   });
 
   it('accepts a team match payload', () => {

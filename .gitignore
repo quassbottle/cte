@@ -150,3 +150,5 @@ graphify-out
 
 # VPS secrets prepared for manual upload
 apps/infra/vps-env/
+
+.codex

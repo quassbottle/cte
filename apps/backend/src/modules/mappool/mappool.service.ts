@@ -25,6 +25,7 @@ import {
 } from 'lib/infrastructure/db';
 import { BeatmapService } from 'modules/beatmap/beatmap.service';
 import { MappoolBeatmapView } from 'modules/beatmap/types';
+import { QualificationResultsService } from 'modules/qualification/qualification-results.service';
 import { MappoolCreateParams, MappoolUpdateParams } from './types';
 
 @Injectable()
@@ -32,6 +33,7 @@ export class MappoolService {
   constructor(
     @Inject('DB') private readonly drizzle: Schema,
     private readonly beatmapService: BeatmapService,
+    private readonly qualificationResults: QualificationResultsService,
   ) {}
 
   public async create(params: MappoolCreateParams): Promise<DbMappool> {
@@ -52,6 +54,7 @@ export class MappoolService {
       .values({ id, ...params })
       .returning();
 
+    await this.qualificationResults.invalidate(stageId);
     return created;
   }
 
@@ -94,10 +97,7 @@ export class MappoolService {
       })
       .from(mappools)
       .innerJoin(stages, eq(stages.id, mappools.stageId))
-      .leftJoin(
-        mappoolsBeatmaps,
-        eq(mappoolsBeatmaps.mappoolId, mappools.id),
-      )
+      .leftJoin(mappoolsBeatmaps, eq(mappoolsBeatmaps.mappoolId, mappools.id))
       .leftJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
       .where(
         and(
@@ -138,7 +138,9 @@ export class MappoolService {
     return [...byId.values()];
   }
 
-  public async findBeatmaps(params: { id: MappoolId }): Promise<MappoolBeatmapView[]> {
+  public async findBeatmaps(params: {
+    id: MappoolId;
+  }): Promise<MappoolBeatmapView[]> {
     const { id } = params;
 
     await this.getById({ id });
@@ -195,6 +197,7 @@ export class MappoolService {
       );
     }
 
+    await this.qualificationResults.invalidate(current.stageId);
     return updated;
   }
 
@@ -213,6 +216,7 @@ export class MappoolService {
       );
     }
 
+    await this.qualificationResults.invalidate(deleted.stageId);
     return deleted;
   }
 
@@ -225,7 +229,7 @@ export class MappoolService {
     const { id, mod, osuBeatmapsetId, osuBeatmapId } = params;
     const normalizedMod = this.normalizeMod(mod);
 
-    await this.getById({ id });
+    const mappool = await this.getById({ id });
 
     const beatmap = await this.beatmapService.findOrCreate({
       osuBeatmapId,
@@ -248,6 +252,7 @@ export class MappoolService {
       })
       .returning();
 
+    await this.qualificationResults.invalidate(mappool.stageId);
     return this.beatmapService.toMappoolBeatmapView({
       mappoolBeatmap: created,
       beatmap,
@@ -265,7 +270,7 @@ export class MappoolService {
     const { id, osuBeatmapId, mod, index, osuBeatmapsetId, nextOsuBeatmapId } =
       params;
 
-    await this.getById({ id });
+    const mappool = await this.getById({ id });
 
     const current = await this.getBeatmapInMappoolByOsuBeatmapId({
       id,
@@ -305,6 +310,7 @@ export class MappoolService {
         );
       }
 
+      await this.qualificationResults.invalidate(mappool.stageId);
       return this.beatmapService.toMappoolBeatmapView({
         mappoolBeatmap: updated,
         beatmap,
@@ -312,9 +318,7 @@ export class MappoolService {
     }
 
     const nextMod =
-      mod === undefined
-        ? current.mappoolBeatmap.mod
-        : this.normalizeMod(mod);
+      mod === undefined ? current.mappoolBeatmap.mod : this.normalizeMod(mod);
     const nextIndex =
       index ??
       (nextMod === current.mappoolBeatmap.mod
@@ -346,6 +350,7 @@ export class MappoolService {
       );
     }
 
+    await this.qualificationResults.invalidate(mappool.stageId);
     return this.beatmapService.toMappoolBeatmapView({
       mappoolBeatmap: updated,
       beatmap: current.beatmap,
@@ -358,7 +363,7 @@ export class MappoolService {
   }): Promise<MappoolBeatmapView> {
     const { id, osuBeatmapId } = params;
 
-    await this.getById({ id });
+    const mappool = await this.getById({ id });
 
     const current = await this.getBeatmapInMappoolByOsuBeatmapId({
       id,
@@ -382,6 +387,7 @@ export class MappoolService {
       );
     }
 
+    await this.qualificationResults.invalidate(mappool.stageId);
     return this.beatmapService.toMappoolBeatmapView({
       mappoolBeatmap: deleted,
       beatmap: current.beatmap,

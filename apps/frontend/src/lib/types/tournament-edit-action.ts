@@ -9,26 +9,32 @@ export type EditAction =
 	| 'createScheduleMatch'
 	| 'updateScheduleMatch'
 	| 'deleteScheduleMatch'
-	| 'syncScheduleMatch'
-	| 'stopScheduleMatch'
+	| 'createQualificationLobby'
+	| 'updateQualificationLobby'
+	| 'deleteQualificationLobby'
+	| 'startQualificationLobby'
+	| 'stopQualificationLobby'
 	| 'updateQualificationSolo'
 	| 'updateQualificationTeam'
 	| 'updateQualificationTeamMember'
-	| 'calculateQualificationSeeds'
 	| 'createMappool'
 	| 'updateMappoolVisibility'
 	| 'addMappoolBeatmap'
 	| 'updateMappoolBeatmap'
 	| 'replaceMappoolBeatmap'
-	| 'deleteMappoolBeatmap';
+	| 'deleteMappoolBeatmap'
+	| 'assignTournamentStaff'
+	| 'removeTournamentStaff';
 
 type ActionContext = {
 	stageId?: string;
 	matchId?: string;
+	lobbyId?: string;
 	mappoolId?: string;
 	beatmapId?: string;
 	teamId?: string;
 	userId?: string;
+	roleId?: string;
 };
 
 export type TournamentEditActionResult =

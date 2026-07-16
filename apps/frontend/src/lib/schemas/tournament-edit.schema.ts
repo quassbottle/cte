@@ -74,6 +74,10 @@ export const stageUpdateFormSchema = stageCreateFormSchema.and(
 export const stageDeleteFormSchema = z.object({
 	stageId: z.string().trim().min(1, 'Stage id is required')
 });
+export const tournamentStaffFormSchema = z.object({
+	roleId: z.string().trim().min(1, 'Role is required'),
+	userId: z.string().trim().min(1, 'User is required')
+});
 
 export const qualificationCompetitorFormSchema = z
 	.object({
@@ -154,13 +158,9 @@ export const scheduleMatchFormSchema = z
 		mpUrl: optionalText,
 		vodUrl: optionalText,
 		player1UserId: z.string().trim().optional(),
-		player1Score: optionalInt,
 		player2UserId: z.string().trim().optional(),
-		player2Score: optionalInt,
 		redTeamId: z.string().trim().optional(),
 		blueTeamId: z.string().trim().optional(),
-		redScore: optionalInt,
-		blueScore: optionalInt,
 		refereeId: z.string().trim().optional(),
 		streamerId: z.string().trim().optional(),
 		commentatorIds: csvIds
@@ -180,22 +180,10 @@ export const scheduleMatchFormSchema = z
 		vodUrl: value.vodUrl,
 		redTeamId: value.redTeamId || null,
 		blueTeamId: value.blueTeamId || null,
-		redScore: value.redScore,
-		blueScore: value.blueScore,
 		players: [
-			value.player1UserId
-				? {
-						userId: value.player1UserId,
-						score: value.player1Score
-					}
-				: null,
-			value.player2UserId
-				? {
-						userId: value.player2UserId,
-						score: value.player2Score
-					}
-				: null
-		].filter((player): player is { userId: string; score: number | null } => Boolean(player)),
+			value.player1UserId ? { userId: value.player1UserId } : null,
+			value.player2UserId ? { userId: value.player2UserId } : null
+		].filter((player): player is { userId: string } => Boolean(player)),
 		staff: [
 			value.refereeId ? { userId: value.refereeId, role: 'referee' as const } : null,
 			value.streamerId ? { userId: value.streamerId, role: 'streamer' as const } : null,
@@ -212,6 +200,7 @@ export type TournamentEditForm = z.infer<typeof tournamentEditFormSchema>;
 export type StageCreateForm = z.infer<typeof stageCreateFormSchema>;
 export type StageUpdateForm = z.infer<typeof stageUpdateFormSchema>;
 export type StageDeleteForm = z.infer<typeof stageDeleteFormSchema>;
+export type TournamentStaffForm = z.infer<typeof tournamentStaffFormSchema>;
 export type QualificationCompetitorForm = z.infer<typeof qualificationCompetitorFormSchema>;
 export type QualificationSoloForm = z.infer<typeof qualificationSoloFormSchema>;
 export type QualificationTeamForm = z.infer<typeof qualificationTeamFormSchema>;

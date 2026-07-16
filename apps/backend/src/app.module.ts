@@ -5,7 +5,6 @@ import { ScheduleModule } from '@nestjs/schedule';
 import { EnvService } from 'lib/common/env/env.service';
 import { AuthModule } from 'modules/auth/auth.module';
 import { MappoolModule } from 'modules/mappool/mappool.module';
-import { MatchSyncModule } from 'modules/match-sync/match-sync.module';
 import { OsuFeatureModule } from 'modules/osu/osu.module';
 import { StageModule } from 'modules/stage/stage.module';
 import { TournamentModule } from 'modules/tournament/tournament.module';
@@ -25,7 +24,6 @@ import * as schema from './lib/infrastructure/db/schema';
     TournamentModule,
     StageModule,
     MappoolModule,
-    MatchSyncModule,
     DrizzlePGModule.registerAsync({
       tag: 'DB',
       inject: [EnvService],

@@ -1,11 +1,5 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
-import {
-  boolean,
-  integer,
-  pgTable,
-  primaryKey,
-  text,
-} from 'drizzle-orm/pg-core';
+import { pgTable, primaryKey, text } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
 import { MatchId } from 'lib/domain/match/match.id';
 import { UserId } from 'lib/domain/user/user.id';
@@ -24,9 +18,6 @@ export const matchParticipants = pgTable(
       .notNull()
       .$type<UserId>()
       .references(() => users.id, { onDelete: 'cascade' }),
-
-    score: integer('score'),
-    isWinner: boolean('is_winner'),
 
     createdAt,
     updatedAt,

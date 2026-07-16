@@ -1,12 +1,14 @@
 import type {
 	AddMappoolBeatmapDto,
+	AssignTournamentStaffDto,
 	CreateTournamentDto,
 	CreateMappoolDto,
 	CreateStageDto,
+	QualificationLobbyUpsertDto,
 	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
-	TournamentParticipantDto,
+	TournamentControllerSearchTeamsParams,
 	UpdateMappoolBeatmapDto,
 	UpdateMappoolDto,
 	UpdateQualificationCompetitorDto,
@@ -23,6 +25,14 @@ import {
 	mappoolControllerFindBeatmaps,
 	mappoolControllerPatch,
 	mappoolControllerUpdateBeatmap,
+	qualificationLobbyControllerCreate,
+	qualificationLobbyControllerDelete,
+	qualificationLobbyControllerFindByTournament,
+	qualificationLobbyControllerSelectSolo,
+	qualificationLobbyControllerSelectTeam,
+	qualificationLobbyControllerStart,
+	qualificationLobbyControllerStop,
+	qualificationLobbyControllerUpdate,
 	osuControllerGetBeatmapMetadata,
 	stageControllerCreate,
 	stageControllerFindMany,
@@ -33,13 +43,16 @@ import {
 	tournamentControllerDeleteMatch,
 	tournamentControllerFindMany,
 	tournamentControllerArchive,
+	tournamentControllerAssignStaff,
 	tournamentControllerGetById,
 	tournamentControllerGetParticipants,
 	tournamentControllerGetQualificationRoster,
+	tournamentControllerGetStaff,
 	tournamentControllerGetTeams,
 	tournamentControllerPatch,
 	tournamentControllerRegister,
-	tournamentControllerCalculateQualificationSeeds,
+	tournamentControllerRemoveStaff,
+	tournamentControllerSearchTeams,
 	tournamentControllerUnregister,
 	tournamentControllerUpdateQualificationTeam,
 	tournamentControllerUpdateQualificationTeamParticipant,
@@ -53,7 +66,6 @@ import {
 	tournamentControllerGetSchedule
 } from '$lib/server/backend/generated/endpoints';
 import type { ServerSession } from '$lib/server/auth/session';
-import { backendFetch } from './fetcher';
 
 type BackendClientInput =
 	| Pick<ServerSession, 'token'>
@@ -115,17 +127,26 @@ export function createBackendClient(input?: BackendClientInput) {
 			getParticipants: (id: string, params?: TournamentControllerGetParticipantsParams) =>
 				tournamentControllerGetParticipants(id, params, options),
 			searchParticipants: (id: string, query: string, signal?: AbortSignal) =>
-				backendFetch<{ data: TournamentParticipantDto[] }>(
-					`/api/tournaments/${id}/participants?${new URLSearchParams({ query, limit: '20' })}`,
+				tournamentControllerGetParticipants(
+					id,
+					{ query, limit: 20 } satisfies TournamentControllerGetParticipantsParams,
 					{ ...options, signal }
 				),
 			searchTeams: (id: string, query: string, signal?: AbortSignal) =>
-				backendFetch<{ data: { id: string; name: string }[] }>(
-					`/api/tournaments/${id}/teams/search?${new URLSearchParams({ query, limit: '20' })}`,
+				tournamentControllerSearchTeams(
+					id,
+					{ query, limit: 20 } satisfies TournamentControllerSearchTeamsParams,
 					{ ...options, signal }
 				),
 			getSchedule: (id: string) => tournamentControllerGetSchedule(id, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
+			staff: {
+				get: (id: string) => tournamentControllerGetStaff(id, options),
+				assign: (id: string, input: AssignTournamentStaffDto) =>
+					tournamentControllerAssignStaff(id, input, options),
+				remove: (id: string, roleId: string, userId: string) =>
+					tournamentControllerRemoveStaff(id, roleId, userId, options)
+			},
 			update: (id: string, input: UpdateTournamentDto) =>
 				tournamentControllerPatch(id, input, options),
 			register: (id: string, input: Parameters<typeof tournamentControllerRegister>[1]) =>
@@ -143,14 +164,7 @@ export function createBackendClient(input?: BackendClientInput) {
 					userId: string,
 					input: UpdateQualificationTeamParticipantDto
 				) =>
-					tournamentControllerUpdateQualificationTeamParticipant(
-						id,
-						teamId,
-						userId,
-						input,
-						options
-					),
-				calculate: (id: string) => tournamentControllerCalculateQualificationSeeds(id, options)
+					tournamentControllerUpdateQualificationTeamParticipant(id, teamId, userId, input, options)
 			}
 		},
 		matches: {
@@ -159,11 +173,25 @@ export function createBackendClient(input?: BackendClientInput) {
 			update: (tournamentId: string, matchId: string, input: ScheduleMatchUpsertDto) =>
 				tournamentControllerUpdateMatch(tournamentId, matchId, input, options),
 			delete: (tournamentId: string, matchId: string) =>
-				tournamentControllerDeleteMatch(tournamentId, matchId, options),
-			sync: (matchId: string) =>
-				backendFetch(`/api/matches/${matchId}/sync`, { ...options, method: 'POST' }),
-			stopSync: (matchId: string) =>
-				backendFetch(`/api/matches/${matchId}/sync`, { ...options, method: 'DELETE' })
+				tournamentControllerDeleteMatch(tournamentId, matchId, options)
+		},
+		qualificationLobbies: {
+			findByTournament: (tournamentId: string) =>
+				qualificationLobbyControllerFindByTournament(tournamentId, options),
+			create: (tournamentId: string, input: QualificationLobbyUpsertDto) =>
+				qualificationLobbyControllerCreate(tournamentId, input, options),
+			update: (tournamentId: string, lobbyId: string, input: QualificationLobbyUpsertDto) =>
+				qualificationLobbyControllerUpdate(tournamentId, lobbyId, input, options),
+			delete: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerDelete(tournamentId, lobbyId, options),
+			start: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerStart(tournamentId, lobbyId, options),
+			stop: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerStop(tournamentId, lobbyId, options),
+			selectSolo: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerSelectSolo(tournamentId, lobbyId, options),
+			selectTeam: (tournamentId: string, lobbyId: string, teamId: string) =>
+				qualificationLobbyControllerSelectTeam(tournamentId, lobbyId, { teamId }, options)
 		},
 		stages: {
 			findByTournament: (tournamentId: string) => stageControllerFindMany(tournamentId, options),

@@ -13,3 +13,5 @@ coverage
 docs
 apps/irc-bot
 apps/stats
+.codex
+graphify-out

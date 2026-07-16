@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TournamentDto, TournamentParticipantDto, UserDto } from '$lib/api/types';
+	import type { TournamentStaffRoleDto } from '$lib/api/generated/model';
 	import type { Viewer } from '$lib/types/viewer';
 	import TournamentBanner from '$lib/components/tournamentBanner/tournamentBanner.svelte';
 	import BreadcrumbList from '$lib/components/ui/breadcrumbList/breadcrumbList.svelte';
@@ -15,6 +16,7 @@
 	export let participants: TournamentParticipantDto[];
 	export let host: UserDto;
 	export let form: TournamentRegistrationForm | undefined;
+	export let staff: TournamentStaffRoleDto[];
 
 	$: participantsCount = tournament.participantsCount ?? participants.length;
 </script>
@@ -61,7 +63,7 @@
 				</BreadcrumbList>
 			</div>
 
-			<RegistrationControls {tournament} {user} {participants} {form} />
+			<RegistrationControls {tournament} {user} {participants} {form} {staff} />
 		</Content>
 	</TournamentBanner>
 

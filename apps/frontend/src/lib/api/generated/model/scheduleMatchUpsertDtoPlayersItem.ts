@@ -9,10 +9,4 @@
 export type ScheduleMatchUpsertDtoPlayersItem = {
 	/** @pattern ^[0-9a-z]+$ */
 	userId: string;
-	/**
-	 * @minimum -9007199254740991
-	 * @maximum 9007199254740991
-	 * @nullable
-	 */
-	score?: number | null;
 };
