@@ -1,5 +1,5 @@
 {
-  "id": "c768d96f-b9cc-40a6-a25b-84d64b5a3698",
+  "id": "cd814968-2904-468a-bbb9-03a5586a54b8",
   "prevId": "6fe41938-a61e-4f30-b703-262cd6a0f683",
   "version": "7",
   "dialect": "postgresql",
@@ -1159,27 +1159,6 @@
           "concurrently": false,
           "method": "btree",
           "with": {}
-        },
-        "qualification_lobbies_id_stage_unique": {
-          "name": "qualification_lobbies_id_stage_unique",
-          "columns": [
-            {
-              "expression": "id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            },
-            {
-              "expression": "stage_id",
-              "isExpression": false,
-              "asc": true,
-              "nulls": "last"
-            }
-          ],
-          "isUnique": true,
-          "concurrently": false,
-          "method": "btree",
-          "with": {}
         }
       },
       "foreignKeys": {
@@ -1230,6 +1209,14 @@
           "nullsNotDistinct": false,
           "columns": [
             "osu_room_id"
+          ]
+        },
+        "qualification_lobbies_id_stage_unique": {
+          "name": "qualification_lobbies_id_stage_unique",
+          "nullsNotDistinct": false,
+          "columns": [
+            "id",
+            "stage_id"
           ]
         }
       },

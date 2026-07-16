@@ -48,7 +48,8 @@ CREATE TABLE "qualification_lobbies" (
 	"osu_room_id" text,
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
-	CONSTRAINT "qualification_lobbies_osu_room_id_unique" UNIQUE("osu_room_id")
+	CONSTRAINT "qualification_lobbies_osu_room_id_unique" UNIQUE("osu_room_id"),
+	CONSTRAINT "qualification_lobbies_id_stage_unique" UNIQUE("id","stage_id")
 );
 --> statement-breakpoint
 CREATE TABLE "qualification_lobby_players" (
@@ -99,7 +100,6 @@ ALTER TABLE "qualification_results" ADD CONSTRAINT "qualification_results_stage_
 ALTER TABLE "qualification_results" ADD CONSTRAINT "qualification_results_user_id_users_id_fk" FOREIGN KEY ("user_id") REFERENCES "public"."users"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "qualification_results" ADD CONSTRAINT "qualification_results_team_id_teams_id_fk" FOREIGN KEY ("team_id") REFERENCES "public"."teams"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 CREATE UNIQUE INDEX "qualification_lobbies_stage_number_unique" ON "qualification_lobbies" USING btree ("stage_id","number");--> statement-breakpoint
-CREATE UNIQUE INDEX "qualification_lobbies_id_stage_unique" ON "qualification_lobbies" USING btree ("id","stage_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "qualification_lobby_players_stage_user_unique" ON "qualification_lobby_players" USING btree ("stage_id","user_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "qualification_lobby_teams_stage_team_unique" ON "qualification_lobby_teams" USING btree ("stage_id","team_id");--> statement-breakpoint
 CREATE UNIQUE INDEX "qualification_results_stage_user_unique" ON "qualification_results" USING btree ("stage_id","user_id") WHERE "qualification_results"."user_id" IS NOT NULL;--> statement-breakpoint

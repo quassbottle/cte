@@ -4,6 +4,7 @@ import {
   pgTable,
   text,
   timestamp,
+  unique,
   uniqueIndex,
 } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
@@ -43,7 +44,7 @@ export const qualificationLobbies = pgTable(
       table.stageId,
       table.number,
     ),
-    uniqueIndex('qualification_lobbies_id_stage_unique').on(
+    unique('qualification_lobbies_id_stage_unique').on(
       table.id,
       table.stageId,
     ),
