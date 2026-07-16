@@ -3,15 +3,15 @@ jest.mock('@paralleldrive/cuid2', () => ({
   init: jest.fn(() => jest.fn(() => 'test-id')),
 }));
 
-import { teamIdSchema } from 'lib/domain/team/team.id';
 import { staffRoleIdSchema } from 'lib/domain/staff-role/staff-role.id';
+import { teamIdSchema } from 'lib/domain/team/team.id';
 import { userIdSchema } from 'lib/domain/user/user.id';
 import z from 'zod';
 import {
   qualificationRosterDtoSchema,
   tournamentParticipantDtoSchema,
-  tournamentTeamDtoSchema,
   tournamentStaffRoleDtoSchema,
+  tournamentTeamDtoSchema,
   updateQualificationCompetitorDtoSchema,
   updateQualificationTeamParticipantDtoSchema,
 } from './index';
@@ -23,24 +23,25 @@ describe('qualification management schemas', () => {
     );
     expect(
       updateQualificationCompetitorDtoSchema.parse({
-        seed: null,
         withdrawn: false,
         withdrawalReason: ' ignored by service ',
       }),
     ).toEqual({
-      seed: null,
       withdrawn: false,
       withdrawalReason: 'ignored by service',
     });
   });
 
-  it('does not allow team-member seeds', () => {
+  it('does not allow manual qualification seeds', () => {
+    expect(
+      updateQualificationCompetitorDtoSchema.safeParse({ seed: 1 }).success,
+    ).toBe(false);
     expect(
       updateQualificationTeamParticipantDtoSchema.safeParse({ seed: 1 })
         .success,
     ).toBe(false);
     expect(
-      updateQualificationTeamParticipantDtoSchema.safeParse({
+      updateQualificationCompetitorDtoSchema.safeParse({
         seed: 2,
         withdrawn: true,
       }).success,

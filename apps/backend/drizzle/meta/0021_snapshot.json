@@ -1,5 +1,5 @@
 {
-  "id": "fc5734ab-ff4b-4abb-924e-48f209a9f645",
+  "id": "bc543f4e-1168-4839-8371-17a199cb337c",
   "prevId": "6fe41938-a61e-4f30-b703-262cd6a0f683",
   "version": "7",
   "dialect": "postgresql",
@@ -1006,12 +1006,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "seed": {
-          "name": "seed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "withdrawn": {
           "name": "withdrawn",
           "type": "boolean",
@@ -1806,12 +1800,6 @@
           "primaryKey": false,
           "notNull": true
         },
-        "seed": {
-          "name": "seed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
-        },
         "withdrawn": {
           "name": "withdrawn",
           "type": "boolean",
@@ -1890,12 +1878,6 @@
           "type": "text",
           "primaryKey": false,
           "notNull": true
-        },
-        "seed": {
-          "name": "seed",
-          "type": "integer",
-          "primaryKey": false,
-          "notNull": false
         },
         "withdrawn": {
           "name": "withdrawn",

@@ -9,7 +9,6 @@ describe('MatchResultService', () => {
       matchId: string;
       userId: string;
       osuId: number;
-      seed: number | null;
       osuUsername: string;
     }[];
     beatmaps?: { osuBeatmapId: number }[];
@@ -79,12 +78,11 @@ describe('MatchResultService', () => {
         },
       ],
       players: [
-        { matchId, userId: 'first', osuId: 11, seed: 1, osuUsername: 'First' },
+        { matchId, userId: 'first', osuId: 11, osuUsername: 'First' },
         {
           matchId,
           userId: 'second',
           osuId: 22,
-          seed: 2,
           osuUsername: 'Second',
         },
       ],
@@ -119,10 +117,9 @@ describe('MatchResultService', () => {
           matchId,
           userId: 'second',
           osuId: 22,
-          seed: 2,
           osuUsername: 'Second',
         },
-        { matchId, userId: 'first', osuId: 11, seed: 1, osuUsername: 'First' },
+        { matchId, userId: 'first', osuId: 11, osuUsername: 'First' },
       ],
       beatmaps: [{ osuBeatmapId: 10 }],
       games: [{ osuGameId: 1, osuBeatmapId: 10, endedAt: new Date() }],

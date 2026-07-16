@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, eq, inArray } from 'drizzle-orm';
+import { eq, inArray } from 'drizzle-orm';
 import { MatchId } from 'lib/domain/match/match.id';
 import { OsuRoomId } from 'lib/domain/osu-multiplayer/osu-room.id';
 import {
@@ -12,8 +12,6 @@ import {
   osuMultiplayerRooms,
   osuMultiplayerScores,
   Schema,
-  soloParticipants,
-  stages,
   users,
 } from 'lib/infrastructure/db';
 import { calculateMatchPoints } from './score';
@@ -88,20 +86,10 @@ export class MatchResultService {
         matchId: matchParticipants.matchId,
         userId: users.id,
         osuId: users.osuId,
-        seed: soloParticipants.seed,
         osuUsername: users.osuUsername,
       })
       .from(matchParticipants)
       .innerJoin(users, eq(users.id, matchParticipants.userId))
-      .innerJoin(matches, eq(matches.id, matchParticipants.matchId))
-      .innerJoin(stages, eq(stages.id, matches.stageId))
-      .leftJoin(
-        soloParticipants,
-        and(
-          eq(soloParticipants.tournamentId, stages.tournamentId),
-          eq(soloParticipants.userId, users.id),
-        ),
-      )
       .where(inArray(matchParticipants.matchId, matchIds));
     const beatmapsPromise = this.db
       .select({
@@ -159,8 +147,6 @@ export class MatchResultService {
           .filter((player) => player.matchId === match.matchId)
           .sort(
             (a, b) =>
-              (a.seed ?? Number.MAX_SAFE_INTEGER) -
-                (b.seed ?? Number.MAX_SAFE_INTEGER) ||
               a.osuUsername.localeCompare(b.osuUsername) ||
               a.userId.localeCompare(b.userId),
           );

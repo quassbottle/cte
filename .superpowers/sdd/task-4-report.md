@@ -110,3 +110,38 @@ Intentional audit leftovers: `modules/match/match-sync.scheduler.ts` is the
 active regular-match orchestrator using shared raw sync, while `redScore`,
 `blueScore`, `score`, and `isWinner` in match result/schedule code are derived
 response values rather than persisted or manually accepted compatibility data.
+
+## Second review fixes
+
+- Added a live PostgreSQL concurrency test using the existing Pool/drizzle
+  pattern. Two players concurrently move from another lobby into one remaining
+  seat; one succeeds, one receives the lobby-full domain error, and the final
+  persisted capacity is 16.
+- Removed manual qualification seed mutation from the competitor DTO and
+  service tests. Seeds are read-only materialized results.
+- Removed legacy `seed` columns from `solo_participants`, `teams`, and
+  `team_participants`, including seed-script writes and regular schedule/result
+  ordering. Regular match players now sort deterministically by username and
+  user ID.
+- Removed the dead direct `/matches/:matchId/sync` policy resolution branch and
+  match-to-tournament lookup.
+- Removed the public `QualificationResultsRepository.replace` duplicate write
+  path; only locked `recalculate` and `invalidate` mutate result rows.
+- Regenerated the single clean migration as
+  `0021_big_swordsman.sql`; it drops all three legacy seed columns in addition
+  to the obsolete sync, attempt, score, and winner persistence.
+
+Second review verification:
+
+```text
+18 suites passed
+65 tests passed, including live PostgreSQL concurrency
+backend build passed
+migration journal and raw/lobby schema checks passed
+git diff --check passed
+graphify update: 3,073 nodes, 4,983 edges
+```
+
+Deletion audit leaves only `qualification_results.seed`, the intended
+materialized seed value. Regular match `redScore`, `blueScore`, player `score`,
+and `isWinner` remain only as derived response values.

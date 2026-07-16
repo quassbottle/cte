@@ -428,7 +428,6 @@ const createTournamentSeed = async (
         name: `Team ${index + 1}`,
         captainId: captain.id,
         tournamentId: tournament,
-        seed: index + 1,
       });
       await db.insert(teamParticipants).values([
         {
@@ -446,7 +445,6 @@ const createTournamentSeed = async (
       params.seedUsers.slice(0, 8).map((seedUser) => ({
         tournamentId: tournament,
         userId: requireSeedUser(params.usersByOsuId, seedUser.osuId).id,
-        seed: seedUser.seed,
       })),
     );
   }

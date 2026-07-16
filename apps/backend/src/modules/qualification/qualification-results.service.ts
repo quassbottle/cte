@@ -136,31 +136,6 @@ export class QualificationResultsRepository {
     };
   }
 
-  public replace(
-    stageId: StageId,
-    isTeam: boolean,
-    rows: ReturnType<typeof calculateQualificationSeeds>,
-  ) {
-    return this.db.transaction(async (tx) => {
-      await lockQualificationStage(tx, stageId);
-      await tx
-        .delete(qualificationResults)
-        .where(eq(qualificationResults.stageId, stageId));
-      if (rows.length) {
-        await tx.insert(qualificationResults).values(
-          rows.map((row) => ({
-            stageId,
-            ...(isTeam
-              ? { teamId: row.competitorId as never }
-              : { userId: row.competitorId as never }),
-            seed: row.seed,
-            aggregateScore: row.totalScore,
-          })),
-        );
-      }
-    });
-  }
-
   public invalidate(stageId: StageId) {
     return this.db.transaction(async (tx) => {
       await lockQualificationStage(tx, stageId);

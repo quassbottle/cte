@@ -58,7 +58,6 @@ const schedulePlayerDtoSchema = z.object({
   osuUsername: z.string(),
   avatarUrl: z.url(),
   countryCode: z.string().nullable(),
-  seed: z.number().int().nullable(),
   score: z.number().int().nullable(),
   isWinner: z.boolean().nullable(),
 });

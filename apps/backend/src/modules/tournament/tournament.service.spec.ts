@@ -111,10 +111,13 @@ describe('TournamentService', () => {
       await service.updateQualificationTeam({
         id: tournamentId,
         teamId,
-        data: { seed: 2 },
+        data: { withdrawn: true, withdrawalReason: 'late' },
       });
 
-      expect(query.set).toHaveBeenCalledWith({ seed: 2 });
+      expect(query.set).toHaveBeenCalledWith({
+        withdrawn: true,
+        withdrawalReason: 'late',
+      });
       expect(containsValue(query.condition, tournamentId)).toBe(true);
       expect(containsValue(query.condition, teamId)).toBe(true);
     });
@@ -147,7 +150,7 @@ describe('TournamentService', () => {
         service.updateSoloQualificationParticipant({
           id: tournamentId,
           userId,
-          data: { seed: 1 },
+          data: { withdrawn: true },
         }),
       ).rejects.toThrow('Participant not found in tournament');
     });

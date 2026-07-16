@@ -1,7 +1,7 @@
 import { dateToIsoString, isoStringToDate } from 'lib/common/utils/zod/date';
 import { paginationSchema } from 'lib/common/utils/zod/pagination';
-import { teamIdSchema } from 'lib/domain/team/team.id';
 import { staffRoleIdSchema } from 'lib/domain/staff-role/staff-role.id';
+import { teamIdSchema } from 'lib/domain/team/team.id';
 import { tournamentIdSchema } from 'lib/domain/tournament/tournament.id';
 import { tournamentModeSchema } from 'lib/domain/tournament/tournament.mode';
 import { userIdSchema } from 'lib/domain/user/user.id';
@@ -199,10 +199,10 @@ export class TournamentTeamSummaryDto extends createZodDto(
 
 export const updateQualificationCompetitorDtoSchema = z
   .object({
-    seed: z.number().int().positive().nullable().optional(),
     withdrawn: z.boolean().optional(),
     withdrawalReason: z.string().trim().max(1000).nullable().optional(),
   })
+  .strict()
   .refine((value) => Object.keys(value).length > 0, {
     message: 'At least one field is required',
   });

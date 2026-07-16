@@ -26,37 +26,6 @@ describe('QualificationResultsService', () => {
     await expect(service.isStale('stage' as never)).resolves.toBe(true);
   });
 
-  it('replaces one stage atomically', async () => {
-    const calls: string[] = [];
-    const tx = {
-      execute: jest.fn(() => calls.push('lock')),
-      delete: jest.fn(() => ({
-        where: jest.fn(() => calls.push('delete')),
-      })),
-      insert: jest.fn(() => ({
-        values: jest.fn(() => calls.push('insert')),
-      })),
-    };
-    const db = {
-      transaction: jest.fn((callback: (tx: never) => unknown) =>
-        callback(tx as never),
-      ),
-    };
-    await new QualificationResultsRepository(db as never).replace(
-      'stage' as never,
-      false,
-      [
-        {
-          competitorId: 'user',
-          seed: 1,
-          averagePlace: 1,
-          totalScore: 100,
-        },
-      ],
-    );
-    expect(calls).toEqual(['lock', 'delete', 'insert']);
-  });
-
   it('serializes invalidation with recalculation on the same stage lock', async () => {
     const calls: string[] = [];
     const tx = {

@@ -9,7 +9,6 @@ import { MatchResultService } from './match-result.service';
 
 const stageRow = aliasedTable(stages, 'stage_row');
 const stageRowId = sql.raw('"stage_row"."id"');
-const stageRowTournamentId = sql.raw('"stage_row"."tournament_id"');
 
 @Injectable()
 export class ScheduleService {
@@ -65,25 +64,12 @@ export class ScheduleService {
                           'osuUsername', player_user.osu_username,
                           'avatarUrl', concat('https://a.ppy.sh/', player_user.osu_id),
                           'countryCode', player_user.country_code,
-                          'seed', (
-                            select solo_seed.seed
-                            from solo_participants solo_seed
-                            where solo_seed.tournament_id = ${stageRowTournamentId}
-                              and solo_seed.user_id = player_user.id
-                            limit 1
-                          ),
                           'score', null,
                           'isWinner', null
                         )
                         order by
-                          (
-                            select solo_seed.seed
-                            from solo_participants solo_seed
-                            where solo_seed.tournament_id = ${stageRowTournamentId}
-                              and solo_seed.user_id = player_user.id
-                            limit 1
-                          ) asc nulls last,
-                          player_user.osu_username asc
+                          player_user.osu_username asc,
+                          player_user.id asc
                       )
                       from match_participants match_player
                       inner join users player_user on player_user.id = match_player.user_id
