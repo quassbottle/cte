@@ -426,7 +426,7 @@ export class TournamentService {
     id: TournamentId;
     teamId: TeamId;
     userId: UserId;
-    data: Omit<UpdateQualificationCompetitorInput, 'seed'>;
+    data: UpdateQualificationCompetitorInput;
   }): Promise<void> {
     const { id, teamId, userId, data } = params;
     if (data.withdrawn === false) {
