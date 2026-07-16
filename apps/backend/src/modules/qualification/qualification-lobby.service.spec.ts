@@ -6,6 +6,26 @@ jest.mock('@paralleldrive/cuid2', () => ({
 import { QualificationLobbyService } from './qualification-lobby.service';
 
 describe('QualificationLobbyService', () => {
+  it('stops the lobby room through the shared sync service', async () => {
+    const syncService = { stop: jest.fn() };
+    const service = new QualificationLobbyService(
+      {} as never,
+      {} as never,
+      syncService as never,
+      {} as never,
+    );
+    (service as unknown as { getScoped: jest.Mock }).getScoped = jest
+      .fn()
+      .mockResolvedValue({ osuRoomId: 'room' });
+
+    await service.stop({
+      tournamentId: 'tournament' as never,
+      lobbyId: 'lobby' as never,
+    });
+
+    expect(syncService.stop).toHaveBeenCalledWith('room');
+  });
+
   it('rejects a non-captain team selection', async () => {
     const db = {
       query: {

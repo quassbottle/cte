@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { PoliciesModule } from 'modules/auth/policies/policies.module';
 import { OsuMultiplayerSyncModule } from 'modules/osu-multiplayer-sync/osu-multiplayer-sync.module';
 import { QualificationLobbyController } from './qualification-lobby.controller';
 import { QualificationLobbyRepository } from './qualification-lobby.repository';
@@ -13,7 +14,7 @@ import {
 } from './qualification-sync.scheduler';
 
 @Module({
-  imports: [OsuMultiplayerSyncModule],
+  imports: [OsuMultiplayerSyncModule, PoliciesModule],
   controllers: [QualificationLobbyController],
   providers: [
     QualificationLobbyRepository,

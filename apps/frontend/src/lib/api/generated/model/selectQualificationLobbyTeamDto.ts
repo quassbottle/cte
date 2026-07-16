@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export type ScheduleMatchUpsertDtoPlayersItem = {
+export interface SelectQualificationLobbyTeamDto {
 	/** @pattern ^[0-9a-z]+$ */
-	userId: string;
-};
+	teamId: string;
+}

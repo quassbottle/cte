@@ -8,7 +8,10 @@
 		TournamentTeamDto,
 		UserDto
 	} from '$lib/api/types';
-	import type { StageScheduleDtoOutput } from '$lib/api/generated/model';
+	import type {
+		QualificationLobbyDtoOutput,
+		StageScheduleDtoOutput
+	} from '$lib/api/generated/model';
 	import type { Viewer } from '$lib/types/viewer';
 	import { Button } from '$lib/components/ui/button';
 	import { page } from '$app/stores';
@@ -16,6 +19,7 @@
 	import InfoTab from './components/InfoTab.svelte';
 	import ParticipantsTab from './components/ParticipantsTab.svelte';
 	import ScheduleTab from './components/ScheduleTab.svelte';
+	import QualificationLobbiesTab from './components/QualificationLobbiesTab.svelte';
 	import MappoolsTab from './components/MappoolsTab.svelte';
 	import StaffTab from './components/StaffTab.svelte';
 	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
@@ -30,13 +34,21 @@
 		host: UserDto;
 		stages: StageDto[];
 		schedule: StageScheduleDtoOutput[];
+		qualificationLobbies: QualificationLobbyDtoOutput[];
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		canEditTournament: boolean;
 	};
 	export let form: TournamentRegistrationForm;
 
-	const tournamentTabs = ['info', 'participants', 'staff', 'schedule', 'mappools'] as const;
+	const tournamentTabs = [
+		'info',
+		'participants',
+		'staff',
+		'schedule',
+		'lobbies',
+		'mappools'
+	] as const;
 	type TournamentTab = (typeof tournamentTabs)[number];
 	let activeTab: TournamentTab = 'info';
 	let lastTabParam: string | null = null;
@@ -58,10 +70,10 @@
 
 	function getEditHref(tab: TournamentTab) {
 		const params = new URLSearchParams($page.url.searchParams);
-		const editTab = tab === 'schedule' || tab === 'mappools' ? tab : 'info';
+		const editTab = tab === 'schedule' || tab === 'lobbies' || tab === 'mappools' ? tab : 'info';
 		params.set('tab', editTab);
 
-		if (editTab !== 'schedule' && editTab !== 'mappools') {
+		if (editTab !== 'schedule' && editTab !== 'lobbies' && editTab !== 'mappools') {
 			params.delete('stage');
 		}
 
@@ -97,6 +109,7 @@
 			<Item value="participants" href={getTournamentTabHref('participants')}>Participants</Item>
 			<Item value="staff" href={getTournamentTabHref('staff')}>Staff</Item>
 			<Item value="schedule" href={getTournamentTabHref('schedule')}>Schedule</Item>
+			<Item value="lobbies" href={getTournamentTabHref('lobbies')}>Lobbies</Item>
 			<Item value="mappools" href={getTournamentTabHref('mappools')}>Mappools</Item>
 		</Head>
 
@@ -131,6 +144,14 @@
 	<ContentItem value="schedule">
 		<ScheduleTab schedule={data.schedule} />
 	</ContentItem>
+	<ContentItem value="lobbies"
+		><QualificationLobbiesTab
+			stages={data.stages}
+			lobbies={data.qualificationLobbies}
+			user={data.user}
+			teams={data.teams}
+		/></ContentItem
+	>
 
 	<ContentItem value="mappools">
 		<MappoolsTab

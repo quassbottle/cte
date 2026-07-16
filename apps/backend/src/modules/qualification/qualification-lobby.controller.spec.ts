@@ -23,13 +23,25 @@ describe('QualificationLobbyController', () => {
     });
   });
 
-  it('scopes sync to the route tournament', async () => {
-    const service = { sync: jest.fn() };
+  it('scopes start to the route tournament', async () => {
+    const service = { start: jest.fn() };
     const controller = new QualificationLobbyController(service as never);
 
-    await controller.sync(tournamentId, lobbyId);
+    await controller.start(tournamentId, lobbyId);
 
-    expect(service.sync).toHaveBeenCalledWith({
+    expect(service.start).toHaveBeenCalledWith({
+      tournamentId,
+      lobbyId,
+    });
+  });
+
+  it('scopes stop to the route tournament', async () => {
+    const service = { stop: jest.fn() };
+    const controller = new QualificationLobbyController(service as never);
+
+    await controller.stop(tournamentId, lobbyId);
+
+    expect(service.stop).toHaveBeenCalledWith({
       tournamentId,
       lobbyId,
     });

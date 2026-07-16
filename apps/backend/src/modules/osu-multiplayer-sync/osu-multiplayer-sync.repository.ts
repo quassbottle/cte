@@ -77,7 +77,11 @@ export class OsuMultiplayerSyncRepository {
           ),
         })
         .where(eq(osuMultiplayerRooms.id, roomId));
-      return { ...row, leaseToken };
+      return {
+        ...row,
+        status: force ? ('active' as const) : row.status,
+        leaseToken,
+      };
     });
   }
 

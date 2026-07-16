@@ -5,39 +5,21 @@
  * Auth and user management API
  * OpenAPI spec version: 1.0
  */
-import type { ScheduleMatchUpsertDtoPlayersItem } from './scheduleMatchUpsertDtoPlayersItem';
-import type { ScheduleMatchUpsertDtoStaffItem } from './scheduleMatchUpsertDtoStaffItem';
 
-export interface ScheduleMatchUpsertDto {
-	/** @minLength 1 */
-	name: string;
+export interface QualificationLobbyUpsertDto {
 	/** @pattern ^[0-9a-z]+$ */
 	stageId: string;
 	/**
 	 * @maximum 9007199254740991
 	 * @exclusiveMinimum 0
-	 * @nullable
 	 */
-	matchNumber?: number | null;
+	number: number;
+	/** @pattern ^[0-9a-z]+$ */
+	refereeId: string;
 	/** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
 	startsAt: string;
 	/** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
 	endsAt: string;
 	/** @nullable */
 	mpUrl?: string | null;
-	/** @nullable */
-	vodUrl?: string | null;
-	/**
-	 * @nullable
-	 * @pattern ^[0-9a-z]+$
-	 */
-	redTeamId?: string | null;
-	/**
-	 * @nullable
-	 * @pattern ^[0-9a-z]+$
-	 */
-	blueTeamId?: string | null;
-	/** @maxItems 2 */
-	players?: ScheduleMatchUpsertDtoPlayersItem[];
-	staff?: ScheduleMatchUpsertDtoStaffItem[];
 }

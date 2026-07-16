@@ -15,6 +15,8 @@ import { TeamId } from 'lib/domain/team/team.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import {
+  osuMultiplayerRooms,
+  osuMultiplayerScores,
   qualificationLobbies,
   qualificationLobbyPlayers,
   qualificationLobbyTeams,
@@ -80,7 +82,7 @@ export class QualificationLobbyService {
       );
     return Promise.all(
       lobbies.map(async ({ lobby, refereeName }) => {
-        const [players, selectedTeams] = await Promise.all([
+        const [players, selectedTeams, attempts] = await Promise.all([
           this.db
             .select({ id: users.id, name: users.osuUsername })
             .from(qualificationLobbyPlayers)
@@ -91,7 +93,29 @@ export class QualificationLobbyService {
             .from(qualificationLobbyTeams)
             .innerJoin(teams, eq(teams.id, qualificationLobbyTeams.teamId))
             .where(eq(qualificationLobbyTeams.lobbyId, lobby.id)),
+          lobby.osuRoomId
+            ? this.db
+                .select({
+                  beatmapId: osuMultiplayerScores.osuBeatmapId,
+                  gameId: osuMultiplayerScores.osuGameId,
+                  osuUserId: osuMultiplayerScores.osuUserId,
+                  userId: users.id,
+                  userName: users.osuUsername,
+                  score: osuMultiplayerScores.score,
+                })
+                .from(osuMultiplayerScores)
+                .leftJoin(
+                  users,
+                  eq(users.osuId, osuMultiplayerScores.osuUserId),
+                )
+                .where(eq(osuMultiplayerScores.roomId, lobby.osuRoomId))
+            : [],
         ]);
+        const room = lobby.osuRoomId
+          ? await this.db.query.osuMultiplayerRooms.findFirst({
+              where: eq(osuMultiplayerRooms.id, lobby.osuRoomId),
+            })
+          : null;
         const [teamSeats] = selectedTeams.length
           ? await this.db
               .select({ value: count() })
@@ -114,6 +138,9 @@ export class QualificationLobbyService {
           players,
           teams: selectedTeams,
           seatCount: players.length + (teamSeats?.value ?? 0),
+          syncStatus: room?.status ?? null,
+          lastSyncedAt: room?.lastSyncedAt?.toISOString() ?? null,
+          attempts,
         };
       }),
     );
@@ -156,7 +183,7 @@ export class QualificationLobbyService {
     return deleted;
   }
 
-  public async sync(input: {
+  public async start(input: {
     tournamentId: TournamentId;
     lobbyId: QualificationLobbyId;
   }) {
@@ -165,6 +192,16 @@ export class QualificationLobbyService {
       throw new BadRequestException('Lobby has no osu room');
     await this.syncService.sync(lobby.osuRoomId, true);
     await this.results.recalculate(lobby.stageId);
+  }
+
+  public async stop(input: {
+    tournamentId: TournamentId;
+    lobbyId: QualificationLobbyId;
+  }) {
+    const lobby = await this.getScoped(input.tournamentId, input.lobbyId);
+    if (!lobby.osuRoomId)
+      throw new BadRequestException('Lobby has no osu room');
+    await this.syncService.stop(lobby.osuRoomId);
   }
 
   public async joinSolo(input: {

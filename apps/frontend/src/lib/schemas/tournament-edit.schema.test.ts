@@ -41,9 +41,6 @@ describe('scheduleMatchFormSchema', () => {
 			player2UserId: 'player-2'
 		});
 
-		expect(result.players).toEqual([
-			{ userId: 'player-1', score: null },
-			{ userId: 'player-2', score: null }
-		]);
+		expect(result.players).toEqual([{ userId: 'player-1' }, { userId: 'player-2' }]);
 	});
 });

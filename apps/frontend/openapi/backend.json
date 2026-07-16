@@ -674,41 +674,6 @@
         ]
       }
     },
-    "/api/tournaments/{id}/qualification/calculate-seeds": {
-      "post": {
-        "operationId": "TournamentController_calculateQualificationSeeds",
-        "parameters": [
-          {
-            "name": "id",
-            "required": true,
-            "in": "path",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "201": {
-            "description": "Recalculates qualification seeds.",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/AugmentedZodDto_Output"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "bearer": []
-          }
-        ],
-        "tags": [
-          "Tournament"
-        ]
-      }
-    },
     "/api/tournaments/{id}/teams/search": {
       "get": {
         "operationId": "TournamentController_searchTeams",
@@ -799,6 +764,144 @@
                   "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/TournamentTeamDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/staff": {
+      "get": {
+        "operationId": "TournamentController_getStaff",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Returns tournament staff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TournamentStaffRoleDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      },
+      "post": {
+        "operationId": "TournamentController_assignStaff",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AssignTournamentStaffDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Assigns tournament staff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TournamentStaffRoleDto"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/staff/{roleId}/{userId}": {
+      "delete": {
+        "operationId": "TournamentController_removeStaff",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "roleId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Removes tournament staff.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TournamentStaffRoleDto"
                   }
                 }
               }
@@ -1089,12 +1192,123 @@
         ]
       }
     },
-    "/api/matches/{matchId}/sync": {
+    "/api/tournaments/{id}/qualification-lobbies": {
       "get": {
-        "operationId": "MatchSyncController_get",
+        "operationId": "QualificationLobbyController_findByTournament",
         "parameters": [
           {
-            "name": "matchId",
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/QualificationLobbyDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "QualificationLobby"
+        ]
+      },
+      "post": {
+        "operationId": "QualificationLobbyController_create",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualificationLobbyUpsertDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "QualificationLobby"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/qualification-lobbies/{lobbyId}": {
+      "patch": {
+        "operationId": "QualificationLobbyController_update",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lobbyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QualificationLobbyUpsertDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "QualificationLobby"
+        ]
+      },
+      "delete": {
+        "operationId": "QualificationLobbyController_delete",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lobbyId",
             "required": true,
             "in": "path",
             "schema": {
@@ -1108,14 +1322,24 @@
           }
         },
         "tags": [
-          "MatchSync"
+          "QualificationLobby"
         ]
-      },
+      }
+    },
+    "/api/tournaments/{id}/qualification-lobbies/{lobbyId}/start": {
       "post": {
-        "operationId": "MatchSyncController_sync",
+        "operationId": "QualificationLobbyController_start",
         "parameters": [
           {
-            "name": "matchId",
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lobbyId",
             "required": true,
             "in": "path",
             "schema": {
@@ -1129,14 +1353,22 @@
           }
         },
         "tags": [
-          "MatchSync"
+          "QualificationLobby"
         ]
       },
       "delete": {
-        "operationId": "MatchSyncController_stop",
+        "operationId": "QualificationLobbyController_stop",
         "parameters": [
           {
-            "name": "matchId",
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lobbyId",
             "required": true,
             "in": "path",
             "schema": {
@@ -1150,7 +1382,79 @@
           }
         },
         "tags": [
-          "MatchSync"
+          "QualificationLobby"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/qualification-lobbies/{lobbyId}/solo": {
+      "post": {
+        "operationId": "QualificationLobbyController_selectSolo",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lobbyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "QualificationLobby"
+        ]
+      }
+    },
+    "/api/tournaments/{id}/qualification-lobbies/{lobbyId}/team": {
+      "post": {
+        "operationId": "QualificationLobbyController_selectTeam",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lobbyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SelectQualificationLobbyTeamDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": ""
+          }
+        },
+        "tags": [
+          "QualificationLobby"
         ]
       }
     },
@@ -2273,13 +2577,6 @@
       "UpdateQualificationCompetitorDto": {
         "type": "object",
         "properties": {
-          "seed": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "nullable": true,
-            "minimum": 0
-          },
           "withdrawn": {
             "type": "boolean"
           },
@@ -2288,7 +2585,8 @@
             "maxLength": 1000,
             "nullable": true
           }
-        }
+        },
+        "additionalProperties": false
       },
       "UpdateQualificationTeamParticipantDto": {
         "type": "object",
@@ -2373,6 +2671,76 @@
           "name",
           "captainId",
           "participants"
+        ]
+      },
+      "TournamentStaffRoleDto": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "name": {
+            "type": "string"
+          },
+          "canParticipate": {
+            "type": "boolean"
+          },
+          "members": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "cuid2",
+                  "pattern": "^[0-9a-z]+$"
+                },
+                "osuId": {
+                  "type": "number"
+                },
+                "osuUsername": {
+                  "type": "string"
+                },
+                "avatarUrl": {
+                  "type": "string",
+                  "format": "uri"
+                }
+              },
+              "required": [
+                "id",
+                "osuId",
+                "osuUsername",
+                "avatarUrl"
+              ]
+            }
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "canParticipate",
+          "members"
+        ]
+      },
+      "AssignTournamentStaffDto": {
+        "type": "object",
+        "properties": {
+          "roleId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "userId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          }
+        },
+        "required": [
+          "roleId",
+          "userId"
         ]
       },
       "StageScheduleDto_Output": {
@@ -2532,12 +2900,6 @@
                         "type": "string",
                         "nullable": true
                       },
-                      "seed": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991,
-                        "nullable": true
-                      },
                       "score": {
                         "type": "integer",
                         "minimum": -9007199254740991,
@@ -2555,7 +2917,6 @@
                       "osuUsername",
                       "avatarUrl",
                       "countryCode",
-                      "seed",
                       "score",
                       "isWinner"
                     ],
@@ -2686,19 +3047,8 @@
             "pattern": "^[0-9a-z]+$",
             "nullable": true
           },
-          "redScore": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991,
-            "nullable": true
-          },
-          "blueScore": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991,
-            "nullable": true
-          },
           "players": {
+            "default": [],
             "maxItems": 2,
             "type": "array",
             "items": {
@@ -2708,12 +3058,6 @@
                   "type": "string",
                   "format": "cuid2",
                   "pattern": "^[0-9a-z]+$"
-                },
-                "score": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991,
-                  "nullable": true
                 }
               },
               "required": [
@@ -2813,18 +3157,6 @@
             "pattern": "^[0-9a-z]+$",
             "nullable": true
           },
-          "redScore": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991,
-            "nullable": true
-          },
-          "blueScore": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991,
-            "nullable": true
-          },
           "createdAt": {
             "type": "string",
             "format": "date-time",
@@ -2848,8 +3180,6 @@
           "vodUrl",
           "redTeamId",
           "blueTeamId",
-          "redScore",
-          "blueScore",
           "createdAt",
           "updatedAt"
         ]
@@ -2972,6 +3302,230 @@
             ]
           }
         }
+      },
+      "QualificationLobbyDto_Output": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "stageId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "number": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
+          },
+          "refereeId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "refereeName": {
+            "type": "string"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "mpUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          },
+          "players": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "cuid2",
+                  "pattern": "^[0-9a-z]+$"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "teams": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string",
+                  "format": "cuid2",
+                  "pattern": "^[0-9a-z]+$"
+                },
+                "name": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "id",
+                "name"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "seatCount": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 16
+          },
+          "syncStatus": {
+            "type": "string",
+            "enum": [
+              "active",
+              "stopped",
+              "completed",
+              null
+            ],
+            "nullable": true
+          },
+          "lastSyncedAt": {
+            "type": "string",
+            "nullable": true
+          },
+          "attempts": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "beatmapId": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "gameId": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "osuUserId": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "userId": {
+                  "type": "string",
+                  "format": "cuid2",
+                  "pattern": "^[0-9a-z]+$",
+                  "nullable": true
+                },
+                "userName": {
+                  "type": "string",
+                  "nullable": true
+                },
+                "score": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "beatmapId",
+                "gameId",
+                "osuUserId",
+                "userId",
+                "userName",
+                "score"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "id",
+          "stageId",
+          "number",
+          "refereeId",
+          "refereeName",
+          "startsAt",
+          "endsAt",
+          "players",
+          "teams",
+          "seatCount",
+          "syncStatus",
+          "lastSyncedAt",
+          "attempts"
+        ],
+        "additionalProperties": false
+      },
+      "QualificationLobbyUpsertDto": {
+        "type": "object",
+        "properties": {
+          "stageId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "number": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "minimum": 0
+          },
+          "refereeId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "startsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "endsAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$"
+          },
+          "mpUrl": {
+            "type": "string",
+            "format": "uri",
+            "nullable": true
+          }
+        },
+        "required": [
+          "stageId",
+          "number",
+          "refereeId",
+          "startsAt",
+          "endsAt"
+        ]
+      },
+      "SelectQualificationLobbyTeamDto": {
+        "type": "object",
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          }
+        },
+        "required": [
+          "teamId"
+        ]
       },
       "StageDto_Output": {
         "type": "object",

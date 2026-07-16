@@ -19,8 +19,8 @@ import {
 	stageCreateFormSchema,
 	stageDeleteFormSchema,
 	stageUpdateFormSchema,
-	tournamentEditFormSchema
-	, tournamentStaffFormSchema
+	tournamentEditFormSchema,
+	tournamentStaffFormSchema
 } from '$lib/schemas/tournament-edit.schema';
 import type { EditAction, TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 import { error, fail, redirect } from '@sveltejs/kit';
@@ -38,6 +38,7 @@ const requireSession = (locals: App.Locals) => {
 type ActionContext = {
 	stageId?: string;
 	matchId?: string;
+	lobbyId?: string;
 	mappoolId?: string;
 	beatmapId?: string;
 	teamId?: string;
@@ -47,6 +48,33 @@ type ActionContext = {
 
 const stringValue = (value: FormDataEntryValue | undefined) =>
 	typeof value === 'string' ? value : undefined;
+
+const lobbyInput = (values: Record<string, FormDataEntryValue>) => {
+	const stageId = stringValue(values.stageId);
+	const refereeId = stringValue(values.refereeId);
+	const number = Number(values.number);
+	const startsAt = new Date(String(values.startsAt ?? ''));
+	const endsAt = new Date(String(values.endsAt ?? ''));
+	if (
+		!stageId ||
+		!refereeId ||
+		!Number.isInteger(number) ||
+		number < 1 ||
+		Number.isNaN(startsAt.valueOf()) ||
+		Number.isNaN(endsAt.valueOf()) ||
+		endsAt <= startsAt
+	) {
+		throw new Error('Enter a stage, referee, positive number, and valid time range.');
+	}
+	return {
+		stageId,
+		refereeId,
+		number,
+		startsAt: startsAt.toISOString(),
+		endsAt: endsAt.toISOString(),
+		mpUrl: stringValue(values.mpUrl) || null
+	};
+};
 
 const submitForm = async <Schema extends z.ZodTypeAny>(
 	event: RequestEvent,
@@ -287,6 +315,133 @@ export const actions: Actions = {
 			} satisfies TournamentEditActionResult);
 		}
 	},
+	createQualificationLobby: (event) =>
+		withFormValues(event, async (values) => {
+			try {
+				await commands.createQualificationLobby(
+					createBackendClient(event),
+					event.params.slug,
+					lobbyInput(values)
+				);
+			} catch (cause) {
+				return fail(backendErrorStatus(cause), {
+					action: 'createQualificationLobby',
+					ok: false,
+					message: backendErrorMessage(
+						cause,
+						cause instanceof Error ? cause.message : 'Request failed'
+					),
+					errors: {},
+					stageId: stringValue(values.stageId)
+				} satisfies TournamentEditActionResult);
+			}
+			return {
+				action: 'createQualificationLobby',
+				ok: true,
+				stageId: stringValue(values.stageId)
+			} satisfies TournamentEditActionResult;
+		}),
+	updateQualificationLobby: (event) =>
+		withFormValues(event, async (values) => {
+			const lobbyId = stringValue(values.lobbyId);
+			try {
+				if (!lobbyId) throw new Error('Lobby id is required');
+				await commands.updateQualificationLobby(
+					createBackendClient(event),
+					event.params.slug,
+					lobbyId,
+					lobbyInput(values)
+				);
+			} catch (cause) {
+				return fail(backendErrorStatus(cause), {
+					action: 'updateQualificationLobby',
+					ok: false,
+					message: backendErrorMessage(
+						cause,
+						cause instanceof Error ? cause.message : 'Request failed'
+					),
+					errors: {},
+					lobbyId
+				} satisfies TournamentEditActionResult);
+			}
+			return {
+				action: 'updateQualificationLobby',
+				ok: true,
+				lobbyId
+			} satisfies TournamentEditActionResult;
+		}),
+	deleteQualificationLobby: async (event) => {
+		requireSession(event.locals);
+		const lobbyId = stringValue(Object.fromEntries(await event.request.formData()).lobbyId);
+		try {
+			if (!lobbyId) throw new Error('Lobby id is required');
+			await createBackendClient(event).qualificationLobbies.delete(event.params.slug, lobbyId);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				action: 'deleteQualificationLobby',
+				ok: false,
+				message: backendErrorMessage(
+					cause,
+					cause instanceof Error ? cause.message : 'Request failed'
+				),
+				errors: {},
+				lobbyId
+			} satisfies TournamentEditActionResult);
+		}
+		return {
+			action: 'deleteQualificationLobby',
+			ok: true,
+			lobbyId
+		} satisfies TournamentEditActionResult;
+	},
+	startQualificationLobby: async (event) => {
+		requireSession(event.locals);
+		const lobbyId = stringValue(Object.fromEntries(await event.request.formData()).lobbyId);
+		try {
+			if (!lobbyId) throw new Error('Lobby id is required');
+			await createBackendClient(event).qualificationLobbies.start(event.params.slug, lobbyId);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				action: 'startQualificationLobby',
+				ok: false,
+				message: backendErrorMessage(
+					cause,
+					cause instanceof Error ? cause.message : 'Request failed'
+				),
+				errors: {},
+				lobbyId
+			} satisfies TournamentEditActionResult);
+		}
+		return {
+			action: 'startQualificationLobby',
+			ok: true,
+			lobbyId
+		} satisfies TournamentEditActionResult;
+	},
+	stopQualificationLobby: async (event) => {
+		requireSession(event.locals);
+		const lobbyId = stringValue(Object.fromEntries(await event.request.formData()).lobbyId);
+		try {
+			if (!lobbyId) throw new Error('Lobby id is required');
+			await createBackendClient(event).qualificationLobbies.stop(event.params.slug, lobbyId);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				action: 'stopQualificationLobby',
+				ok: false,
+				message: backendErrorMessage(
+					cause,
+					cause instanceof Error ? cause.message : 'Request failed'
+				),
+				errors: {},
+				lobbyId
+			} satisfies TournamentEditActionResult);
+		}
+		return {
+			action: 'stopQualificationLobby',
+			ok: true,
+			lobbyId
+		} satisfies TournamentEditActionResult;
+	},
 	updateQualificationSolo: (event) =>
 		withFormValues(event, (values) =>
 			submitForm(
@@ -324,27 +479,28 @@ export const actions: Actions = {
 					commands.updateQualificationTeamMember(backend, event.params.slug, input)
 			)
 		),
-	calculateQualificationSeeds: async (event) => {
-		requireSession(event.locals);
-
-		try {
-			await commands.calculateQualificationSeeds(createBackendClient(event), event.params.slug);
-		} catch (cause) {
-			return fail(backendErrorStatus(cause), {
-				action: 'calculateQualificationSeeds',
-				ok: false,
-				message: backendErrorMessage(cause, 'Request failed'),
-				errors: {}
-			} satisfies TournamentEditActionResult);
-		}
-
-		return {
-			action: 'calculateQualificationSeeds',
-			ok: true
-		} satisfies TournamentEditActionResult;
-	},
-	assignTournamentStaff: (event) => withFormValues(event, (values) => submitForm(event, 'assignTournamentStaff', tournamentStaffFormSchema, values, { roleId: stringValue(values.roleId), userId: stringValue(values.userId) }, (backend, input) => commands.assignTournamentStaff(backend, event.params.slug, input))),
-	removeTournamentStaff: (event) => withFormValues(event, (values) => submitForm(event, 'removeTournamentStaff', tournamentStaffFormSchema, values, { roleId: stringValue(values.roleId), userId: stringValue(values.userId) }, (backend, input) => commands.removeTournamentStaff(backend, event.params.slug, input))),
+	assignTournamentStaff: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'assignTournamentStaff',
+				tournamentStaffFormSchema,
+				values,
+				{ roleId: stringValue(values.roleId), userId: stringValue(values.userId) },
+				(backend, input) => commands.assignTournamentStaff(backend, event.params.slug, input)
+			)
+		),
+	removeTournamentStaff: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'removeTournamentStaff',
+				tournamentStaffFormSchema,
+				values,
+				{ roleId: stringValue(values.roleId), userId: stringValue(values.userId) },
+				(backend, input) => commands.removeTournamentStaff(backend, event.params.slug, input)
+			)
+		),
 	createMappool: (event) =>
 		withFormValues(event, (values) =>
 			submitForm(

@@ -7,6 +7,7 @@
  */
 
 export * from './addMappoolBeatmapDto';
+export * from './assignTournamentStaffDto';
 export * from './augmentedZodDtoOutput';
 export * from './authControllerAuthCallbackParams';
 export * from './authTokenDtoOutput';
@@ -25,12 +26,19 @@ export * from './mappoolWithBeatmapsDtoOutputBeatmapsItem';
 export * from './mappoolWithBeatmapsDtoOutputBeatmapsItemMode';
 export * from './matchDto';
 export * from './osuBeatmapMetadataDtoOutput';
+export * from './qualificationLobbyDtoOutput';
+export * from './qualificationLobbyDtoOutputAttemptsItem';
+export * from './qualificationLobbyDtoOutputPlayersItem';
+export * from './qualificationLobbyDtoOutputSyncStatus';
+export * from './qualificationLobbyDtoOutputTeamsItem';
+export * from './qualificationLobbyUpsertDto';
 export * from './registerTournamentDto';
 export * from './registerTournamentDtoTeam';
 export * from './scheduleMatchUpsertDto';
 export * from './scheduleMatchUpsertDtoPlayersItem';
 export * from './scheduleMatchUpsertDtoStaffItem';
 export * from './scheduleMatchUpsertDtoStaffItemRole';
+export * from './selectQualificationLobbyTeamDto';
 export * from './stageDtoOutput';
 export * from './stageDtoOutputType';
 export * from './stageScheduleDtoOutput';
@@ -50,6 +58,8 @@ export * from './tournamentControllerSearchTeamsParams';
 export * from './tournamentDtoOutput';
 export * from './tournamentDtoOutputMode';
 export * from './tournamentParticipantDto';
+export * from './tournamentStaffRoleDto';
+export * from './tournamentStaffRoleDtoMembersItem';
 export * from './tournamentTeamDto';
 export * from './tournamentTeamDtoParticipantsItem';
 export * from './tournamentTeamSummaryDtoOutput';

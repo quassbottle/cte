@@ -12,9 +12,7 @@ describe('scheduleMatchFormSchema', () => {
 			mpUrl: '',
 			vodUrl: 'https://example.com/vod',
 			player1UserId: 'user-1',
-			player1Score: '6',
 			player2UserId: 'user-2',
-			player2Score: '4',
 			refereeId: 'ref-1',
 			streamerId: 'stream-1',
 			commentatorIds: 'com-1, com-2'
@@ -22,10 +20,7 @@ describe('scheduleMatchFormSchema', () => {
 
 		expect(parsed.matchNumber).toBe(7);
 		expect(parsed.mpUrl).toBeNull();
-		expect(parsed.players).toEqual([
-			{ userId: 'user-1', score: 6 },
-			{ userId: 'user-2', score: 4 }
-		]);
+		expect(parsed.players).toEqual([{ userId: 'user-1' }, { userId: 'user-2' }]);
 		expect(parsed.staff).toEqual([
 			{ userId: 'ref-1', role: 'referee' },
 			{ userId: 'stream-1', role: 'streamer' },
@@ -43,16 +38,12 @@ describe('scheduleMatchFormSchema', () => {
 			mpUrl: '',
 			vodUrl: '',
 			redTeamId: 'red-team',
-			blueTeamId: 'blue-team',
-			redScore: '5',
-			blueScore: '3'
+			blueTeamId: 'blue-team'
 		});
 
 		expect(parsed).toMatchObject({
 			redTeamId: 'red-team',
 			blueTeamId: 'blue-team',
-			redScore: 5,
-			blueScore: 3,
 			players: []
 		});
 	});

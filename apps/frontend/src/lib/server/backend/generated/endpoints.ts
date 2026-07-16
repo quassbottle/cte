@@ -7,6 +7,7 @@
  */
 import type {
 	AddMappoolBeatmapDto,
+	AssignTournamentStaffDto,
 	AugmentedZodDtoOutput,
 	AuthControllerAuthCallbackParams,
 	AuthTokenDtoOutput,
@@ -20,8 +21,11 @@ import type {
 	MappoolWithBeatmapsDtoOutput,
 	MatchDto,
 	OsuBeatmapMetadataDtoOutput,
+	QualificationLobbyDtoOutput,
+	QualificationLobbyUpsertDto,
 	RegisterTournamentDto,
 	ScheduleMatchUpsertDto,
+	SelectQualificationLobbyTeamDto,
 	StageDtoOutput,
 	StageScheduleDtoOutput,
 	TournamentControllerFindManyParams,
@@ -29,6 +33,7 @@ import type {
 	TournamentControllerSearchTeamsParams,
 	TournamentDtoOutput,
 	TournamentParticipantDto,
+	TournamentStaffRoleDto,
 	TournamentTeamDto,
 	TournamentTeamSummaryDtoOutput,
 	UpdateMappoolBeatmapDto,
@@ -543,35 +548,6 @@ export const tournamentControllerUpdateQualificationTeamParticipant = async (
 	);
 };
 
-export type tournamentControllerCalculateQualificationSeedsResponse201 = {
-	data: AugmentedZodDtoOutput;
-	status: 201;
-};
-
-export type tournamentControllerCalculateQualificationSeedsResponseSuccess =
-	tournamentControllerCalculateQualificationSeedsResponse201 & {
-		headers: Headers;
-	};
-export type tournamentControllerCalculateQualificationSeedsResponse =
-	tournamentControllerCalculateQualificationSeedsResponseSuccess;
-
-export const getTournamentControllerCalculateQualificationSeedsUrl = (id: string) => {
-	return `/api/tournaments/${id}/qualification/calculate-seeds`;
-};
-
-export const tournamentControllerCalculateQualificationSeeds = async (
-	id: string,
-	options?: RequestInit
-): Promise<tournamentControllerCalculateQualificationSeedsResponse> => {
-	return backendFetch<tournamentControllerCalculateQualificationSeedsResponse>(
-		getTournamentControllerCalculateQualificationSeedsUrl(id),
-		{
-			...options,
-			method: 'POST'
-		}
-	);
-};
-
 export type tournamentControllerSearchTeamsResponse200 = {
 	data: TournamentTeamSummaryDtoOutput[];
 	status: 200;
@@ -641,6 +617,101 @@ export const tournamentControllerGetTeams = async (
 		{
 			...options,
 			method: 'GET'
+		}
+	);
+};
+
+export type tournamentControllerGetStaffResponse200 = {
+	data: TournamentStaffRoleDto[];
+	status: 200;
+};
+
+export type tournamentControllerGetStaffResponseSuccess =
+	tournamentControllerGetStaffResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerGetStaffResponse = tournamentControllerGetStaffResponseSuccess;
+
+export const getTournamentControllerGetStaffUrl = (id: string) => {
+	return `/api/tournaments/${id}/staff`;
+};
+
+export const tournamentControllerGetStaff = async (
+	id: string,
+	options?: RequestInit
+): Promise<tournamentControllerGetStaffResponse> => {
+	return backendFetch<tournamentControllerGetStaffResponse>(
+		getTournamentControllerGetStaffUrl(id),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
+
+export type tournamentControllerAssignStaffResponse201 = {
+	data: TournamentStaffRoleDto[];
+	status: 201;
+};
+
+export type tournamentControllerAssignStaffResponseSuccess =
+	tournamentControllerAssignStaffResponse201 & {
+		headers: Headers;
+	};
+export type tournamentControllerAssignStaffResponse =
+	tournamentControllerAssignStaffResponseSuccess;
+
+export const getTournamentControllerAssignStaffUrl = (id: string) => {
+	return `/api/tournaments/${id}/staff`;
+};
+
+export const tournamentControllerAssignStaff = async (
+	id: string,
+	assignTournamentStaffDto: AssignTournamentStaffDto,
+	options?: RequestInit
+): Promise<tournamentControllerAssignStaffResponse> => {
+	return backendFetch<tournamentControllerAssignStaffResponse>(
+		getTournamentControllerAssignStaffUrl(id),
+		{
+			...options,
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(assignTournamentStaffDto)
+		}
+	);
+};
+
+export type tournamentControllerRemoveStaffResponse200 = {
+	data: TournamentStaffRoleDto[];
+	status: 200;
+};
+
+export type tournamentControllerRemoveStaffResponseSuccess =
+	tournamentControllerRemoveStaffResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerRemoveStaffResponse =
+	tournamentControllerRemoveStaffResponseSuccess;
+
+export const getTournamentControllerRemoveStaffUrl = (
+	id: string,
+	roleId: string,
+	userId: string
+) => {
+	return `/api/tournaments/${id}/staff/${roleId}/${userId}`;
+};
+
+export const tournamentControllerRemoveStaff = async (
+	id: string,
+	roleId: string,
+	userId: string,
+	options?: RequestInit
+): Promise<tournamentControllerRemoveStaffResponse> => {
+	return backendFetch<tournamentControllerRemoveStaffResponse>(
+		getTournamentControllerRemoveStaffUrl(id, roleId, userId),
+		{
+			...options,
+			method: 'DELETE'
 		}
 	);
 };
@@ -852,76 +923,251 @@ export const tournamentControllerUnregister = async (
 	);
 };
 
-export type matchSyncControllerGetResponse200 = {
-	data: void;
+export type qualificationLobbyControllerFindByTournamentResponse200 = {
+	data: QualificationLobbyDtoOutput[];
 	status: 200;
 };
 
-export type matchSyncControllerGetResponseSuccess = matchSyncControllerGetResponse200 & {
-	headers: Headers;
-};
-export type matchSyncControllerGetResponse = matchSyncControllerGetResponseSuccess;
+export type qualificationLobbyControllerFindByTournamentResponseSuccess =
+	qualificationLobbyControllerFindByTournamentResponse200 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerFindByTournamentResponse =
+	qualificationLobbyControllerFindByTournamentResponseSuccess;
 
-export const getMatchSyncControllerGetUrl = (matchId: string) => {
-	return `/api/matches/${matchId}/sync`;
+export const getQualificationLobbyControllerFindByTournamentUrl = (id: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies`;
 };
 
-export const matchSyncControllerGet = async (
-	matchId: string,
+export const qualificationLobbyControllerFindByTournament = async (
+	id: string,
 	options?: RequestInit
-): Promise<matchSyncControllerGetResponse> => {
-	return backendFetch<matchSyncControllerGetResponse>(getMatchSyncControllerGetUrl(matchId), {
-		...options,
-		method: 'GET'
-	});
+): Promise<qualificationLobbyControllerFindByTournamentResponse> => {
+	return backendFetch<qualificationLobbyControllerFindByTournamentResponse>(
+		getQualificationLobbyControllerFindByTournamentUrl(id),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
 };
 
-export type matchSyncControllerSyncResponse201 = {
+export type qualificationLobbyControllerCreateResponse201 = {
 	data: void;
 	status: 201;
 };
 
-export type matchSyncControllerSyncResponseSuccess = matchSyncControllerSyncResponse201 & {
-	headers: Headers;
-};
-export type matchSyncControllerSyncResponse = matchSyncControllerSyncResponseSuccess;
+export type qualificationLobbyControllerCreateResponseSuccess =
+	qualificationLobbyControllerCreateResponse201 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerCreateResponse =
+	qualificationLobbyControllerCreateResponseSuccess;
 
-export const getMatchSyncControllerSyncUrl = (matchId: string) => {
-	return `/api/matches/${matchId}/sync`;
+export const getQualificationLobbyControllerCreateUrl = (id: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies`;
 };
 
-export const matchSyncControllerSync = async (
-	matchId: string,
+export const qualificationLobbyControllerCreate = async (
+	id: string,
+	qualificationLobbyUpsertDto: QualificationLobbyUpsertDto,
 	options?: RequestInit
-): Promise<matchSyncControllerSyncResponse> => {
-	return backendFetch<matchSyncControllerSyncResponse>(getMatchSyncControllerSyncUrl(matchId), {
-		...options,
-		method: 'POST'
-	});
+): Promise<qualificationLobbyControllerCreateResponse> => {
+	return backendFetch<qualificationLobbyControllerCreateResponse>(
+		getQualificationLobbyControllerCreateUrl(id),
+		{
+			...options,
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(qualificationLobbyUpsertDto)
+		}
+	);
 };
 
-export type matchSyncControllerStopResponse200 = {
+export type qualificationLobbyControllerUpdateResponse200 = {
 	data: void;
 	status: 200;
 };
 
-export type matchSyncControllerStopResponseSuccess = matchSyncControllerStopResponse200 & {
-	headers: Headers;
-};
-export type matchSyncControllerStopResponse = matchSyncControllerStopResponseSuccess;
+export type qualificationLobbyControllerUpdateResponseSuccess =
+	qualificationLobbyControllerUpdateResponse200 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerUpdateResponse =
+	qualificationLobbyControllerUpdateResponseSuccess;
 
-export const getMatchSyncControllerStopUrl = (matchId: string) => {
-	return `/api/matches/${matchId}/sync`;
+export const getQualificationLobbyControllerUpdateUrl = (id: string, lobbyId: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies/${lobbyId}`;
 };
 
-export const matchSyncControllerStop = async (
-	matchId: string,
+export const qualificationLobbyControllerUpdate = async (
+	id: string,
+	lobbyId: string,
+	qualificationLobbyUpsertDto: QualificationLobbyUpsertDto,
 	options?: RequestInit
-): Promise<matchSyncControllerStopResponse> => {
-	return backendFetch<matchSyncControllerStopResponse>(getMatchSyncControllerStopUrl(matchId), {
-		...options,
-		method: 'DELETE'
-	});
+): Promise<qualificationLobbyControllerUpdateResponse> => {
+	return backendFetch<qualificationLobbyControllerUpdateResponse>(
+		getQualificationLobbyControllerUpdateUrl(id, lobbyId),
+		{
+			...options,
+			method: 'PATCH',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(qualificationLobbyUpsertDto)
+		}
+	);
+};
+
+export type qualificationLobbyControllerDeleteResponse200 = {
+	data: void;
+	status: 200;
+};
+
+export type qualificationLobbyControllerDeleteResponseSuccess =
+	qualificationLobbyControllerDeleteResponse200 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerDeleteResponse =
+	qualificationLobbyControllerDeleteResponseSuccess;
+
+export const getQualificationLobbyControllerDeleteUrl = (id: string, lobbyId: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies/${lobbyId}`;
+};
+
+export const qualificationLobbyControllerDelete = async (
+	id: string,
+	lobbyId: string,
+	options?: RequestInit
+): Promise<qualificationLobbyControllerDeleteResponse> => {
+	return backendFetch<qualificationLobbyControllerDeleteResponse>(
+		getQualificationLobbyControllerDeleteUrl(id, lobbyId),
+		{
+			...options,
+			method: 'DELETE'
+		}
+	);
+};
+
+export type qualificationLobbyControllerStartResponse201 = {
+	data: void;
+	status: 201;
+};
+
+export type qualificationLobbyControllerStartResponseSuccess =
+	qualificationLobbyControllerStartResponse201 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerStartResponse =
+	qualificationLobbyControllerStartResponseSuccess;
+
+export const getQualificationLobbyControllerStartUrl = (id: string, lobbyId: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies/${lobbyId}/start`;
+};
+
+export const qualificationLobbyControllerStart = async (
+	id: string,
+	lobbyId: string,
+	options?: RequestInit
+): Promise<qualificationLobbyControllerStartResponse> => {
+	return backendFetch<qualificationLobbyControllerStartResponse>(
+		getQualificationLobbyControllerStartUrl(id, lobbyId),
+		{
+			...options,
+			method: 'POST'
+		}
+	);
+};
+
+export type qualificationLobbyControllerStopResponse200 = {
+	data: void;
+	status: 200;
+};
+
+export type qualificationLobbyControllerStopResponseSuccess =
+	qualificationLobbyControllerStopResponse200 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerStopResponse =
+	qualificationLobbyControllerStopResponseSuccess;
+
+export const getQualificationLobbyControllerStopUrl = (id: string, lobbyId: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies/${lobbyId}/start`;
+};
+
+export const qualificationLobbyControllerStop = async (
+	id: string,
+	lobbyId: string,
+	options?: RequestInit
+): Promise<qualificationLobbyControllerStopResponse> => {
+	return backendFetch<qualificationLobbyControllerStopResponse>(
+		getQualificationLobbyControllerStopUrl(id, lobbyId),
+		{
+			...options,
+			method: 'DELETE'
+		}
+	);
+};
+
+export type qualificationLobbyControllerSelectSoloResponse201 = {
+	data: void;
+	status: 201;
+};
+
+export type qualificationLobbyControllerSelectSoloResponseSuccess =
+	qualificationLobbyControllerSelectSoloResponse201 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerSelectSoloResponse =
+	qualificationLobbyControllerSelectSoloResponseSuccess;
+
+export const getQualificationLobbyControllerSelectSoloUrl = (id: string, lobbyId: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies/${lobbyId}/solo`;
+};
+
+export const qualificationLobbyControllerSelectSolo = async (
+	id: string,
+	lobbyId: string,
+	options?: RequestInit
+): Promise<qualificationLobbyControllerSelectSoloResponse> => {
+	return backendFetch<qualificationLobbyControllerSelectSoloResponse>(
+		getQualificationLobbyControllerSelectSoloUrl(id, lobbyId),
+		{
+			...options,
+			method: 'POST'
+		}
+	);
+};
+
+export type qualificationLobbyControllerSelectTeamResponse201 = {
+	data: void;
+	status: 201;
+};
+
+export type qualificationLobbyControllerSelectTeamResponseSuccess =
+	qualificationLobbyControllerSelectTeamResponse201 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerSelectTeamResponse =
+	qualificationLobbyControllerSelectTeamResponseSuccess;
+
+export const getQualificationLobbyControllerSelectTeamUrl = (id: string, lobbyId: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies/${lobbyId}/team`;
+};
+
+export const qualificationLobbyControllerSelectTeam = async (
+	id: string,
+	lobbyId: string,
+	selectQualificationLobbyTeamDto: SelectQualificationLobbyTeamDto,
+	options?: RequestInit
+): Promise<qualificationLobbyControllerSelectTeamResponse> => {
+	return backendFetch<qualificationLobbyControllerSelectTeamResponse>(
+		getQualificationLobbyControllerSelectTeamUrl(id, lobbyId),
+		{
+			...options,
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(selectQualificationLobbyTeamDto)
+		}
+	);
 };
 
 export type stageControllerFindManyResponse200 = {

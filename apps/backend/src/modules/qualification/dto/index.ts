@@ -28,12 +28,30 @@ export class SelectQualificationLobbyTeamDto extends createZodDto(
   z.object({ teamId: teamIdSchema }),
 ) {}
 
-export const qualificationLobbyDtoSchema = lobbyInput.safeExtend({
+export const qualificationLobbyDtoSchema = z.object({
   id: qualificationLobbyIdSchema,
+  stageId: stageIdSchema,
+  number: z.number().int().positive(),
+  refereeId: userIdSchema,
   refereeName: z.string(),
+  startsAt: z.string().datetime(),
+  endsAt: z.string().datetime(),
+  mpUrl: z.string().url().nullable().optional(),
   players: z.array(z.object({ id: userIdSchema, name: z.string() })),
   teams: z.array(z.object({ id: teamIdSchema, name: z.string() })),
   seatCount: z.number().int().min(0).max(16),
+  syncStatus: z.enum(['active', 'stopped', 'completed']).nullable(),
+  lastSyncedAt: z.string().nullable(),
+  attempts: z.array(
+    z.object({
+      beatmapId: z.number().int(),
+      gameId: z.number().int(),
+      osuUserId: z.number().int(),
+      userId: userIdSchema.nullable(),
+      userName: z.string().nullable(),
+      score: z.number().int(),
+    }),
+  ),
 });
 export class QualificationLobbyDto extends createZodDto(
   qualificationLobbyDtoSchema,

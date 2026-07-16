@@ -80,16 +80,31 @@ export class QualificationLobbyController {
     });
   }
 
-  @Post(':lobbyId/sync')
+  @Post(':lobbyId/start')
   @UseGuards(JwtUserGuard, PoliciesGuard)
   @CheckPolicies((ability, context) =>
     ability.can('update', context.subjectData),
   )
-  public sync(
+  public start(
     @Param('id', TournamentIdPipe) tournamentId: TournamentId,
     @Param('lobbyId') lobbyId: string,
   ) {
-    return this.service.sync({
+    return this.service.start({
+      tournamentId,
+      lobbyId: qualificationLobbyIdSchema.parse(lobbyId),
+    });
+  }
+
+  @Delete(':lobbyId/start')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  public stop(
+    @Param('id', TournamentIdPipe) tournamentId: TournamentId,
+    @Param('lobbyId') lobbyId: string,
+  ) {
+    return this.service.stop({
       tournamentId,
       lobbyId: qualificationLobbyIdSchema.parse(lobbyId),
     });

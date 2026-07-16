@@ -12,6 +12,7 @@ export async function getTournamentPage(
 		staffResponse,
 		stagesResponse,
 		scheduleResponse,
+		qualificationLobbiesResponse,
 		mappoolsResponse
 	] = await Promise.all([
 		backend.tournaments.getById(tournamentId),
@@ -20,6 +21,7 @@ export async function getTournamentPage(
 		backend.tournaments.staff.get(tournamentId),
 		backend.stages.findByTournament(tournamentId),
 		backend.tournaments.getSchedule(tournamentId),
+		backend.qualificationLobbies.findByTournament(tournamentId),
 		backend.mappools.findByTournament(tournamentId)
 	]);
 	const tournament = tournamentResponse.data;
@@ -35,6 +37,7 @@ export async function getTournamentPage(
 		host,
 		stages: stagesResponse.data,
 		schedule: scheduleResponse.data,
+		qualificationLobbies: qualificationLobbiesResponse.data,
 		mappools: visibleMappools.map(({ beatmaps, ...mappool }) => mappool),
 		mappoolBeatmaps: visibleMappools.map((mappool) => ({
 			mappoolId: mappool.id,

@@ -158,13 +158,9 @@ export const scheduleMatchFormSchema = z
 		mpUrl: optionalText,
 		vodUrl: optionalText,
 		player1UserId: z.string().trim().optional(),
-		player1Score: optionalInt,
 		player2UserId: z.string().trim().optional(),
-		player2Score: optionalInt,
 		redTeamId: z.string().trim().optional(),
 		blueTeamId: z.string().trim().optional(),
-		redScore: optionalInt,
-		blueScore: optionalInt,
 		refereeId: z.string().trim().optional(),
 		streamerId: z.string().trim().optional(),
 		commentatorIds: csvIds
@@ -184,22 +180,10 @@ export const scheduleMatchFormSchema = z
 		vodUrl: value.vodUrl,
 		redTeamId: value.redTeamId || null,
 		blueTeamId: value.blueTeamId || null,
-		redScore: value.redScore,
-		blueScore: value.blueScore,
 		players: [
-			value.player1UserId
-				? {
-						userId: value.player1UserId,
-						score: value.player1Score
-					}
-				: null,
-			value.player2UserId
-				? {
-						userId: value.player2UserId,
-						score: value.player2Score
-					}
-				: null
-		].filter((player): player is { userId: string; score: number | null } => Boolean(player)),
+			value.player1UserId ? { userId: value.player1UserId } : null,
+			value.player2UserId ? { userId: value.player2UserId } : null
+		].filter((player): player is { userId: string } => Boolean(player)),
 		staff: [
 			value.refereeId ? { userId: value.refereeId, role: 'referee' as const } : null,
 			value.streamerId ? { userId: value.streamerId, role: 'streamer' as const } : null,

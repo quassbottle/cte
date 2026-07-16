@@ -11,10 +11,14 @@ export type EditAction =
 	| 'deleteScheduleMatch'
 	| 'syncScheduleMatch'
 	| 'stopScheduleMatch'
+	| 'createQualificationLobby'
+	| 'updateQualificationLobby'
+	| 'deleteQualificationLobby'
+	| 'startQualificationLobby'
+	| 'stopQualificationLobby'
 	| 'updateQualificationSolo'
 	| 'updateQualificationTeam'
 	| 'updateQualificationTeamMember'
-	| 'calculateQualificationSeeds'
 	| 'createMappool'
 	| 'updateMappoolVisibility'
 	| 'addMappoolBeatmap'
@@ -27,6 +31,7 @@ export type EditAction =
 type ActionContext = {
 	stageId?: string;
 	matchId?: string;
+	lobbyId?: string;
 	mappoolId?: string;
 	beatmapId?: string;
 	teamId?: string;

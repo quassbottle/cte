@@ -3,6 +3,7 @@ import type {
 	CreateTournamentDto,
 	CreateMappoolDto,
 	CreateStageDto,
+	QualificationLobbyUpsertDto,
 	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
@@ -23,6 +24,14 @@ import {
 	mappoolControllerFindBeatmaps,
 	mappoolControllerPatch,
 	mappoolControllerUpdateBeatmap,
+	qualificationLobbyControllerCreate,
+	qualificationLobbyControllerDelete,
+	qualificationLobbyControllerFindByTournament,
+	qualificationLobbyControllerSelectSolo,
+	qualificationLobbyControllerSelectTeam,
+	qualificationLobbyControllerStart,
+	qualificationLobbyControllerStop,
+	qualificationLobbyControllerUpdate,
 	osuControllerGetBeatmapMetadata,
 	stageControllerCreate,
 	stageControllerFindMany,
@@ -39,7 +48,6 @@ import {
 	tournamentControllerGetTeams,
 	tournamentControllerPatch,
 	tournamentControllerRegister,
-	tournamentControllerCalculateQualificationSeeds,
 	tournamentControllerUnregister,
 	tournamentControllerUpdateQualificationTeam,
 	tournamentControllerUpdateQualificationTeamParticipant,
@@ -128,11 +136,19 @@ export function createBackendClient(input?: BackendClientInput) {
 			getSchedule: (id: string) => tournamentControllerGetSchedule(id, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
 			staff: {
-				get: (id: string) => backendFetch<{ data: TournamentStaffRole[] }>(`/api/tournaments/${id}/staff`, options),
+				get: (id: string) =>
+					backendFetch<{ data: TournamentStaffRole[] }>(`/api/tournaments/${id}/staff`, options),
 				assign: (id: string, input: { roleId: string; userId: string }) =>
-					backendFetch(`/api/tournaments/${id}/staff`, { ...options, method: 'POST', body: JSON.stringify(input) }),
+					backendFetch(`/api/tournaments/${id}/staff`, {
+						...options,
+						method: 'POST',
+						body: JSON.stringify(input)
+					}),
 				remove: (id: string, roleId: string, userId: string) =>
-					backendFetch(`/api/tournaments/${id}/staff/${roleId}/${userId}`, { ...options, method: 'DELETE' })
+					backendFetch(`/api/tournaments/${id}/staff/${roleId}/${userId}`, {
+						...options,
+						method: 'DELETE'
+					})
 			},
 			update: (id: string, input: UpdateTournamentDto) =>
 				tournamentControllerPatch(id, input, options),
@@ -151,14 +167,7 @@ export function createBackendClient(input?: BackendClientInput) {
 					userId: string,
 					input: UpdateQualificationTeamParticipantDto
 				) =>
-					tournamentControllerUpdateQualificationTeamParticipant(
-						id,
-						teamId,
-						userId,
-						input,
-						options
-					),
-				calculate: (id: string) => tournamentControllerCalculateQualificationSeeds(id, options)
+					tournamentControllerUpdateQualificationTeamParticipant(id, teamId, userId, input, options)
 			}
 		},
 		matches: {
@@ -172,6 +181,24 @@ export function createBackendClient(input?: BackendClientInput) {
 				backendFetch(`/api/matches/${matchId}/sync`, { ...options, method: 'POST' }),
 			stopSync: (matchId: string) =>
 				backendFetch(`/api/matches/${matchId}/sync`, { ...options, method: 'DELETE' })
+		},
+		qualificationLobbies: {
+			findByTournament: (tournamentId: string) =>
+				qualificationLobbyControllerFindByTournament(tournamentId, options),
+			create: (tournamentId: string, input: QualificationLobbyUpsertDto) =>
+				qualificationLobbyControllerCreate(tournamentId, input, options),
+			update: (tournamentId: string, lobbyId: string, input: QualificationLobbyUpsertDto) =>
+				qualificationLobbyControllerUpdate(tournamentId, lobbyId, input, options),
+			delete: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerDelete(tournamentId, lobbyId, options),
+			start: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerStart(tournamentId, lobbyId, options),
+			stop: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerStop(tournamentId, lobbyId, options),
+			selectSolo: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerSelectSolo(tournamentId, lobbyId, options),
+			selectTeam: (tournamentId: string, lobbyId: string, teamId: string) =>
+				qualificationLobbyControllerSelectTeam(tournamentId, lobbyId, { teamId }, options)
 		},
 		stages: {
 			findByTournament: (tournamentId: string) => stageControllerFindMany(tournamentId, options),

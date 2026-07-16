@@ -28,25 +28,9 @@
 </script>
 
 <div class="flex flex-col gap-5">
-	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-		<p class="text-sm text-muted-foreground">
-			Manage qualification seeds and withdrawals. Recalculation overwrites manual seeds.
-		</p>
-		<form
-			method="post"
-			action="?/calculateQualificationSeeds"
-			use:enhance
-			on:submit={(event) => {
-				if (!confirm('Recalculate and overwrite all seeds?')) event.preventDefault();
-			}}
-		>
-			<Button type="submit" class="w-full text-[12px] sm:w-auto">Recalculate seeds</Button>
-		</form>
-	</div>
+	<p class="text-sm text-muted-foreground">Manage qualification seeds and withdrawals.</p>
 
 	{#if form && !form.ok && form.action.startsWith('updateQualification')}
-		<p class="text-sm text-destructive">{form.message}</p>
-	{:else if form && !form.ok && form.action === 'calculateQualificationSeeds'}
 		<p class="text-sm text-destructive">{form.message}</p>
 	{/if}
 
