@@ -82,48 +82,50 @@ describe('MatchService qualification lobbies', () => {
     );
   };
 
-  it('requires an mp URL for a solo-tournament qualification lobby', async () => {
+  it('rejects regular match creation on qualification stages', async () => {
     await expect(
       createService(false).createScheduleMatch({
         tournamentId,
-        data: qualificationData({ mpUrl: null }),
+        data: qualificationData({}),
       }),
-    ).rejects.toThrow('Qualification lobby requires an mp URL');
+    ).rejects.toThrow('Regular matches are unavailable on qualification stages');
   });
+});
 
-  it('rejects players in a qualification lobby', async () => {
-    await expect(
-      createService(false).createScheduleMatch({
-        tournamentId,
-        data: qualificationData({
-          players: [{ userId: playerId, score: null }],
-        }),
-      }),
-    ).rejects.toThrow('Qualification lobby cannot select competitors');
-  });
+describe('MatchService room references', () => {
+  it('attaches the room returned for an mp URL', async () => {
+    const values = jest.fn(() => ({ returning: jest.fn().mockResolvedValue([{ id: 'match-id' }]) }));
+    const tx = {
+      insert: jest.fn(() => ({ values })),
+      delete: jest.fn(() => ({ where: jest.fn() })),
+    };
+    const db = {
+      query: {
+        stages: { findFirst: jest.fn().mockResolvedValue({ type: 'regular' }) },
+        tournaments: { findFirst: jest.fn().mockResolvedValue({ isTeam: false }) },
+      },
+      select: jest.fn(() => ({ from: jest.fn(() => ({ where: jest.fn().mockResolvedValue([]) })) })),
+      transaction: jest.fn((callback) => callback(tx)),
+    };
+    const sync = { ensureRoom: jest.fn().mockResolvedValue('room-id') };
+    const service = new MatchService(db as never, sync as never);
 
-  it('rejects teams in a team-tournament qualification lobby', async () => {
-    await expect(
-      createService(true).createScheduleMatch({
-        tournamentId,
-        data: qualificationData({
-          redTeamId: 'ckm123456789012345678905',
-          blueTeamId: 'ckm123456789012345678906',
+    await service.createScheduleMatch({
+      tournamentId: 'ckm123456789012345678901' as TournamentId,
+      data: {
+        ...scheduleMatchUpsertDtoSchema.parse({
+          name: 'Final',
+          stageId: 'ckm123456789012345678904',
+          startsAt: '2026-07-13T12:00:00.000Z',
+          endsAt: '2026-07-13T13:00:00.000Z',
+          mpUrl: 'https://osu.ppy.sh/community/matches/123',
         }),
-      }),
-    ).rejects.toThrow('Qualification lobby cannot select competitors');
-  });
+        creatorId: 'ckm123456789012345678902' as UserId,
+      },
+    });
 
-  it('rejects competitors when updating a qualification lobby', async () => {
-    await expect(
-      createService(false).updateScheduleMatch({
-        tournamentId,
-        matchId: 'ckm123456789012345678907' as never,
-        data: qualificationData({
-          players: [{ userId: playerId, score: null }],
-        }),
-      }),
-    ).rejects.toThrow('Qualification lobby cannot select competitors');
+    expect(sync.ensureRoom).toHaveBeenCalledWith('https://osu.ppy.sh/community/matches/123');
+    expect(values).toHaveBeenCalledWith(expect.objectContaining({ osuRoomId: 'room-id' }));
   });
 });
 

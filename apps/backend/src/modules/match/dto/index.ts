@@ -129,12 +129,6 @@ const nullableMpUrl = nullableUrl.refine(
 
 const scheduleMatchPlayerInputSchema = z.object({
   userId: userIdSchema,
-  score: z
-    .number()
-    .int()
-    .nullable()
-    .optional()
-    .transform((value) => value ?? null),
 });
 
 const scheduleMatchStaffInputSchema = z.object({
@@ -153,8 +147,6 @@ export const scheduleMatchUpsertDtoSchema = z
     vodUrl: nullableUrl,
     redTeamId: teamIdSchema.nullable().optional().transform((value) => value ?? null),
     blueTeamId: teamIdSchema.nullable().optional().transform((value) => value ?? null),
-    redScore: z.number().int().nullable().optional().transform((value) => value ?? null),
-    blueScore: z.number().int().nullable().optional().transform((value) => value ?? null),
     players: z.array(scheduleMatchPlayerInputSchema).max(2).default([]),
     staff: z.array(scheduleMatchStaffInputSchema).default([]),
   })

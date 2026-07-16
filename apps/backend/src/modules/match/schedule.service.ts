@@ -2,8 +2,10 @@ import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, isNull, sql } from 'drizzle-orm';
 import { aliasedTable } from 'drizzle-orm/alias';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
+import { MatchId } from 'lib/domain/match/match.id';
 import { Schema, stages } from 'lib/infrastructure/db';
 import { StageScheduleInput } from './dto';
+import { MatchResultService } from './match-result.service';
 
 const stageRow = aliasedTable(stages, 'stage_row');
 const stageRowId = sql.raw('"stage_row"."id"');
@@ -11,7 +13,10 @@ const stageRowTournamentId = sql.raw('"stage_row"."tournament_id"');
 
 @Injectable()
 export class ScheduleService {
-  constructor(@Inject('DB') private readonly drizzle: Schema) {}
+  constructor(
+    @Inject('DB') private readonly drizzle: Schema,
+    private readonly matchResults: MatchResultService,
+  ) {}
 
   public async findByTournament(params: {
     tournamentId: TournamentId;
@@ -37,16 +42,8 @@ export class ScheduleService {
                   'endsAt', match_row.ends_at,
                   'mpUrl', match_row.mp_url,
                   'vodUrl', match_row.vod_url,
-                  'syncStatus', (
-                    select sync_row.status
-                    from match_osu_sync sync_row
-                    where sync_row.match_id = match_row.id
-                  ),
-                  'lastSyncedAt', (
-                    select sync_row.last_synced_at
-                    from match_osu_sync sync_row
-                    where sync_row.match_id = match_row.id
-                  ),
+                  'syncStatus', null,
+                  'lastSyncedAt', null,
                   'redTeam', (
                     select json_build_object('id', red_team.id, 'name', red_team.name)
                     from teams red_team
@@ -57,8 +54,8 @@ export class ScheduleService {
                     from teams blue_team
                     where blue_team.id = match_row.blue_team_id
                   ),
-                  'redScore', match_row.red_score,
-                  'blueScore', match_row.blue_score,
+                  'redScore', null,
+                  'blueScore', null,
                   'players', coalesce(
                     (
                       select json_agg(
@@ -75,8 +72,8 @@ export class ScheduleService {
                               and solo_seed.user_id = player_user.id
                             limit 1
                           ),
-                          'score', match_player.score,
-                          'isWinner', match_player.is_winner
+                          'score', null,
+                          'isWinner', null
                         )
                         order by
                           (
@@ -138,6 +135,27 @@ export class ScheduleService {
       )
       .orderBy(asc(stageRow.startsAt));
 
-    return schedule;
+    return Promise.all(
+      schedule.map(async (stage) => ({
+        ...stage,
+        matches: await Promise.all(
+          stage.matches.map(async (match) => {
+            const result = await this.matchResults.get(match.id as MatchId);
+            const players = new Map(
+              result.players.map((player) => [player.userId, player]),
+            );
+            return {
+              ...match,
+              ...result,
+              players: match.players.map((player) => ({
+                ...player,
+                score: players.get(player.id)?.score ?? null,
+                isWinner: players.get(player.id)?.isWinner ?? null,
+              })),
+            };
+          }),
+        ),
+      })),
+    );
   }
 }
