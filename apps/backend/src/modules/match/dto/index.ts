@@ -4,7 +4,7 @@ import { stageIdSchema } from 'lib/domain/stage/stage.id';
 import { stageTypeSchema } from 'lib/domain/stage/stage.type';
 import { teamIdSchema } from 'lib/domain/team/team.id';
 import { userIdSchema } from 'lib/domain/user/user.id';
-import { parseOsuMatchId } from 'modules/match-sync/mp-url';
+import { parseOsuMatchId } from 'modules/osu-multiplayer-sync/mp-url';
 import { userDtoSchema } from 'modules/user/dto';
 import { createZodDto } from 'nestjs-zod';
 import z from 'zod';
@@ -36,8 +36,8 @@ export const matchDtoSchema = z.object({
   vodUrl: z.string().nullable(),
   redTeamId: teamIdSchema.nullable(),
   blueTeamId: teamIdSchema.nullable(),
-  redScore: z.number().int().nullable(),
-  blueScore: z.number().int().nullable(),
+  redScore: z.number().int().nullable().optional(),
+  blueScore: z.number().int().nullable().optional(),
   createdAt: isoStringToDate,
   updatedAt: isoStringToDate,
 });
@@ -145,8 +145,14 @@ export const scheduleMatchUpsertDtoSchema = z
     endsAt: isoStringToDate,
     mpUrl: nullableMpUrl,
     vodUrl: nullableUrl,
-    redTeamId: teamIdSchema.nullable().optional().transform((value) => value ?? null),
-    blueTeamId: teamIdSchema.nullable().optional().transform((value) => value ?? null),
+    redTeamId: teamIdSchema
+      .nullable()
+      .optional()
+      .transform((value) => value ?? null),
+    blueTeamId: teamIdSchema
+      .nullable()
+      .optional()
+      .transform((value) => value ?? null),
     players: z.array(scheduleMatchPlayerInputSchema).max(2).default([]),
     staff: z.array(scheduleMatchStaffInputSchema).default([]),
   })

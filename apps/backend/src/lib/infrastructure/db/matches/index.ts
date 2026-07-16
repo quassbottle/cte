@@ -41,9 +41,6 @@ export const matches = pgTable(
     blueTeamId: text('blue_team_id')
       .$type<TeamId>()
       .references(() => teams.id),
-    redScore: integer('red_score'),
-    blueScore: integer('blue_score'),
-
     createdAt,
     updatedAt,
   },

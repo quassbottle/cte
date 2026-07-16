@@ -4,8 +4,8 @@ import { AppModule } from '../src/app.module';
 import { BeatmapId, beatmapId } from '../src/lib/domain/beatmap/beatmap.id';
 import { mappoolId } from '../src/lib/domain/mappool/mappool.id';
 import { matchId } from '../src/lib/domain/match/match.id';
-import { stageId } from '../src/lib/domain/stage/stage.id';
 import { StaffRoleId } from '../src/lib/domain/staff-role/staff-role.id';
+import { stageId } from '../src/lib/domain/stage/stage.id';
 import { teamId } from '../src/lib/domain/team/team.id';
 import { tournamentId } from '../src/lib/domain/tournament/tournament.id';
 import { UserId, userId } from '../src/lib/domain/user/user.id';
@@ -474,14 +474,10 @@ const createTournamentSeed = async (
       {
         matchId: currentMatchId,
         userId: left.id,
-        score: index === 3 ? null : 6,
-        isWinner: index === 3 ? null : true,
       },
       {
         matchId: currentMatchId,
         userId: right.id,
-        score: index === 3 ? null : index + 1,
-        isWinner: index === 3 ? null : false,
       },
     ]);
 

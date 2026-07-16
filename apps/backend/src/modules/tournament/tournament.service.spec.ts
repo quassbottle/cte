@@ -3,8 +3,6 @@ jest.mock('@paralleldrive/cuid2', () => ({
   init: jest.fn(() => jest.fn(() => 'test-id')),
 }));
 
-import { teamParticipants, teams } from 'lib/infrastructure/db';
-import * as qualificationSeeding from './qualification-seeding';
 import { TournamentService } from './tournament.service';
 
 const containsValue = (
@@ -24,218 +22,43 @@ describe('TournamentService', () => {
   describe('qualification seed recalculation', () => {
     const tournamentId = 'ckm123456789012345678901' as never;
 
-    const transactionDb = (options?: {
-      stage?: unknown;
-      beatmaps?: unknown[];
-    }) => {
-      const selectRows = [
-        options?.beatmaps ?? [{ beatmapId: 'map-1' }],
-        [
-          {
-            osuGameId: 7,
-            beatmapId: 'map-1',
-            userId: 'active-user',
-            score: 123,
+    it('delegates qualification result calculation to the qualification module', async () => {
+      const results = { recalculate: jest.fn() };
+      const service = new TournamentService(
+        {
+          query: {
+            stages: {
+              findFirst: jest.fn().mockResolvedValue({ id: 'stage-1' }),
+            },
           },
-        ],
-        [
-          {
-            id: 'active-user',
-            userId: 'active-user',
-            osuId: 42,
-          },
-        ],
-      ];
-      const updateConditions: unknown[] = [];
-      const set = jest.fn((value: unknown) => ({
-        where: jest.fn((condition: unknown) => {
-          updateConditions.push(condition);
-          return Promise.resolve(value);
-        }),
-      }));
-      const tx = {
-        query: {
-          tournaments: {
-            findFirst: jest.fn().mockResolvedValue({ isTeam: false }),
-          },
-          stages: {
-            findFirst: jest
-              .fn()
-              .mockResolvedValue(
-                options?.stage === undefined
-                  ? { id: 'stage-1' }
-                  : options.stage,
-              ),
-          },
-        },
-        select: jest.fn(() => {
-          const rows = selectRows.shift() ?? [];
-          const where = jest.fn().mockResolvedValue(rows);
-          const innerJoin = jest.fn(() => ({ innerJoin, where }));
-          return { from: jest.fn(() => ({ innerJoin, where })) };
-        }),
-        update: jest.fn(() => ({ set })),
-      };
-      return {
-        drizzle: {
-          transaction: jest.fn(async (callback: (tx: unknown) => unknown) =>
-            callback(tx),
-          ),
-        },
-        tx,
-        set,
-        updateConditions,
-      };
-    };
-
-    it('clears all solo seeds then writes only calculated active competitors', async () => {
-      const fake = transactionDb();
-      const service = new TournamentService(fake.drizzle as never);
+        } as never,
+        results as never,
+      );
       jest.spyOn(service, 'getQualificationRoster').mockResolvedValue({
         kind: 'solo',
         participants: [],
       });
-      const calculator = jest
-        .spyOn(qualificationSeeding, 'calculateQualificationSeeds')
-        .mockReturnValue([
-          {
-            competitorId: 'active-user',
-            seed: 1,
-            averagePlace: 1,
-            totalScore: 123,
-          },
-        ]);
 
       await service.calculateQualificationSeeds({ id: tournamentId });
 
-      expect(calculator).toHaveBeenCalledWith({
-        beatmapIds: ['map-1'],
-        competitors: [
-          { id: 'active-user', tieBreakId: 42, userIds: ['active-user'] },
-        ],
-        attempts: [
-          {
-            osuGameId: 7,
-            beatmapId: 'map-1',
-            userId: 'active-user',
-            score: 123,
-          },
-        ],
-      });
-      expect(fake.set).toHaveBeenCalledWith({ seed: null });
-      expect(fake.set).toHaveBeenCalledWith({ seed: 1 });
-      expect(fake.set.mock.calls.map(([value]) => value)).toEqual([
-        { seed: null },
-        { seed: 1 },
-      ]);
-      expect(fake.updateConditions).toHaveLength(2);
-      expect(
-        fake.updateConditions.every((condition) =>
-          containsValue(condition, tournamentId),
-        ),
-      ).toBe(true);
+      expect(results.recalculate).toHaveBeenCalledWith('stage-1');
     });
 
-    it('rejects a missing qualification stage before updating', async () => {
-      const fake = transactionDb({ stage: null });
-      const service = new TournamentService(fake.drizzle as never);
+    it('rejects a missing qualification stage before delegating', async () => {
+      const results = { recalculate: jest.fn() };
+      const service = new TournamentService(
+        {
+          query: {
+            stages: { findFirst: jest.fn().mockResolvedValue(undefined) },
+          },
+        } as never,
+        results as never,
+      );
 
       await expect(
         service.calculateQualificationSeeds({ id: tournamentId }),
       ).rejects.toThrow('Qualification stage not found');
-      expect(fake.tx.update).not.toHaveBeenCalled();
-    });
-
-    it('rejects an empty qualification mappool before updating', async () => {
-      const fake = transactionDb({ beatmaps: [] });
-      const service = new TournamentService(fake.drizzle as never);
-
-      await expect(
-        service.calculateQualificationSeeds({ id: tournamentId }),
-      ).rejects.toThrow('Qualification mappool is empty');
-      expect(fake.tx.update).not.toHaveBeenCalled();
-    });
-
-    it('excludes withdrawn teams but keeps withdrawn members of active teams', async () => {
-      const conditions: unknown[] = [];
-      const rows = [
-        [{ beatmapId: 'map-1' }],
-        [],
-        [
-          { teamId: 'team-1', userId: 'active-member' },
-          { teamId: 'team-1', userId: 'withdrawn-member' },
-        ],
-      ];
-      const updateConditions: unknown[] = [];
-      const set = jest.fn((value: unknown) => ({
-        where: jest.fn((condition: unknown) => {
-          updateConditions.push(condition);
-          return Promise.resolve(value);
-        }),
-      }));
-      const tx = {
-        query: {
-          tournaments: {
-            findFirst: jest.fn().mockResolvedValue({ isTeam: true }),
-          },
-          stages: {
-            findFirst: jest.fn().mockResolvedValue({ id: 'stage-1' }),
-          },
-        },
-        select: jest.fn(() => {
-          const where = jest.fn((condition: unknown) => {
-            conditions.push(condition);
-            return Promise.resolve(rows.shift() ?? []);
-          });
-          const innerJoin = jest.fn(() => ({ innerJoin, where }));
-          return { from: jest.fn(() => ({ innerJoin, where })) };
-        }),
-        update: jest.fn(() => ({ set })),
-      };
-      const service = new TournamentService({
-        transaction: jest.fn(async (callback) => callback(tx)),
-      } as never);
-      jest
-        .spyOn(service, 'getQualificationRoster')
-        .mockResolvedValue({ kind: 'team', teams: [] });
-      const calculator = jest
-        .spyOn(qualificationSeeding, 'calculateQualificationSeeds')
-        .mockReturnValue([
-          {
-            competitorId: 'team-1',
-            seed: 1,
-            averagePlace: 1,
-            totalScore: 0,
-          },
-        ]);
-
-      await service.calculateQualificationSeeds({ id: tournamentId });
-
-      expect(calculator).toHaveBeenCalledWith(
-        expect.objectContaining({
-          competitors: [
-            {
-              id: 'team-1',
-              tieBreakId: 'team-1',
-              userIds: ['active-member', 'withdrawn-member'],
-            },
-          ],
-        }),
-      );
-      expect(containsValue(conditions.at(-1), teams.withdrawn)).toBe(true);
-      expect(containsValue(conditions.at(-1), teamParticipants.withdrawn)).toBe(
-        false,
-      );
-      expect(set.mock.calls.map(([value]) => value)).toEqual([
-        { seed: null },
-        { seed: 1 },
-      ]);
-      expect(updateConditions).toHaveLength(2);
-      expect(
-        updateConditions.every((condition) =>
-          containsValue(condition, tournamentId),
-        ),
-      ).toBe(true);
+      expect(results.recalculate).not.toHaveBeenCalled();
     });
   });
 
@@ -257,7 +80,8 @@ describe('TournamentService', () => {
       ];
       const orderBy = jest.fn().mockResolvedValue(rows);
       const where = jest.fn(() => ({ orderBy }));
-      const innerJoin = jest.fn(() => ({ where }));
+      const leftJoin = jest.fn(() => ({ where }));
+      const innerJoin = jest.fn(() => ({ innerJoin, leftJoin, where }));
       const from = jest.fn(() => ({ innerJoin }));
       const service = new TournamentService({
         select: jest.fn(() => ({ from })),

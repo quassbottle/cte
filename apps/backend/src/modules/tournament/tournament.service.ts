@@ -1,4 +1,9 @@
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  Inject,
+  Injectable,
+  Optional,
+} from '@nestjs/common';
 import {
   and,
   asc,
@@ -11,8 +16,8 @@ import {
   or,
 } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
-import { TeamId, teamId } from 'lib/domain/team/team.id';
 import { StaffRoleId } from 'lib/domain/staff-role/staff-role.id';
+import { TeamId, teamId } from 'lib/domain/team/team.id';
 import {
   TournamentException,
   TournamentExceptionCode,
@@ -26,10 +31,7 @@ import { UserId } from 'lib/domain/user/user.id';
 import {
   DbTournament,
   DbUser,
-  mappools,
-  mappoolsBeatmaps,
-  matches,
-  qualificationAttempts,
+  qualificationResults,
   Schema,
   soloParticipants,
   staffRoles,
@@ -40,12 +42,12 @@ import {
   tournamentStaffMembers,
   users,
 } from 'lib/infrastructure/db';
+import { QualificationResultsService } from 'modules/qualification/qualification-results.service';
 import {
   QualificationRosterInput,
   type TournamentStaffRoleDto,
   UpdateQualificationCompetitorInput,
 } from './dto';
-import { calculateQualificationSeeds as calculateSeeds } from './qualification-seeding';
 import {
   TournamentCreateParams,
   TournamentRegisterParams,
@@ -54,15 +56,30 @@ import {
 
 @Injectable()
 export class TournamentService {
-  constructor(@Inject('DB') private readonly drizzle: Schema) {}
+  constructor(
+    @Inject('DB') private readonly drizzle: Schema,
+    @Optional()
+    private readonly qualificationResults?: QualificationResultsService,
+  ) {}
 
   public async create(params: TournamentCreateParams): Promise<DbTournament> {
     const id = tournamentId();
     return this.drizzle.transaction(async (tx) => {
-      const [created] = await tx.insert(tournaments).values({ id, ...params }).returning();
-      const host = await tx.query.staffRoles.findFirst({ where: eq(staffRoles.name, 'Host') });
+      const [created] = await tx
+        .insert(tournaments)
+        .values({ id, ...params })
+        .returning();
+      const host = await tx.query.staffRoles.findFirst({
+        where: eq(staffRoles.name, 'Host'),
+      });
       if (!host) throw new Error('Host staff role is missing');
-      await tx.insert(tournamentStaffMembers).values({ tournamentId: id, roleId: host.id, userId: params.creatorId });
+      await tx
+        .insert(tournamentStaffMembers)
+        .values({
+          tournamentId: id,
+          roleId: host.id,
+          userId: params.creatorId,
+        });
       return created;
     });
   }
@@ -180,12 +197,17 @@ export class TournamentService {
     return found.map(({ user }) => user);
   }
 
-  public async getStaff(params: { id: TournamentId }): Promise<
-    InstanceType<typeof TournamentStaffRoleDto>[]
-  > {
+  public async getStaff(params: {
+    id: TournamentId;
+  }): Promise<InstanceType<typeof TournamentStaffRoleDto>[]> {
     await this.getById({ id: params.id });
     const rows = await this.drizzle
-      .select({ roleId: staffRoles.id, roleName: staffRoles.name, canParticipate: staffRoles.canParticipate, user: users })
+      .select({
+        roleId: staffRoles.id,
+        roleName: staffRoles.name,
+        canParticipate: staffRoles.canParticipate,
+        user: users,
+      })
       .from(staffRoles)
       .leftJoin(
         tournamentStaffMembers,
@@ -198,7 +220,12 @@ export class TournamentService {
       .orderBy(asc(staffRoles.name), asc(users.osuUsername));
     const result = new Map<
       StaffRoleId,
-      { id: StaffRoleId; name: string; canParticipate: boolean; members: DbUser[] }
+      {
+        id: StaffRoleId;
+        name: string;
+        canParticipate: boolean;
+        members: DbUser[];
+      }
     >();
     for (const row of rows) {
       const role = result.get(row.roleId) ?? {
@@ -256,14 +283,28 @@ export class TournamentService {
           id: users.id,
           osuId: users.osuId,
           osuUsername: users.osuUsername,
-          seed: soloParticipants.seed,
+          seed: qualificationResults.seed,
           withdrawn: soloParticipants.withdrawn,
           withdrawalReason: soloParticipants.withdrawalReason,
         })
         .from(soloParticipants)
         .innerJoin(users, eq(users.id, soloParticipants.userId))
+        .innerJoin(
+          stages,
+          and(
+            eq(stages.tournamentId, soloParticipants.tournamentId),
+            eq(stages.type, 'qualification'),
+          ),
+        )
+        .leftJoin(
+          qualificationResults,
+          and(
+            eq(qualificationResults.stageId, stages.id),
+            eq(qualificationResults.userId, soloParticipants.userId),
+          ),
+        )
         .where(eq(soloParticipants.tournamentId, id))
-        .orderBy(asc(soloParticipants.seed), asc(users.osuUsername));
+        .orderBy(asc(qualificationResults.seed), asc(users.osuUsername));
 
       return {
         kind: 'solo',
@@ -278,7 +319,7 @@ export class TournamentService {
       .select({
         teamId: teams.id,
         teamName: teams.name,
-        teamSeed: teams.seed,
+        teamSeed: qualificationResults.seed,
         teamWithdrawn: teams.withdrawn,
         teamWithdrawalReason: teams.withdrawalReason,
         id: users.id,
@@ -290,8 +331,26 @@ export class TournamentService {
       .from(teams)
       .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
       .innerJoin(users, eq(users.id, teamParticipants.userId))
+      .innerJoin(
+        stages,
+        and(
+          eq(stages.tournamentId, teams.tournamentId),
+          eq(stages.type, 'qualification'),
+        ),
+      )
+      .leftJoin(
+        qualificationResults,
+        and(
+          eq(qualificationResults.stageId, stages.id),
+          eq(qualificationResults.teamId, teams.id),
+        ),
+      )
       .where(eq(teams.tournamentId, id))
-      .orderBy(asc(teams.seed), asc(teams.name), asc(users.osuUsername));
+      .orderBy(
+        asc(qualificationResults.seed),
+        asc(teams.name),
+        asc(users.osuUsername),
+      );
 
     const managedTeams = new Map<
       TeamId,
@@ -332,7 +391,11 @@ export class TournamentService {
     const { id, userId, data } = params;
     const [updated] = await this.drizzle
       .update(soloParticipants)
-      .set(this.qualificationUpdate(data))
+      .set({
+        ...data,
+        withdrawalReason:
+          data.withdrawn === false ? null : data.withdrawalReason,
+      })
       .where(
         and(
           eq(soloParticipants.tournamentId, id),
@@ -342,6 +405,7 @@ export class TournamentService {
       .returning();
 
     if (!updated) this.throwScopedQualificationNotFound('Participant');
+    await this.invalidateQualification(id);
   }
 
   public async updateQualificationTeam(params: {
@@ -352,11 +416,16 @@ export class TournamentService {
     const { id, teamId, data } = params;
     const [updated] = await this.drizzle
       .update(teams)
-      .set(this.qualificationUpdate(data))
+      .set({
+        ...data,
+        withdrawalReason:
+          data.withdrawn === false ? null : data.withdrawalReason,
+      })
       .where(and(eq(teams.tournamentId, id), eq(teams.id, teamId)))
       .returning();
 
     if (!updated) this.throwScopedQualificationNotFound('Team');
+    await this.invalidateQualification(id);
   }
 
   public async updateQualificationTeamParticipant(params: {
@@ -368,7 +437,11 @@ export class TournamentService {
     const { id, teamId, userId, data } = params;
     const [updated] = await this.drizzle
       .update(teamParticipants)
-      .set(this.qualificationUpdate(data))
+      .set({
+        ...data,
+        withdrawalReason:
+          data.withdrawn === false ? null : data.withdrawalReason,
+      })
       .from(teams)
       .where(
         and(
@@ -381,6 +454,7 @@ export class TournamentService {
       .returning();
 
     if (!updated) this.throwScopedQualificationNotFound('Team participant');
+    await this.invalidateQualification(id);
   }
 
   public async calculateQualificationSeeds(params: {
@@ -388,133 +462,17 @@ export class TournamentService {
   }): Promise<QualificationRosterInput> {
     const { id } = params;
 
-    await this.drizzle.transaction(async (tx) => {
-      const tournament = await tx.query.tournaments.findFirst({
-        where: and(eq(tournaments.id, id), isNull(tournaments.deletedAt)),
-      });
-      if (!tournament) {
-        throw new TournamentException(
-          'Tournament not found',
-          TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
-        );
-      }
-
-      const stage = await tx.query.stages.findFirst({
-        where: and(
-          eq(stages.tournamentId, id),
-          eq(stages.type, 'qualification'),
-          isNull(stages.deletedAt),
-        ),
-      });
-      if (!stage) {
-        throw new BadRequestException('Qualification stage not found');
-      }
-
-      const beatmaps = await tx
-        .select({ beatmapId: mappoolsBeatmaps.beatmapId })
-        .from(mappoolsBeatmaps)
-        .innerJoin(mappools, eq(mappools.id, mappoolsBeatmaps.mappoolId))
-        .where(eq(mappools.stageId, stage.id));
-      if (beatmaps.length === 0) {
-        throw new BadRequestException('Qualification mappool is empty');
-      }
-
-      const attempts = await tx
-        .select({
-          osuGameId: qualificationAttempts.osuGameId,
-          beatmapId: qualificationAttempts.beatmapId,
-          userId: qualificationAttempts.userId,
-          score: qualificationAttempts.score,
-        })
-        .from(qualificationAttempts)
-        .innerJoin(matches, eq(matches.id, qualificationAttempts.matchId))
-        .where(eq(matches.stageId, stage.id));
-
-      const beatmapIds = beatmaps.map(({ beatmapId }) => beatmapId);
-      if (!tournament.isTeam) {
-        const competitors = await tx
-          .select({
-            id: soloParticipants.userId,
-            userId: soloParticipants.userId,
-            osuId: users.osuId,
-          })
-          .from(soloParticipants)
-          .innerJoin(users, eq(users.id, soloParticipants.userId))
-          .where(
-            and(
-              eq(soloParticipants.tournamentId, id),
-              eq(soloParticipants.withdrawn, false),
-            ),
-          );
-        const seeds = calculateSeeds({
-          beatmapIds,
-          competitors: competitors.map((competitor) => ({
-            id: competitor.id,
-            tieBreakId: competitor.osuId,
-            userIds: [competitor.userId],
-          })),
-          attempts,
-        });
-
-        await tx
-          .update(soloParticipants)
-          .set({ seed: null })
-          .where(eq(soloParticipants.tournamentId, id));
-        for (const seed of seeds) {
-          await tx
-            .update(soloParticipants)
-            .set({ seed: seed.seed })
-            .where(
-              and(
-                eq(soloParticipants.tournamentId, id),
-                eq(soloParticipants.userId, seed.competitorId as UserId),
-              ),
-            );
-        }
-        return;
-      }
-
-      const members = await tx
-        .select({
-          teamId: teams.id,
-          userId: teamParticipants.userId,
-        })
-        .from(teams)
-        .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
-        .where(and(eq(teams.tournamentId, id), eq(teams.withdrawn, false)));
-      const membersByTeam = new Map<TeamId, UserId[]>();
-      for (const member of members) {
-        const userIds = membersByTeam.get(member.teamId) ?? [];
-        userIds.push(member.userId);
-        membersByTeam.set(member.teamId, userIds);
-      }
-      const seeds = calculateSeeds({
-        beatmapIds,
-        competitors: [...membersByTeam].map(([teamId, userIds]) => ({
-          id: teamId,
-          tieBreakId: teamId,
-          userIds,
-        })),
-        attempts,
-      });
-
-      await tx
-        .update(teams)
-        .set({ seed: null })
-        .where(eq(teams.tournamentId, id));
-      for (const seed of seeds) {
-        await tx
-          .update(teams)
-          .set({ seed: seed.seed })
-          .where(
-            and(
-              eq(teams.tournamentId, id),
-              eq(teams.id, seed.competitorId as TeamId),
-            ),
-          );
-      }
+    const stage = await this.drizzle.query.stages.findFirst({
+      where: and(
+        eq(stages.tournamentId, id),
+        eq(stages.type, 'qualification'),
+        isNull(stages.deletedAt),
+      ),
     });
-
+    if (!stage) throw new BadRequestException('Qualification stage not found');
+    if (!this.qualificationResults)
+      throw new Error('Qualification results unavailable');
+    await this.qualificationResults.recalculate(stage.id);
     return this.getQualificationRoster({ id });
   }
 
@@ -740,7 +698,9 @@ export class TournamentService {
     await this.assertCanParticipate({
       tournamentId: id,
       userIds: tournament.isTeam
-        ? Array.from(new Set<UserId>([userId, ...(data.team?.participants ?? [])]))
+        ? Array.from(
+            new Set<UserId>([userId, ...(data.team?.participants ?? [])]),
+          )
         : [userId],
     });
 
@@ -845,15 +805,27 @@ export class TournamentService {
     });
   }
 
-  private async assertCanParticipate(params: { tournamentId: TournamentId; userIds: UserId[] }) {
+  private async assertCanParticipate(params: {
+    tournamentId: TournamentId;
+    userIds: UserId[];
+  }) {
     const blocked = await this.drizzle
       .select({ userId: tournamentStaffMembers.userId })
       .from(tournamentStaffMembers)
       .innerJoin(staffRoles, eq(staffRoles.id, tournamentStaffMembers.roleId))
-      .where(and(eq(tournamentStaffMembers.tournamentId, params.tournamentId), inArray(tournamentStaffMembers.userId, params.userIds), eq(staffRoles.canParticipate, false)))
+      .where(
+        and(
+          eq(tournamentStaffMembers.tournamentId, params.tournamentId),
+          inArray(tournamentStaffMembers.userId, params.userIds),
+          eq(staffRoles.canParticipate, false),
+        ),
+      )
       .limit(1);
     if (blocked.length) {
-      throw new TournamentException('Tournament staff with this role cannot participate', TournamentExceptionCode.TOURNAMENT_STAFF_CANNOT_PARTICIPATE);
+      throw new TournamentException(
+        'Tournament staff with this role cannot participate',
+        TournamentExceptionCode.TOURNAMENT_STAFF_CANNOT_PARTICIPATE,
+      );
     }
   }
 
@@ -963,11 +935,16 @@ export class TournamentService {
     }
   }
 
-  private qualificationUpdate(data: UpdateQualificationCompetitorInput) {
-    return {
-      ...data,
-      withdrawalReason: data.withdrawn === false ? null : data.withdrawalReason,
-    };
+  private async invalidateQualification(tournamentId: TournamentId) {
+    if (!this.qualificationResults) return;
+    const stage = await this.drizzle.query.stages.findFirst({
+      where: and(
+        eq(stages.tournamentId, tournamentId),
+        eq(stages.type, 'qualification'),
+        isNull(stages.deletedAt),
+      ),
+    });
+    if (stage) await this.qualificationResults.invalidate(stage.id);
   }
 
   private throwScopedQualificationNotFound(subject: string): never {
