@@ -105,6 +105,7 @@ CREATE UNIQUE INDEX "qualification_lobby_teams_stage_team_unique" ON "qualificat
 CREATE UNIQUE INDEX "qualification_results_stage_user_unique" ON "qualification_results" USING btree ("stage_id","user_id") WHERE "qualification_results"."user_id" IS NOT NULL;--> statement-breakpoint
 CREATE UNIQUE INDEX "qualification_results_stage_team_unique" ON "qualification_results" USING btree ("stage_id","team_id") WHERE "qualification_results"."team_id" IS NOT NULL;--> statement-breakpoint
 ALTER TABLE "matches" ADD CONSTRAINT "matches_osu_room_id_osu_multiplayer_rooms_id_fk" FOREIGN KEY ("osu_room_id") REFERENCES "public"."osu_multiplayer_rooms"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "matches" DROP COLUMN "mp_url";--> statement-breakpoint
 ALTER TABLE "matches" DROP COLUMN "red_score";--> statement-breakpoint
 ALTER TABLE "matches" DROP COLUMN "blue_score";--> statement-breakpoint
 ALTER TABLE "match_participants" DROP COLUMN "score";--> statement-breakpoint
@@ -112,5 +113,4 @@ ALTER TABLE "match_participants" DROP COLUMN "is_winner";--> statement-breakpoin
 ALTER TABLE "solo_participants" DROP COLUMN "seed";--> statement-breakpoint
 ALTER TABLE "teams" DROP COLUMN "seed";--> statement-breakpoint
 ALTER TABLE "team_participants" DROP COLUMN "seed";--> statement-breakpoint
-ALTER TABLE "matches" ADD CONSTRAINT "matches_osu_room_id_unique" UNIQUE("osu_room_id");--> statement-breakpoint
-ALTER TABLE "matches" DROP COLUMN "mp_url";
+ALTER TABLE "matches" ADD CONSTRAINT "matches_osu_room_id_unique" UNIQUE("osu_room_id");
