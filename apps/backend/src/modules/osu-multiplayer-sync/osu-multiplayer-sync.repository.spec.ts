@@ -3,11 +3,17 @@ jest.mock('@paralleldrive/cuid2', () => ({
   init: jest.fn(() => jest.fn(() => 'new-room')),
 }));
 
+import { randomUUID } from 'crypto';
+import 'dotenv/config';
+import { eq } from 'drizzle-orm';
+import { drizzle } from 'drizzle-orm/node-postgres';
 import {
   osuMultiplayerGames,
   osuMultiplayerRooms,
   osuMultiplayerScores,
 } from 'lib/infrastructure/db';
+import * as schema from 'lib/infrastructure/db/schema';
+import { Pool } from 'pg';
 import { OsuMultiplayerSyncRepository } from './osu-multiplayer-sync.repository';
 
 const lease = {
@@ -149,5 +155,127 @@ describe('OsuMultiplayerSyncRepository', () => {
       lease,
     );
     await expect(repository.claim(lease.roomId as never)).resolves.toBeNull();
+  });
+});
+
+describe('OsuMultiplayerSyncRepository with PostgreSQL', () => {
+  const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+  const db = drizzle(pool, { schema });
+  const env = {
+    get: jest.fn((key: string) =>
+      key === 'OSU_MATCH_SYNC_LEASE_MS' ? 60_000 : 15_000,
+    ),
+  };
+  const repository = new OsuMultiplayerSyncRepository(db, env as never);
+  const roomIds: string[] = [];
+  let createdTables = false;
+
+  beforeAll(async () => {
+    const existing = await pool.query(
+      `select to_regclass('osu_multiplayer_rooms') as rooms`,
+    );
+    if (existing.rows[0].rooms) return;
+    createdTables = true;
+    await pool.query(`
+      create table osu_multiplayer_rooms (
+        id text primary key, osu_match_id bigint not null unique,
+        status text not null default 'active', snapshot_hash text,
+        next_sync_at timestamptz not null default now(), lease_until timestamptz,
+        lease_token text, last_synced_at timestamptz, last_data_changed_at timestamptz,
+        last_error text, attempts integer not null default 0,
+        created_at timestamptz not null default now(), updated_at timestamptz not null default now()
+      );
+      create table osu_multiplayer_games (
+        room_id text not null references osu_multiplayer_rooms(id) on delete cascade,
+        osu_game_id bigint not null, osu_beatmap_id bigint not null, ended_at timestamptz,
+        created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
+        primary key (room_id, osu_game_id)
+      );
+      create table osu_multiplayer_scores (
+        room_id text not null, osu_game_id bigint not null, osu_user_id bigint not null,
+        osu_beatmap_id bigint not null, score bigint not null, team text,
+        created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
+        primary key (room_id, osu_game_id, osu_user_id),
+        foreign key (room_id, osu_game_id) references osu_multiplayer_games(room_id, osu_game_id) on delete cascade
+      );
+    `);
+  });
+
+  afterAll(async () => {
+    if (roomIds.length) {
+      await db
+        .delete(osuMultiplayerRooms)
+        .where(eq(osuMultiplayerRooms.id, roomIds[0] as never));
+      for (const roomId of roomIds.slice(1)) {
+        await db
+          .delete(osuMultiplayerRooms)
+          .where(eq(osuMultiplayerRooms.id, roomId as never));
+      }
+    }
+    if (createdTables) {
+      await pool.query(
+        'drop table osu_multiplayer_scores, osu_multiplayer_games, osu_multiplayer_rooms',
+      );
+    }
+    await pool.end();
+  });
+
+  async function createRoom() {
+    const roomId = randomUUID();
+    await db.insert(osuMultiplayerRooms).values({
+      id: roomId as never,
+      osuMatchId: Math.floor(Math.random() * Number.MAX_SAFE_INTEGER),
+      leaseToken: 'token',
+      leaseUntil: new Date(Date.now() + 60_000),
+    });
+    roomIds.push(roomId);
+    return roomId;
+  }
+
+  it('rolls back changed games and scores when a score write fails', async () => {
+    const roomId = await createRoom();
+    const roomLease = { ...lease, roomId } as never;
+    await repository.applySnapshot(roomLease, snapshot);
+    await db
+      .update(osuMultiplayerRooms)
+      .set({ leaseToken: 'token', leaseUntil: new Date(Date.now() + 60_000) })
+      .where(eq(osuMultiplayerRooms.id, roomId as never));
+
+    const invalid = {
+      ...snapshot,
+      games: [
+        {
+          ...snapshot.games[0],
+          scores: [snapshot.games[0].scores[0], snapshot.games[0].scores[0]],
+        },
+      ],
+    };
+    await expect(
+      repository.applySnapshot(roomLease, invalid),
+    ).rejects.toThrow();
+
+    await expect(
+      db
+        .select({ osuGameId: osuMultiplayerGames.osuGameId })
+        .from(osuMultiplayerGames)
+        .where(eq(osuMultiplayerGames.roomId, roomId as never)),
+    ).resolves.toEqual(
+      expect.arrayContaining([{ osuGameId: 1 }, { osuGameId: 2 }]),
+    );
+  });
+
+  it('allows exactly one of two concurrent claims for a room', async () => {
+    const roomId = await createRoom();
+    await db
+      .update(osuMultiplayerRooms)
+      .set({ leaseToken: null, leaseUntil: null })
+      .where(eq(osuMultiplayerRooms.id, roomId as never));
+
+    const claims = await Promise.all([
+      repository.claim(roomId as never),
+      repository.claim(roomId as never),
+    ]);
+
+    expect(claims.filter(Boolean)).toHaveLength(1);
   });
 });
