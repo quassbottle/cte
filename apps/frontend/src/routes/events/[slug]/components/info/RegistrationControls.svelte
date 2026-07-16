@@ -1,19 +1,24 @@
 <script lang="ts">
 	import type { TournamentDto, TournamentParticipantDto } from '$lib/api/types';
+	import type { TournamentStaffRoleDto } from '$lib/api/generated/model';
 	import type { Viewer } from '$lib/types/viewer';
 	import { Button } from '$lib/components/ui/button';
 	import RegisterDialog from './RegisterDialog.svelte';
 	import TeamRegistrationDialog from './TeamRegistrationDialog.svelte';
 	import UnregisterDialog from './UnregisterDialog.svelte';
 	import type { TournamentRegistrationForm } from './types';
-	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 
 	export let tournament: TournamentDto;
 	export let user: Viewer | null;
 	export let participants: TournamentParticipantDto[];
 	export let form: TournamentRegistrationForm;
-	export let staff: TournamentStaffRole[];
-	$: isBlockedStaff = Boolean(user?.id && staff.some((role) => !role.canParticipate && role.members.some((member) => member.id === user?.id)));
+	export let staff: TournamentStaffRoleDto[];
+	$: isBlockedStaff = Boolean(
+		user?.id &&
+		staff.some(
+			(role) => !role.canParticipate && role.members.some((member) => member.id === user?.id)
+		)
+	);
 
 	$: isLoggedIn = Boolean(user?.id);
 	$: isRegistered = Boolean(

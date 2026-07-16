@@ -44,7 +44,7 @@
 					<div class="grid gap-3 md:grid-cols-2">
 						{#each lobbies.filter((lobby) => lobby.stageId === stage.id) as lobby (lobby.id)}
 							<QualificationLobbyCard {lobby}>
-								<div slot="selection">
+								<div slot="actions">
 									{#if user}
 										<form
 											method="post"

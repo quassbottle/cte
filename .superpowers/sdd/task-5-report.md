@@ -37,3 +37,11 @@
 - No compatibility `/sync` endpoint or local `QualificationLobby` type remains.
 - No manual score input names remain in frontend source.
 - Derived match result score fields remain read-only display output.
+
+## Review follow-up
+
+- Forced starts now persist `active` inside the lease transaction, so a failed fetch remains scheduler-retryable; PostgreSQL regression coverage verifies the failure/backoff/reclaim flow.
+- Tournament staff reads and mutations now use generated endpoints and DTOs end-to-end; the handwritten staff type was deleted.
+- Lobby editor controls have explicit accessible labels and IDs.
+- Public selection uses the card's single actions slot.
+- Removed unreachable qualification-lobby wording from the regular schedule editor.

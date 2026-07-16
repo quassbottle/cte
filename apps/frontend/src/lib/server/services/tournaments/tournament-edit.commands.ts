@@ -1,4 +1,7 @@
-import type { QualificationLobbyUpsertDto } from '$lib/api/generated/model';
+import type {
+	AssignTournamentStaffDto,
+	QualificationLobbyUpsertDto
+} from '$lib/api/generated/model';
 import type {
 	MappoolBeatmapAddForm,
 	MappoolBeatmapDeleteForm,
@@ -115,7 +118,7 @@ export function updateQualificationTeamMember(
 export function assignTournamentStaff(
 	backend: BackendClient,
 	tournamentId: string,
-	input: TournamentStaffForm
+	input: AssignTournamentStaffDto
 ) {
 	return backend.tournaments.staff.assign(tournamentId, input);
 }

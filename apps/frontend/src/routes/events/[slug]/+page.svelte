@@ -10,7 +10,8 @@
 	} from '$lib/api/types';
 	import type {
 		QualificationLobbyDtoOutput,
-		StageScheduleDtoOutput
+		StageScheduleDtoOutput,
+		TournamentStaffRoleDto
 	} from '$lib/api/generated/model';
 	import type { Viewer } from '$lib/types/viewer';
 	import { Button } from '$lib/components/ui/button';
@@ -22,7 +23,6 @@
 	import QualificationLobbiesTab from './components/QualificationLobbiesTab.svelte';
 	import MappoolsTab from './components/MappoolsTab.svelte';
 	import StaffTab from './components/StaffTab.svelte';
-	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 	import type { TournamentRegistrationForm } from './components/info/types';
 
 	export let data: {
@@ -30,7 +30,7 @@
 		user: Viewer | null;
 		participants: TournamentParticipantDto[];
 		teams: TournamentTeamDto[];
-		staff: TournamentStaffRole[];
+		staff: TournamentStaffRoleDto[];
 		host: UserDto;
 		stages: StageDto[];
 		schedule: StageScheduleDtoOutput[];

@@ -18,7 +18,7 @@ describe('qualification lobby actions', () => {
 				method: 'POST',
 				body: form
 			}),
-			fetch: async (_input, init) => {
+			fetch: async (_input: RequestInfo | URL, init?: RequestInit) => {
 				requestInit = init;
 				return new Response('', { status: 201 });
 			}

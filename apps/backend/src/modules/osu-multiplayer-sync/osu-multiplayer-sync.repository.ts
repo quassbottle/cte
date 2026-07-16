@@ -71,6 +71,7 @@ export class OsuMultiplayerSyncRepository {
       await tx
         .update(osuMultiplayerRooms)
         .set({
+          status: force ? 'active' : row.status,
           leaseToken,
           leaseUntil: new Date(
             now.valueOf() + this.env.get('OSU_MATCH_SYNC_LEASE_MS'),

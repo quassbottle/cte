@@ -1,5 +1,6 @@
 import type {
 	AddMappoolBeatmapDto,
+	AssignTournamentStaffDto,
 	CreateTournamentDto,
 	CreateMappoolDto,
 	CreateStageDto,
@@ -42,12 +43,15 @@ import {
 	tournamentControllerDeleteMatch,
 	tournamentControllerFindMany,
 	tournamentControllerArchive,
+	tournamentControllerAssignStaff,
 	tournamentControllerGetById,
 	tournamentControllerGetParticipants,
 	tournamentControllerGetQualificationRoster,
+	tournamentControllerGetStaff,
 	tournamentControllerGetTeams,
 	tournamentControllerPatch,
 	tournamentControllerRegister,
+	tournamentControllerRemoveStaff,
 	tournamentControllerUnregister,
 	tournamentControllerUpdateQualificationTeam,
 	tournamentControllerUpdateQualificationTeamParticipant,
@@ -61,7 +65,6 @@ import {
 	tournamentControllerGetSchedule
 } from '$lib/server/backend/generated/endpoints';
 import type { ServerSession } from '$lib/server/auth/session';
-import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 import { backendFetch } from './fetcher';
 
 type BackendClientInput =
@@ -136,19 +139,11 @@ export function createBackendClient(input?: BackendClientInput) {
 			getSchedule: (id: string) => tournamentControllerGetSchedule(id, options),
 			getTeams: (id: string) => tournamentControllerGetTeams(id, options),
 			staff: {
-				get: (id: string) =>
-					backendFetch<{ data: TournamentStaffRole[] }>(`/api/tournaments/${id}/staff`, options),
-				assign: (id: string, input: { roleId: string; userId: string }) =>
-					backendFetch(`/api/tournaments/${id}/staff`, {
-						...options,
-						method: 'POST',
-						body: JSON.stringify(input)
-					}),
+				get: (id: string) => tournamentControllerGetStaff(id, options),
+				assign: (id: string, input: AssignTournamentStaffDto) =>
+					tournamentControllerAssignStaff(id, input, options),
 				remove: (id: string, roleId: string, userId: string) =>
-					backendFetch(`/api/tournaments/${id}/staff/${roleId}/${userId}`, {
-						...options,
-						method: 'DELETE'
-					})
+					tournamentControllerRemoveStaff(id, roleId, userId, options)
 			},
 			update: (id: string, input: UpdateTournamentDto) =>
 				tournamentControllerPatch(id, input, options),

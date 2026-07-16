@@ -1,5 +1,6 @@
 <script lang="ts">
 	import type { TournamentDto, TournamentParticipantDto, UserDto } from '$lib/api/types';
+	import type { TournamentStaffRoleDto } from '$lib/api/generated/model';
 	import type { Viewer } from '$lib/types/viewer';
 	import TournamentBanner from '$lib/components/tournamentBanner/tournamentBanner.svelte';
 	import BreadcrumbList from '$lib/components/ui/breadcrumbList/breadcrumbList.svelte';
@@ -9,14 +10,13 @@
 	import { Calendar, UserRound } from 'lucide-svelte';
 	import RegistrationControls from './RegistrationControls.svelte';
 	import type { TournamentRegistrationForm } from './types';
-	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 
 	export let tournament: TournamentDto;
 	export let user: Viewer | null;
 	export let participants: TournamentParticipantDto[];
 	export let host: UserDto;
 	export let form: TournamentRegistrationForm | undefined;
-	export let staff: TournamentStaffRole[];
+	export let staff: TournamentStaffRoleDto[];
 
 	$: participantsCount = tournament.participantsCount ?? participants.length;
 </script>

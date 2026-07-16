@@ -1,6 +1,11 @@
 <script lang="ts">
 	import type { MappoolBeatmapDto, MappoolDto, StageDto, TournamentDto } from '$lib/api/types';
-	import type { AugmentedZodDtoOutput, StageScheduleDtoOutput } from '$lib/api/generated/model';
+	import type {
+		AugmentedZodDtoOutput,
+		QualificationLobbyDtoOutput,
+		StageScheduleDtoOutput,
+		TournamentStaffRoleDto
+	} from '$lib/api/generated/model';
 	import { Button } from '$lib/components/ui/button';
 	import { page } from '$app/stores';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
@@ -9,11 +14,9 @@
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 	import ScheduleTab from './components/ScheduleTab.svelte';
 	import QualificationLobbiesTab from './components/QualificationLobbiesTab.svelte';
-	import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
 	import StagesTab from './components/StagesTab.svelte';
 	import TournamentTab from './components/TournamentTab.svelte';
 	import StaffTab from './components/StaffTab.svelte';
-	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
 
 	export let data: {
 		tournament: TournamentDto;
@@ -23,7 +26,7 @@
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		qualificationRoster: AugmentedZodDtoOutput;
-		staff: TournamentStaffRole[];
+		staff: TournamentStaffRoleDto[];
 	};
 	export let form: TournamentEditActionResult | undefined;
 

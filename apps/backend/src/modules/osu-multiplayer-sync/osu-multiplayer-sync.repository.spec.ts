@@ -278,4 +278,34 @@ describe('OsuMultiplayerSyncRepository with PostgreSQL', () => {
 
     expect(claims.filter(Boolean)).toHaveLength(1);
   });
+
+  it('keeps a failed forced start active so the scheduler can retry it', async () => {
+    const roomId = await createRoom();
+    await db
+      .update(osuMultiplayerRooms)
+      .set({ status: 'stopped', leaseToken: null, leaseUntil: null })
+      .where(eq(osuMultiplayerRooms.id, roomId as never));
+
+    const forced = await repository.claim(roomId as never, true);
+    expect(forced?.status).toBe('active');
+    await repository.applyFailure(forced!, new Error('osu unavailable'));
+
+    const [failed] = await db
+      .select({
+        status: osuMultiplayerRooms.status,
+        nextSyncAt: osuMultiplayerRooms.nextSyncAt,
+      })
+      .from(osuMultiplayerRooms)
+      .where(eq(osuMultiplayerRooms.id, roomId as never));
+    expect(failed.status).toBe('active');
+
+    await db
+      .update(osuMultiplayerRooms)
+      .set({ nextSyncAt: new Date(0) })
+      .where(eq(osuMultiplayerRooms.id, roomId as never));
+    await expect(repository.claim(roomId as never)).resolves.toMatchObject({
+      roomId,
+      status: 'active',
+    });
+  });
 });

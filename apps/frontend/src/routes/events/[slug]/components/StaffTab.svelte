@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { TournamentStaffRole } from '$lib/types/tournament-staff';
+	import type { TournamentStaffRoleDto } from '$lib/api/generated/model';
 	import RosterGroups from './RosterGroups.svelte';
 
-	export let staff: TournamentStaffRole[];
+	export let staff: TournamentStaffRoleDto[];
 </script>
 
 <div class="flex flex-col gap-3">

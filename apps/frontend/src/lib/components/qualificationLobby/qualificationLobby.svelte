@@ -57,6 +57,5 @@
 		</div>
 	{/if}
 
-	<slot name="selection" />
 	<slot name="actions" />
 </article>

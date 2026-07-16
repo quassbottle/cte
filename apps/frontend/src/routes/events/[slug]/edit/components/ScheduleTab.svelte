@@ -50,7 +50,6 @@
 		currentDialog && currentDialog.mode !== 'delete'
 			? sortedSchedule.find((stage) => stage.id === currentDialog.stageId)
 			: undefined;
-	$: isQualificationDialog = dialogStage?.type === 'qualification';
 
 	function getActiveStageId(value: string | null) {
 		if (value && sortedSchedule.some((stage) => stage.id === value)) {
@@ -204,13 +203,9 @@
 				<div>
 					<p class="text-lg font-semibold">
 						{dialog.mode === 'create'
-							? isQualificationDialog
-								? 'Add qualification lobby'
-								: 'Add match'
+							? 'Add match'
 							: dialog.mode === 'update'
-								? isQualificationDialog
-									? 'Edit qualification lobby'
-									: 'Edit match'
+								? 'Edit match'
 								: 'Delete match'}
 					</p>
 					<p class="text-sm text-muted-foreground">
