@@ -229,30 +229,16 @@
 					onCancel={() => (dialog = null)}
 				/>
 			{:else if dialog.mode === 'update'}
-				<div class="flex flex-col gap-3">
-					<div class="flex justify-end gap-2">
-						<form method="post" action="?/syncScheduleMatch" use:enhance={enhanceDeleteMatch}>
-							<input type="hidden" name="matchId" value={dialog.match.id} />
-							<Button type="submit" variant="outline" class="text-[12px]">Sync</Button>
-						</form>
-						{#if dialog.match.syncStatus === 'active'}
-							<form method="post" action="?/stopScheduleMatch" use:enhance={enhanceDeleteMatch}>
-								<input type="hidden" name="matchId" value={dialog.match.id} />
-								<Button type="submit" variant="outline" class="text-[12px]">Stop sync</Button>
-							</form>
-						{/if}
-					</div>
-					<ScheduleMatchForm
-						stage={dialogStage}
-						{tournamentId}
-						stageId={dialog.stageId}
-						match={dialog.match}
-						{form}
-						{isTeam}
-						mode="update"
-						onCancel={() => (dialog = null)}
-					/>
-				</div>
+				<ScheduleMatchForm
+					stage={dialogStage}
+					{tournamentId}
+					stageId={dialog.stageId}
+					match={dialog.match}
+					{form}
+					{isTeam}
+					mode="update"
+					onCancel={() => (dialog = null)}
+				/>
 			{:else}
 				<div class="flex flex-col gap-4">
 					<p class="text-sm text-muted-foreground">

@@ -9,8 +9,6 @@ export type EditAction =
 	| 'createScheduleMatch'
 	| 'updateScheduleMatch'
 	| 'deleteScheduleMatch'
-	| 'syncScheduleMatch'
-	| 'stopScheduleMatch'
 	| 'createQualificationLobby'
 	| 'updateQualificationLobby'
 	| 'deleteQualificationLobby'
