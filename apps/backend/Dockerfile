@@ -22,7 +22,7 @@ FROM build AS migrate
 
 WORKDIR /app/apps/backend
 
-CMD ["pnpm", "migration:push"]
+CMD ["pnpm", "migration:migrate"]
 
 FROM node:22-bookworm-slim AS runtime
 

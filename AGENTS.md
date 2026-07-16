@@ -10,3 +10,9 @@ Rules:
 - If graphify-out/wiki/index.md exists, use it for broad navigation instead of raw source browsing.
 - Read graphify-out/GRAPH_REPORT.md only for broad architecture review or when query/path/explain do not surface enough context.
 - After modifying code, run `graphify update .` to keep the graph current (AST-only, no API cost).
+
+## Drizzle migrations
+
+- Never edit `apps/backend/drizzle/meta/_journal.json` or snapshot files manually.
+- Never create migration SQL files manually. Create migrations only with the Drizzle Kit CLI.
+- Generated migration SQL may be extended with required data migration statements, but journal and snapshots must remain CLI-generated.

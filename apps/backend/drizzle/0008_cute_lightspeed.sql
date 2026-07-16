@@ -1,1 +1,0 @@
-ALTER TABLE "beatmaps" ADD COLUMN IF NOT EXISTS "mode" text DEFAULT 'osu' NOT NULL;
