@@ -1,16 +1,16 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import { and, count, eq, inArray, sql } from 'drizzle-orm';
+import { and, count, eq, inArray } from 'drizzle-orm';
 import { QualificationLobbyId } from 'lib/domain/qualification-lobby/qualification-lobby.id';
 import { StageId } from 'lib/domain/stage/stage.id';
 import { TeamId } from 'lib/domain/team/team.id';
 import { UserId } from 'lib/domain/user/user.id';
 import {
-  qualificationLobbies,
   qualificationLobbyPlayers,
   qualificationLobbyTeams,
   Schema,
   teamParticipants,
 } from 'lib/infrastructure/db';
+import { lockQualificationStage } from './qualification-stage.lock';
 
 const CAPACITY = 16;
 
@@ -24,9 +24,7 @@ export class QualificationLobbyRepository {
     userId: UserId;
   }) {
     return this.db.transaction(async (tx) => {
-      await tx.execute(
-        sql`select 1 from ${qualificationLobbies} where ${qualificationLobbies.id} = ${input.lobbyId} for update`,
-      );
+      await lockQualificationStage(tx, input.stageId);
       await tx
         .delete(qualificationLobbyPlayers)
         .where(
@@ -47,9 +45,7 @@ export class QualificationLobbyRepository {
     seats: number;
   }) {
     return this.db.transaction(async (tx) => {
-      await tx.execute(
-        sql`select 1 from ${qualificationLobbies} where ${qualificationLobbies.id} = ${input.lobbyId} for update`,
-      );
+      await lockQualificationStage(tx, input.stageId);
       await tx
         .delete(qualificationLobbyTeams)
         .where(
@@ -65,6 +61,24 @@ export class QualificationLobbyRepository {
         teamId: input.teamId,
       });
     });
+  }
+
+  public async assertAssignedTeamCapacity(
+    db: Schema,
+    stageId: StageId,
+    teamId: TeamId,
+  ) {
+    await lockQualificationStage(db, stageId);
+    const [assignment] = await db
+      .select({ lobbyId: qualificationLobbyTeams.lobbyId })
+      .from(qualificationLobbyTeams)
+      .where(
+        and(
+          eq(qualificationLobbyTeams.stageId, stageId),
+          eq(qualificationLobbyTeams.teamId, teamId),
+        ),
+      );
+    if (assignment) await this.assertCapacity(db, assignment.lobbyId, 0);
   }
 
   private async assertCapacity(

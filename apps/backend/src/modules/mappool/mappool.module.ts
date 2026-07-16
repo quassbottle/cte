@@ -1,7 +1,6 @@
 import { Module } from '@nestjs/common';
 import { AuthModule } from 'modules/auth/auth.module';
 import { BeatmapModule } from 'modules/beatmap/beatmap.module';
-import { QualificationModule } from 'modules/qualification/qualification.module';
 import { TournamentModule } from 'modules/tournament/tournament.module';
 import {
   MappoolController,
@@ -10,7 +9,7 @@ import {
 import { MappoolService } from './mappool.service';
 
 @Module({
-  imports: [AuthModule, BeatmapModule, TournamentModule, QualificationModule],
+  imports: [AuthModule, BeatmapModule, TournamentModule],
   controllers: [MappoolController, TournamentMappoolController],
   providers: [MappoolService],
   exports: [MappoolService],

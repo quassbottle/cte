@@ -1,4 +1,4 @@
-import { Inject, Injectable, Optional } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { and, asc, eq, isNull, max, ne } from 'drizzle-orm';
 import { PaginationParams } from 'lib/common/utils/zod/pagination';
 import { BeatmapId } from 'lib/domain/beatmap/beatmap.id';
@@ -33,8 +33,7 @@ export class MappoolService {
   constructor(
     @Inject('DB') private readonly drizzle: Schema,
     private readonly beatmapService: BeatmapService,
-    @Optional()
-    private readonly qualificationResults?: QualificationResultsService,
+    private readonly qualificationResults: QualificationResultsService,
   ) {}
 
   public async create(params: MappoolCreateParams): Promise<DbMappool> {
@@ -55,7 +54,7 @@ export class MappoolService {
       .values({ id, ...params })
       .returning();
 
-    await this.qualificationResults?.invalidate(stageId);
+    await this.qualificationResults.invalidate(stageId);
     return created;
   }
 
@@ -198,7 +197,7 @@ export class MappoolService {
       );
     }
 
-    await this.qualificationResults?.invalidate(current.stageId);
+    await this.qualificationResults.invalidate(current.stageId);
     return updated;
   }
 
@@ -217,7 +216,7 @@ export class MappoolService {
       );
     }
 
-    await this.qualificationResults?.invalidate(deleted.stageId);
+    await this.qualificationResults.invalidate(deleted.stageId);
     return deleted;
   }
 
@@ -253,7 +252,7 @@ export class MappoolService {
       })
       .returning();
 
-    await this.qualificationResults?.invalidate(mappool.stageId);
+    await this.qualificationResults.invalidate(mappool.stageId);
     return this.beatmapService.toMappoolBeatmapView({
       mappoolBeatmap: created,
       beatmap,
@@ -311,7 +310,7 @@ export class MappoolService {
         );
       }
 
-      await this.qualificationResults?.invalidate(mappool.stageId);
+      await this.qualificationResults.invalidate(mappool.stageId);
       return this.beatmapService.toMappoolBeatmapView({
         mappoolBeatmap: updated,
         beatmap,
@@ -351,7 +350,7 @@ export class MappoolService {
       );
     }
 
-    await this.qualificationResults?.invalidate(mappool.stageId);
+    await this.qualificationResults.invalidate(mappool.stageId);
     return this.beatmapService.toMappoolBeatmapView({
       mappoolBeatmap: updated,
       beatmap: current.beatmap,
@@ -388,7 +387,7 @@ export class MappoolService {
       );
     }
 
-    await this.qualificationResults?.invalidate(mappool.stageId);
+    await this.qualificationResults.invalidate(mappool.stageId);
     return this.beatmapService.toMappoolBeatmapView({
       mappoolBeatmap: deleted,
       beatmap: current.beatmap,

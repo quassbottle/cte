@@ -23,6 +23,10 @@ import {
     QualificationSyncRepository,
     QualificationSyncScheduler,
   ],
-  exports: [QualificationLobbyService, QualificationResultsService],
+  exports: [
+    QualificationLobbyRepository,
+    QualificationLobbyService,
+    QualificationResultsService,
+  ],
 })
 export class QualificationModule {}

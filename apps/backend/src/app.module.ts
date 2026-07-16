@@ -6,7 +6,6 @@ import { EnvService } from 'lib/common/env/env.service';
 import { AuthModule } from 'modules/auth/auth.module';
 import { MappoolModule } from 'modules/mappool/mappool.module';
 import { OsuFeatureModule } from 'modules/osu/osu.module';
-import { QualificationModule } from 'modules/qualification/qualification.module';
 import { StageModule } from 'modules/stage/stage.module';
 import { TournamentModule } from 'modules/tournament/tournament.module';
 import { UserModule } from 'modules/user/user.module';
@@ -23,7 +22,6 @@ import * as schema from './lib/infrastructure/db/schema';
     //GatewayModule,
     OsuFeatureModule,
     TournamentModule,
-    QualificationModule,
     StageModule,
     MappoolModule,
     DrizzlePGModule.registerAsync({

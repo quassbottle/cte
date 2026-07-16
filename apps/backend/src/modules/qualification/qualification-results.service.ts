@@ -20,13 +20,14 @@ import {
   users,
 } from 'lib/infrastructure/db';
 import { calculateQualificationSeeds } from './qualification-seeding';
+import { lockQualificationStage } from './qualification-stage.lock';
 
 @Injectable()
 export class QualificationResultsRepository {
   constructor(@Inject('DB') private readonly db: Schema) {}
 
-  public async load(stageId: StageId) {
-    const stage = await this.db
+  public async load(stageId: StageId, db: Schema = this.db) {
+    const stage = await db
       .select({ tournamentId: stages.tournamentId, isTeam: tournaments.isTeam })
       .from(stages)
       .innerJoin(tournaments, eq(tournaments.id, stages.tournamentId))
@@ -36,7 +37,7 @@ export class QualificationResultsRepository {
       throw new BadRequestException('Qualification stage not found');
 
     const [maps, attempts] = await Promise.all([
-      this.db
+      db
         .select({ beatmapId: beatmaps.id })
         .from(mappools)
         .innerJoin(
@@ -45,7 +46,7 @@ export class QualificationResultsRepository {
         )
         .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
         .where(eq(mappools.stageId, stageId)),
-      this.db
+      db
         .select({
           osuGameId: osuMultiplayerScores.osuGameId,
           beatmapId: beatmaps.id,
@@ -68,7 +69,7 @@ export class QualificationResultsRepository {
 
     if (!stage[0].isTeam) {
       const [competitors, assigned] = await Promise.all([
-        this.db
+        db
           .select({ id: users.id, tieBreakId: users.osuId })
           .from(soloParticipants)
           .innerJoin(users, eq(users.id, soloParticipants.userId))
@@ -78,7 +79,7 @@ export class QualificationResultsRepository {
               eq(soloParticipants.withdrawn, false),
             ),
           ),
-        this.db
+        db
           .select({ id: qualificationLobbyPlayers.userId })
           .from(qualificationLobbyPlayers)
           .where(eq(qualificationLobbyPlayers.stageId, stageId)),
@@ -98,7 +99,7 @@ export class QualificationResultsRepository {
     }
 
     const [members, assigned] = await Promise.all([
-      this.db
+      db
         .select({ teamId: teams.id, userId: teamParticipants.userId })
         .from(teams)
         .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
@@ -109,7 +110,7 @@ export class QualificationResultsRepository {
             eq(teamParticipants.withdrawn, false),
           ),
         ),
-      this.db
+      db
         .select({ id: qualificationLobbyTeams.teamId })
         .from(qualificationLobbyTeams)
         .where(eq(qualificationLobbyTeams.stageId, stageId)),
@@ -141,6 +142,7 @@ export class QualificationResultsRepository {
     rows: ReturnType<typeof calculateQualificationSeeds>,
   ) {
     return this.db.transaction(async (tx) => {
+      await lockQualificationStage(tx, stageId);
       await tx
         .delete(qualificationResults)
         .where(eq(qualificationResults.stageId, stageId));
@@ -160,9 +162,36 @@ export class QualificationResultsRepository {
   }
 
   public invalidate(stageId: StageId) {
-    return this.db
-      .delete(qualificationResults)
-      .where(eq(qualificationResults.stageId, stageId));
+    return this.db.transaction(async (tx) => {
+      await lockQualificationStage(tx, stageId);
+      await tx
+        .delete(qualificationResults)
+        .where(eq(qualificationResults.stageId, stageId));
+    });
+  }
+
+  public recalculate(stageId: StageId) {
+    return this.db.transaction(async (tx) => {
+      await lockQualificationStage(tx, stageId);
+      const input = await this.load(stageId, tx as Schema);
+      if (!input.complete || !input.beatmapIds.length) return;
+      const rows = calculateQualificationSeeds(input);
+      await tx
+        .delete(qualificationResults)
+        .where(eq(qualificationResults.stageId, stageId));
+      if (rows.length) {
+        await tx.insert(qualificationResults).values(
+          rows.map((row) => ({
+            stageId,
+            ...(input.isTeam
+              ? { teamId: row.competitorId as never }
+              : { userId: row.competitorId as never }),
+            seed: row.seed,
+            aggregateScore: row.totalScore,
+          })),
+        );
+      }
+    });
   }
 
   public async isStale(stageId: StageId) {
@@ -190,13 +219,7 @@ export class QualificationResultsService {
   constructor(private readonly repository: QualificationResultsRepository) {}
 
   public async recalculate(stageId: StageId) {
-    const input = await this.repository.load(stageId);
-    if (!input.complete || !input.beatmapIds.length) return;
-    await this.repository.replace(
-      stageId,
-      input.isTeam,
-      calculateQualificationSeeds(input),
-    );
+    await this.repository.recalculate(stageId);
   }
 
   public invalidate(stageId: StageId) {

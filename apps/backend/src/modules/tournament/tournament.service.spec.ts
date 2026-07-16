@@ -5,6 +5,19 @@ jest.mock('@paralleldrive/cuid2', () => ({
 
 import { TournamentService } from './tournament.service';
 
+const tournamentService = (db: never) =>
+  new TournamentService(
+    {
+      ...(db as object),
+      query: {
+        ...((db as { query?: object }).query ?? {}),
+        stages: { findFirst: jest.fn().mockResolvedValue(undefined) },
+      },
+    } as never,
+    { invalidate: jest.fn() } as never,
+    { assertAssignedTeamCapacity: jest.fn() } as never,
+  );
+
 const containsValue = (
   value: unknown,
   expected: unknown,
@@ -19,49 +32,6 @@ const containsValue = (
 };
 
 describe('TournamentService', () => {
-  describe('qualification seed recalculation', () => {
-    const tournamentId = 'ckm123456789012345678901' as never;
-
-    it('delegates qualification result calculation to the qualification module', async () => {
-      const results = { recalculate: jest.fn() };
-      const service = new TournamentService(
-        {
-          query: {
-            stages: {
-              findFirst: jest.fn().mockResolvedValue({ id: 'stage-1' }),
-            },
-          },
-        } as never,
-        results as never,
-      );
-      jest.spyOn(service, 'getQualificationRoster').mockResolvedValue({
-        kind: 'solo',
-        participants: [],
-      });
-
-      await service.calculateQualificationSeeds({ id: tournamentId });
-
-      expect(results.recalculate).toHaveBeenCalledWith('stage-1');
-    });
-
-    it('rejects a missing qualification stage before delegating', async () => {
-      const results = { recalculate: jest.fn() };
-      const service = new TournamentService(
-        {
-          query: {
-            stages: { findFirst: jest.fn().mockResolvedValue(undefined) },
-          },
-        } as never,
-        results as never,
-      );
-
-      await expect(
-        service.calculateQualificationSeeds({ id: tournamentId }),
-      ).rejects.toThrow('Qualification stage not found');
-      expect(results.recalculate).not.toHaveBeenCalled();
-    });
-  });
-
   describe('qualification roster updates', () => {
     const tournamentId = 'ckm123456789012345678901' as never;
     const teamId = 'ckm123456789012345678902' as never;
@@ -83,7 +53,7 @@ describe('TournamentService', () => {
       const leftJoin = jest.fn(() => ({ where }));
       const innerJoin = jest.fn(() => ({ innerJoin, leftJoin, where }));
       const from = jest.fn(() => ({ innerJoin }));
-      const service = new TournamentService({
+      const service = tournamentService({
         select: jest.fn(() => ({ from })),
       } as never);
       jest
@@ -118,7 +88,7 @@ describe('TournamentService', () => {
 
     it('scopes solo updates to tournament and user and clears stale reason', async () => {
       const query = updateDb();
-      const service = new TournamentService(query.db as never);
+      const service = tournamentService(query.db as never);
 
       await service.updateSoloQualificationParticipant({
         id: tournamentId,
@@ -136,7 +106,7 @@ describe('TournamentService', () => {
 
     it('scopes team updates to tournament and team', async () => {
       const query = updateDb();
-      const service = new TournamentService(query.db as never);
+      const service = tournamentService(query.db as never);
 
       await service.updateQualificationTeam({
         id: tournamentId,
@@ -151,7 +121,7 @@ describe('TournamentService', () => {
 
     it('scopes team member updates to tournament, team, and user', async () => {
       const query = updateDb();
-      const service = new TournamentService(query.db as never);
+      const service = tournamentService(query.db as never);
 
       await service.updateQualificationTeamParticipant({
         id: tournamentId,
@@ -171,7 +141,7 @@ describe('TournamentService', () => {
 
     it('reports scoped participants missing from the tournament', async () => {
       const query = updateDb([]);
-      const service = new TournamentService(query.db as never);
+      const service = tournamentService(query.db as never);
 
       await expect(
         service.updateSoloQualificationParticipant({
@@ -196,7 +166,7 @@ describe('TournamentService', () => {
         },
       },
     };
-    const service = new TournamentService(drizzle as never);
+    const service = tournamentService(drizzle as never);
 
     await service.findMany({
       limit: 20,
@@ -218,7 +188,7 @@ describe('TournamentService', () => {
     const set = jest.fn(() => ({ where }));
     const update = jest.fn(() => ({ set }));
     const drizzle = { update };
-    const service = new TournamentService(drizzle as never);
+    const service = tournamentService(drizzle as never);
 
     await service.archive({ id: 'tournament-1' as never, archivedAt });
 
@@ -227,7 +197,7 @@ describe('TournamentService', () => {
   });
 
   it('rejects updates to archived tournaments', async () => {
-    const service = new TournamentService({} as never);
+    const service = tournamentService({} as never);
     jest.spyOn(service, 'getById').mockResolvedValue({
       id: 'tournament-1',
       archivedAt: new Date('2026-01-01T00:00:00.000Z'),
@@ -253,7 +223,7 @@ describe('TournamentService', () => {
     });
     const innerJoin = jest.fn(() => ({ where }));
     const from = jest.fn(() => ({ innerJoin }));
-    const service = new TournamentService({
+    const service = tournamentService({
       select: jest.fn(() => ({ from })),
     } as never);
     jest
@@ -277,7 +247,7 @@ describe('TournamentService', () => {
     const orderBy = jest.fn(() => ({ limit }));
     const where = jest.fn(() => ({ orderBy }));
     const from = jest.fn(() => ({ where }));
-    const service = new TournamentService({
+    const service = tournamentService({
       select: jest.fn(() => ({ from })),
     } as never);
     jest.spyOn(service, 'getById').mockResolvedValue({ isTeam: true } as never);
@@ -294,7 +264,7 @@ describe('TournamentService', () => {
 
   it('does not search teams for a solo tournament', async () => {
     const select = jest.fn();
-    const service = new TournamentService({ select } as never);
+    const service = tournamentService({ select } as never);
     jest
       .spyOn(service, 'getById')
       .mockResolvedValue({ isTeam: false } as never);

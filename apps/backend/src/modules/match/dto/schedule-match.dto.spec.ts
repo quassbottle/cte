@@ -3,7 +3,13 @@ jest.mock('@paralleldrive/cuid2', () => ({
   init: jest.fn(() => jest.fn(() => 'test-id')),
 }));
 
-import { scheduleMatchUpsertDtoSchema } from './index';
+import { matchDtoSchema, scheduleMatchUpsertDtoSchema } from './index';
+
+it('does not expose persisted score compatibility fields on a match', () => {
+  expect(matchDtoSchema.keyof().options).not.toEqual(
+    expect.arrayContaining(['redScore', 'blueScore']),
+  );
+});
 
 describe('scheduleMatchUpsertDtoSchema', () => {
   it('accepts a complete schedule match payload', () => {

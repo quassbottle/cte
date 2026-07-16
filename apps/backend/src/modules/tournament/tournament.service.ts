@@ -1,9 +1,4 @@
-import {
-  BadRequestException,
-  Inject,
-  Injectable,
-  Optional,
-} from '@nestjs/common';
+import { BadRequestException, Inject, Injectable } from '@nestjs/common';
 import {
   and,
   asc,
@@ -42,6 +37,7 @@ import {
   tournamentStaffMembers,
   users,
 } from 'lib/infrastructure/db';
+import { QualificationLobbyRepository } from 'modules/qualification/qualification-lobby.repository';
 import { QualificationResultsService } from 'modules/qualification/qualification-results.service';
 import {
   QualificationRosterInput,
@@ -58,8 +54,8 @@ import {
 export class TournamentService {
   constructor(
     @Inject('DB') private readonly drizzle: Schema,
-    @Optional()
-    private readonly qualificationResults?: QualificationResultsService,
+    private readonly qualificationResults: QualificationResultsService,
+    private readonly qualificationLobbies: QualificationLobbyRepository,
   ) {}
 
   public async create(params: TournamentCreateParams): Promise<DbTournament> {
@@ -73,13 +69,11 @@ export class TournamentService {
         where: eq(staffRoles.name, 'Host'),
       });
       if (!host) throw new Error('Host staff role is missing');
-      await tx
-        .insert(tournamentStaffMembers)
-        .values({
-          tournamentId: id,
-          roleId: host.id,
-          userId: params.creatorId,
-        });
+      await tx.insert(tournamentStaffMembers).values({
+        tournamentId: id,
+        roleId: host.id,
+        userId: params.creatorId,
+      });
       return created;
     });
   }
@@ -435,12 +429,45 @@ export class TournamentService {
     data: Omit<UpdateQualificationCompetitorInput, 'seed'>;
   }): Promise<void> {
     const { id, teamId, userId, data } = params;
+    if (data.withdrawn === false) {
+      await this.drizzle.transaction(async (tx) => {
+        const stage = await tx.query.stages.findFirst({
+          where: and(
+            eq(stages.tournamentId, id),
+            eq(stages.type, 'qualification'),
+            isNull(stages.deletedAt),
+          ),
+        });
+        if (!stage)
+          throw new BadRequestException('Qualification stage not found');
+        const [updated] = await tx
+          .update(teamParticipants)
+          .set({ ...data, withdrawalReason: null })
+          .from(teams)
+          .where(
+            and(
+              eq(teamParticipants.teamId, teamId),
+              eq(teamParticipants.userId, userId),
+              eq(teams.id, teamParticipants.teamId),
+              eq(teams.tournamentId, id),
+            ),
+          )
+          .returning();
+        if (!updated) this.throwScopedQualificationNotFound('Team participant');
+        await this.qualificationLobbies.assertAssignedTeamCapacity(
+          tx as Schema,
+          stage.id,
+          teamId,
+        );
+      });
+      await this.invalidateQualification(id);
+      return;
+    }
     const [updated] = await this.drizzle
       .update(teamParticipants)
       .set({
         ...data,
-        withdrawalReason:
-          data.withdrawn === false ? null : data.withdrawalReason,
+        withdrawalReason: data.withdrawalReason,
       })
       .from(teams)
       .where(
@@ -455,25 +482,6 @@ export class TournamentService {
 
     if (!updated) this.throwScopedQualificationNotFound('Team participant');
     await this.invalidateQualification(id);
-  }
-
-  public async calculateQualificationSeeds(params: {
-    id: TournamentId;
-  }): Promise<QualificationRosterInput> {
-    const { id } = params;
-
-    const stage = await this.drizzle.query.stages.findFirst({
-      where: and(
-        eq(stages.tournamentId, id),
-        eq(stages.type, 'qualification'),
-        isNull(stages.deletedAt),
-      ),
-    });
-    if (!stage) throw new BadRequestException('Qualification stage not found');
-    if (!this.qualificationResults)
-      throw new Error('Qualification results unavailable');
-    await this.qualificationResults.recalculate(stage.id);
-    return this.getQualificationRoster({ id });
   }
 
   public async searchTeams(
@@ -936,7 +944,6 @@ export class TournamentService {
   }
 
   private async invalidateQualification(tournamentId: TournamentId) {
-    if (!this.qualificationResults) return;
     const stage = await this.drizzle.query.stages.findFirst({
       where: and(
         eq(stages.tournamentId, tournamentId),

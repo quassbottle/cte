@@ -74,3 +74,39 @@ Result: all exited 0. Graph rebuilt with 3,069 nodes and 4,980 edges.
 - `apps/backend/drizzle/meta/{0021_snapshot.json,_journal.json}`
 
 Frontend Task 5 changes were not modified or staged.
+
+## Review fixes
+
+- Result recalculation now locks the qualification stage before loading raw
+  inputs and keeps the lock through stage replacement. Invalidation uses the
+  same transaction lock, so a concurrent invalidation cannot be overwritten by
+  a stale rebuild.
+- Lobby selections lock the shared stage row, serializing the same competitor
+  and final-seat decisions even when requests target different lobbies.
+- Reactivating a member of an assigned team validates the locked lobby capacity
+  inside the roster update transaction and rejects a seventeenth occupied seat.
+- Deleted the manual `POST :id/qualification/calculate-seeds` route and
+  `TournamentService` method. Scheduler/service materialization is the only
+  calculation owner.
+- Qualification dependencies are required; removed `@Optional`, optional
+  chaining, and silent invalidation skips.
+- Removed `redScore` and `blueScore` from the base match DTO. Derived schedule
+  result fields remain because they are computed from raw osu scores.
+- Removed the duplicate root qualification-module import and the dead scheduler
+  test mock. Tournament exports the imported qualification module to mappool.
+
+Review verification:
+
+```text
+17 suites passed
+62 tests passed
+backend build passed
+migration journal and raw/lobby schema checks passed
+git diff --check passed
+graphify update: 3,076 nodes, 4,989 edges
+```
+
+Intentional audit leftovers: `modules/match/match-sync.scheduler.ts` is the
+active regular-match orchestrator using shared raw sync, while `redScore`,
+`blueScore`, `score`, and `isWinner` in match result/schedule code are derived
+response values rather than persisted or manually accepted compatibility data.

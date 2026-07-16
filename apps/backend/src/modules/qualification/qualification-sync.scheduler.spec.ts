@@ -12,7 +12,6 @@ describe('QualificationSyncScheduler', () => {
         { stageId: 'stage', roomId: 'room-1' },
         { stageId: 'stage', roomId: 'room-2' },
       ]),
-      assignmentsComplete: jest.fn().mockResolvedValue(true),
     };
     const sync = { sync: jest.fn() };
     const results = {

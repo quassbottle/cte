@@ -36,8 +36,6 @@ export const matchDtoSchema = z.object({
   vodUrl: z.string().nullable(),
   redTeamId: teamIdSchema.nullable(),
   blueTeamId: teamIdSchema.nullable(),
-  redScore: z.number().int().nullable().optional(),
-  blueScore: z.number().int().nullable().optional(),
   createdAt: isoStringToDate,
   updatedAt: isoStringToDate,
 });

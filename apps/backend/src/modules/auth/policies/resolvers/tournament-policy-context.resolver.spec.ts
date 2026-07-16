@@ -50,7 +50,7 @@ describe('TournamentPolicyContextResolver', () => {
       },
       {
         method: 'POST',
-        originalUrl: `/api/tournaments/${id}/qualification/calculate-seeds`,
+        originalUrl: `/api/tournaments/${id}/qualification/participants/user`,
         params: { id },
       },
     ]) {
