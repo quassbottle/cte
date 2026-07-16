@@ -8,10 +8,8 @@ import {
   QualificationResultsRepository,
   QualificationResultsService,
 } from './qualification-results.service';
-import {
-  QualificationSyncRepository,
-  QualificationSyncScheduler,
-} from './qualification-sync.scheduler';
+import { QualificationSyncRepository } from './qualification-sync.repository';
+import { QualificationSyncScheduler } from './qualification-sync.scheduler';
 
 @Module({
   imports: [OsuMultiplayerSyncModule, PoliciesModule],
