@@ -29,7 +29,6 @@ export const matches = pgTable(
 
     startsAt: timestamp('starts_at').notNull(),
     endsAt: timestamp('ends_at', { withTimezone: true }).notNull(),
-    mpUrl: text('mp_url'),
     osuRoomId: text('osu_room_id')
       .$type<OsuRoomId>()
       .unique()

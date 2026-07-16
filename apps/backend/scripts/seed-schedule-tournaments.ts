@@ -454,17 +454,14 @@ const createTournamentSeed = async (
     const left = requireSeedUser(params.usersByOsuId, leftOsuId);
     const right = requireSeedUser(params.usersByOsuId, rightOsuId);
     const currentMatchId = matchId();
-    const stage = index < 3 ? qualifier : finals;
-
     await db.insert(matches).values({
       id: currentMatchId,
       name: `Match ${index + 1}`,
-      stageId: stage,
+      stageId: finals,
       matchNumber: index + 1,
       creatorId: params.hostId,
       startsAt: new Date(Date.UTC(2026, 6, 10 + index, 16, 0, 0)),
       endsAt: new Date(Date.UTC(2026, 6, 10 + index, 17, 30, 0)),
-      mpUrl: `https://osu.ppy.sh/community/matches/${1000000 + index}`,
       vodUrl: `https://www.twitch.tv/videos/${1000000 + index}`,
     });
 

@@ -39,7 +39,13 @@ export class ScheduleService {
                   'matchNumber', match_row.match_number,
                   'startsAt', match_row.starts_at,
                   'endsAt', match_row.ends_at,
-                  'mpUrl', match_row.mp_url,
+                  'mpUrl', case
+                    when match_room.osu_match_id is null then null
+                    else concat(
+                      'https://osu.ppy.sh/community/matches/',
+                      match_room.osu_match_id
+                    )
+                  end,
                   'vodUrl', match_row.vod_url,
                   'syncStatus', null,
                   'lastSyncedAt', null,
@@ -106,6 +112,8 @@ export class ScheduleService {
                 order by match_row.starts_at asc, match_row.match_number asc nulls last
               )
               from matches match_row
+              left join osu_multiplayer_rooms match_room
+                on match_room.id = match_row.osu_room_id
               where match_row.stage_id = ${stageRowId}
             ),
             '[]'::json

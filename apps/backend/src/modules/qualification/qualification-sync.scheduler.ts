@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { and, eq, isNotNull } from 'drizzle-orm';
+import { eq, isNotNull } from 'drizzle-orm';
 import { OsuRoomId } from 'lib/domain/osu-multiplayer/osu-room.id';
 import { StageId } from 'lib/domain/stage/stage.id';
 import {
@@ -15,26 +15,30 @@ import { QualificationResultsService } from './qualification-results.service';
 export class QualificationSyncRepository {
   constructor(@Inject('DB') private readonly db: Schema) {}
 
-  public async activeRoomsByStage(): Promise<
-    { stageId: StageId; roomId: OsuRoomId }[]
+  public async roomsByStage(): Promise<
+    {
+      stageId: StageId;
+      roomId: OsuRoomId;
+      status: 'active' | 'stopped' | 'completed';
+    }[]
   > {
     const rows = await this.db
       .select({
         stageId: qualificationLobbies.stageId,
         roomId: qualificationLobbies.osuRoomId,
+        status: osuMultiplayerRooms.status,
       })
       .from(qualificationLobbies)
       .innerJoin(
         osuMultiplayerRooms,
         eq(osuMultiplayerRooms.id, qualificationLobbies.osuRoomId),
       )
-      .where(
-        and(
-          eq(osuMultiplayerRooms.status, 'active'),
-          isNotNull(qualificationLobbies.osuRoomId),
-        ),
-      );
-    return rows as { stageId: StageId; roomId: OsuRoomId }[];
+      .where(isNotNull(qualificationLobbies.osuRoomId));
+    return rows as {
+      stageId: StageId;
+      roomId: OsuRoomId;
+      status: 'active' | 'stopped' | 'completed';
+    }[];
   }
 }
 
@@ -48,10 +52,13 @@ export class QualificationSyncScheduler {
 
   @Cron(CronExpression.EVERY_MINUTE)
   public async sync() {
-    const rows = await this.repository.activeRoomsByStage();
+    const rows = await this.repository.roomsByStage();
     const stages = new Map<StageId, OsuRoomId[]>();
     for (const row of rows) {
-      stages.set(row.stageId, [...(stages.get(row.stageId) ?? []), row.roomId]);
+      stages.set(row.stageId, [
+        ...(stages.get(row.stageId) ?? []),
+        ...(row.status === 'active' ? [row.roomId] : []),
+      ]);
     }
     for (const [stageId, roomIds] of stages) {
       await Promise.all(roomIds.map((roomId) => this.syncService.sync(roomId)));

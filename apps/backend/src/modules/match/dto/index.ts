@@ -32,7 +32,6 @@ export const matchDtoSchema = z.object({
   creatorId: userIdSchema,
   startsAt: isoStringToDate,
   endsAt: isoStringToDate,
-  mpUrl: z.string().nullable(),
   vodUrl: z.string().nullable(),
   redTeamId: teamIdSchema.nullable(),
   blueTeamId: teamIdSchema.nullable(),

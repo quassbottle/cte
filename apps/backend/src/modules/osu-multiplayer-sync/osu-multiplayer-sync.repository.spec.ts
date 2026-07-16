@@ -156,6 +156,7 @@ describe('OsuMultiplayerSyncRepository', () => {
     );
     await expect(repository.claim(lease.roomId as never)).resolves.toBeNull();
   });
+
 });
 
 describe('OsuMultiplayerSyncRepository with PostgreSQL', () => {
@@ -307,5 +308,22 @@ describe('OsuMultiplayerSyncRepository with PostgreSQL', () => {
       roomId,
       status: 'active',
     });
+  });
+
+  it('does not claim a room before nextSyncAt unless forced', async () => {
+    const roomId = await createRoom();
+    await db
+      .update(osuMultiplayerRooms)
+      .set({
+        leaseToken: null,
+        leaseUntil: null,
+        nextSyncAt: new Date(Date.now() + 60_000),
+      })
+      .where(eq(osuMultiplayerRooms.id, roomId as never));
+
+    await expect(repository.claim(roomId as never)).resolves.toBeNull();
+    await expect(repository.claim(roomId as never, true)).resolves.toMatchObject(
+      { roomId },
+    );
   });
 });

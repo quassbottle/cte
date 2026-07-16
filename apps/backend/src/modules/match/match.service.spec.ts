@@ -67,9 +67,6 @@ describe('MatchService qualification lobbies', () => {
         tournaments: {
           findFirst: jest.fn().mockResolvedValue({ isTeam }),
         },
-        matches: {
-          findFirst: jest.fn().mockResolvedValue({ mpUrl: null }),
-        },
       },
       select,
     };
@@ -140,10 +137,7 @@ describe('MatchService room references', () => {
     );
   });
 
-  const updateService = (
-    currentMpUrl: string | null,
-    currentRoomId: string | null,
-  ) => {
+  const updateService = (currentRoomId: string | null) => {
     const returning = jest.fn().mockResolvedValue([{ id: 'match-id' }]);
     const set = jest.fn(() => ({ where: jest.fn(() => ({ returning })) }));
     const tx = {
@@ -160,7 +154,6 @@ describe('MatchService room references', () => {
         matches: {
           findFirst: jest.fn().mockResolvedValue({
             id: 'match-id',
-            mpUrl: currentMpUrl,
             osuRoomId: currentRoomId,
           }),
         },
@@ -193,10 +186,7 @@ describe('MatchService room references', () => {
     });
 
   it('keeps the room active when the mp URL is unchanged', async () => {
-    const { service, sync } = updateService(
-      'https://osu.ppy.sh/community/matches/123',
-      'new-room',
-    );
+    const { service, sync } = updateService('new-room');
     await service.updateScheduleMatch({
       tournamentId: 'ckm123456789012345678901' as TournamentId,
       matchId: 'ckm123456789012345678907' as never,
@@ -206,10 +196,7 @@ describe('MatchService room references', () => {
   });
 
   it('stops the old room when the mp URL changes', async () => {
-    const { service, sync } = updateService(
-      'https://osu.ppy.sh/community/matches/123',
-      'old-room',
-    );
+    const { service, sync } = updateService('old-room');
     await service.updateScheduleMatch({
       tournamentId: 'ckm123456789012345678901' as TournamentId,
       matchId: 'ckm123456789012345678907' as never,
@@ -219,10 +206,7 @@ describe('MatchService room references', () => {
   });
 
   it('stops the old room when the mp URL is removed', async () => {
-    const { service, sync, set } = updateService(
-      'https://osu.ppy.sh/community/matches/123',
-      'old-room',
-    );
+    const { service, sync, set } = updateService('old-room');
     await service.updateScheduleMatch({
       tournamentId: 'ckm123456789012345678901' as TournamentId,
       matchId: 'ckm123456789012345678907' as never,

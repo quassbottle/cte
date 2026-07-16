@@ -61,6 +61,7 @@ export class OsuMultiplayerSyncRepository {
               lte(osuMultiplayerRooms.leaseUntil, now),
             ),
             force ? undefined : eq(osuMultiplayerRooms.status, 'active'),
+            force ? undefined : lte(osuMultiplayerRooms.nextSyncAt, now),
           ),
         )
         .for('update')

@@ -112,4 +112,5 @@ ALTER TABLE "match_participants" DROP COLUMN "is_winner";--> statement-breakpoin
 ALTER TABLE "solo_participants" DROP COLUMN "seed";--> statement-breakpoint
 ALTER TABLE "teams" DROP COLUMN "seed";--> statement-breakpoint
 ALTER TABLE "team_participants" DROP COLUMN "seed";--> statement-breakpoint
-ALTER TABLE "matches" ADD CONSTRAINT "matches_osu_room_id_unique" UNIQUE("osu_room_id");
+ALTER TABLE "matches" ADD CONSTRAINT "matches_osu_room_id_unique" UNIQUE("osu_room_id");--> statement-breakpoint
+ALTER TABLE "matches" DROP COLUMN "mp_url";
