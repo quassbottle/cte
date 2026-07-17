@@ -31,7 +31,58 @@ const containsValue = (
   );
 };
 
+const selectRows = <T>(rows: T[]) => {
+  const orderBy = () => Promise.resolve(rows);
+  type Query = {
+    innerJoin: () => Query;
+    leftJoin: () => Query;
+    where: () => { orderBy: typeof orderBy };
+  };
+  const query = {} as Query;
+  query.innerJoin = () => query;
+  query.leftJoin = () => query;
+  query.where = () => ({ orderBy });
+  return { select: () => ({ from: () => query }) };
+};
+
 describe('TournamentService', () => {
+  it('orders teams by qualification seed and puts unseeded teams last', async () => {
+    const rows = [
+      {
+        teamId: 'argentina',
+        teamName: 'Argentina',
+        teamSeed: 2,
+        captainId: 'captain-1',
+        user: { id: 'user-1' },
+      },
+      {
+        teamId: 'japan',
+        teamName: 'Japan',
+        teamSeed: 1,
+        captainId: 'captain-2',
+        user: { id: 'user-2' },
+      },
+      {
+        teamId: 'unseeded',
+        teamName: 'Unseeded',
+        teamSeed: null,
+        captainId: 'captain-3',
+        user: { id: 'user-3' },
+      },
+    ];
+    const service = tournamentService(selectRows(rows) as never);
+    jest.spyOn(service, 'getById').mockResolvedValue({ isTeam: true } as never);
+
+    const teams = await service.getTeams({ id: 'tournament' as never });
+
+    expect(teams.map(({ name }) => name)).toEqual([
+      'Japan',
+      'Argentina',
+      'Unseeded',
+    ]);
+    expect(teams.map(({ seed }) => seed)).toEqual([1, 2, null]);
+  });
+
   describe('qualification roster updates', () => {
     const tournamentId = 'ckm123456789012345678901' as never;
     const teamId = 'ckm123456789012345678902' as never;
@@ -48,14 +99,7 @@ describe('TournamentService', () => {
           withdrawalReason: null,
         },
       ];
-      const orderBy = jest.fn().mockResolvedValue(rows);
-      const where = jest.fn(() => ({ orderBy }));
-      const leftJoin = jest.fn(() => ({ where }));
-      const innerJoin = jest.fn(() => ({ innerJoin, leftJoin, where }));
-      const from = jest.fn(() => ({ innerJoin }));
-      const service = tournamentService({
-        select: jest.fn(() => ({ from })),
-      } as never);
+      const service = tournamentService(selectRows(rows) as never);
       jest
         .spyOn(service, 'getById')
         .mockResolvedValue({ isTeam: false } as never);
@@ -218,14 +262,22 @@ describe('TournamentService', () => {
 
   it('adds the participant search text to the tournament-scoped query', async () => {
     let condition: unknown;
-    const offset = jest.fn().mockResolvedValue([]);
+    const offset = jest.fn().mockResolvedValue([
+      {
+        user: { id: 'player', osuUsername: 'player' },
+        seed: 4,
+      },
+    ]);
     const limit = jest.fn(() => ({ offset }));
+    const orderBy = jest.fn(() => ({ limit }));
     const where = jest.fn((value: unknown) => {
       condition = value;
-      return { limit };
+      return { orderBy };
     });
-    const innerJoin = jest.fn(() => ({ where }));
-    const from = jest.fn(() => ({ innerJoin }));
+    const query = { innerJoin: jest.fn(), leftJoin: jest.fn(), where };
+    query.innerJoin.mockReturnValue(query);
+    query.leftJoin.mockReturnValue(query);
+    const from = jest.fn(() => query);
     const service = tournamentService({
       select: jest.fn(() => ({ from })),
     } as never);
@@ -233,12 +285,14 @@ describe('TournamentService', () => {
       .spyOn(service, 'getById')
       .mockResolvedValue({ isTeam: false } as never);
 
-    await service.getParticipants({
-      id: 'ckm123456789012345678901' as never,
-      limit: 20,
-      offset: 0,
-      query: 'player',
-    } as never);
+    await expect(
+      service.getParticipants({
+        id: 'ckm123456789012345678901' as never,
+        limit: 20,
+        offset: 0,
+        query: 'player',
+      } as never),
+    ).resolves.toEqual([{ id: 'player', osuUsername: 'player', seed: 4 }]);
 
     expect(containsValue(condition, '%player%')).toBe(true);
   });

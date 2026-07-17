@@ -25,11 +25,13 @@ export interface TournamentParticipantDto {
 	osuId: number;
 	osuUsername: string;
 	avatarUrl: string;
+	seed: number | null;
 }
 
 export interface TournamentTeamDto {
 	id: string;
 	name: string;
+	seed: number | null;
 	captainId: string;
 	participants: TournamentParticipantDto[];
 }

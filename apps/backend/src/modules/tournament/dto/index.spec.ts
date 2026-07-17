@@ -87,6 +87,7 @@ describe('tournament response codecs', () => {
     id: userIdSchema.parse('ckm123456789012345678901'),
     osuId: 42,
     osuUsername: 'player',
+    seed: 3,
   };
 
   it('encodes database participants in API response shape', () => {
@@ -101,12 +102,14 @@ describe('tournament response codecs', () => {
       z.encode(tournamentTeamDtoSchema, {
         id: teamIdSchema.parse('ckm123456789012345678902'),
         name: 'Team',
+        seed: 2,
         captainId: participant.id,
         participants: [participant],
       }),
     ).toEqual({
       id: 'ckm123456789012345678902',
       name: 'Team',
+      seed: 2,
       captainId: participant.id,
       participants: [{ ...participant, avatarUrl: 'https://a.ppy.sh/42' }],
     });

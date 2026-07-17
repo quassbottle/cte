@@ -12,4 +12,10 @@ export interface TournamentParticipantDto {
 	osuId: number;
 	osuUsername: string;
 	avatarUrl: string;
+	/**
+	 * @maximum 9007199254740991
+	 * @exclusiveMinimum 0
+	 * @nullable
+	 */
+	seed: number | null;
 }

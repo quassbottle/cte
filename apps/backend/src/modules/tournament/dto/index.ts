@@ -123,6 +123,7 @@ const tournamentParticipantResponseSchema = z.object({
   osuId: z.number(),
   osuUsername: z.string(),
   avatarUrl: z.url(),
+  seed: z.number().int().positive().nullable(),
 });
 
 const tournamentParticipantDbSchema = z
@@ -130,6 +131,7 @@ const tournamentParticipantDbSchema = z
     id: userIdSchema,
     osuId: z.number(),
     osuUsername: z.string(),
+    seed: z.number().int().positive().nullable().optional(),
   })
   .passthrough();
 
@@ -141,12 +143,14 @@ export const tournamentParticipantDtoSchema = z.codec(
       id: userIdSchema.parse(participant.id),
       osuId: participant.osuId,
       osuUsername: participant.osuUsername,
+      seed: participant.seed,
     }),
     encode: (participant) => ({
       id: userIdSchema.parse(participant.id),
       osuId: participant.osuId,
       osuUsername: participant.osuUsername,
       avatarUrl: `https://a.ppy.sh/${participant.osuId}`,
+      seed: participant.seed ?? null,
     }),
   },
 );
@@ -159,6 +163,7 @@ export class TournamentParticipantDto extends createZodDto(
 export const tournamentTeamDtoSchema = z.object({
   id: teamIdSchema,
   name: z.string(),
+  seed: z.number().int().positive().nullable(),
   captainId: userIdSchema,
   participants: z.array(tournamentParticipantDtoSchema),
 });

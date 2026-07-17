@@ -2404,13 +2404,21 @@
           "avatarUrl": {
             "type": "string",
             "format": "uri"
+          },
+          "seed": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "nullable": true,
+            "minimum": 0
           }
         },
         "required": [
           "id",
           "osuId",
           "osuUsername",
-          "avatarUrl"
+          "avatarUrl",
+          "seed"
         ]
       },
       "AugmentedZodDto_Output": {
@@ -2631,6 +2639,13 @@
           "name": {
             "type": "string"
           },
+          "seed": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "nullable": true,
+            "minimum": 0
+          },
           "captainId": {
             "type": "string",
             "format": "cuid2",
@@ -2655,13 +2670,21 @@
                 "avatarUrl": {
                   "type": "string",
                   "format": "uri"
+                },
+                "seed": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991,
+                  "nullable": true,
+                  "minimum": 0
                 }
               },
               "required": [
                 "id",
                 "osuId",
                 "osuUsername",
-                "avatarUrl"
+                "avatarUrl",
+                "seed"
               ]
             }
           }
@@ -2669,6 +2692,7 @@
         "required": [
           "id",
           "name",
+          "seed",
           "captainId",
           "participants"
         ]
@@ -2706,13 +2730,21 @@
                 "avatarUrl": {
                   "type": "string",
                   "format": "uri"
+                },
+                "seed": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991,
+                  "nullable": true,
+                  "minimum": 0
                 }
               },
               "required": [
                 "id",
                 "osuId",
                 "osuUsername",
-                "avatarUrl"
+                "avatarUrl",
+                "seed"
               ]
             }
           }

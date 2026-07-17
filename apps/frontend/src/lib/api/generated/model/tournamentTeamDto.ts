@@ -11,6 +11,12 @@ export interface TournamentTeamDto {
 	/** @pattern ^[0-9a-z]+$ */
 	id: string;
 	name: string;
+	/**
+	 * @maximum 9007199254740991
+	 * @exclusiveMinimum 0
+	 * @nullable
+	 */
+	seed: number | null;
 	/** @pattern ^[0-9a-z]+$ */
 	captainId: string;
 	participants: TournamentTeamDtoParticipantsItem[];

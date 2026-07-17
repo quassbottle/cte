@@ -157,7 +157,7 @@ export class TournamentService {
 
   public async getParticipants(
     params: { id: TournamentId; query?: string } & PaginationParams,
-  ): Promise<DbUser[]> {
+  ): Promise<(DbUser & { seed: number | null })[]> {
     const { id, limit, offset, query } = params;
 
     const tournament = await this.getById({ id });
@@ -181,18 +181,33 @@ export class TournamentService {
         .limit(limit)
         .offset(offset);
 
-      return found.map(({ user }) => user);
+      return found.map(({ user }) => ({ ...user, seed: null }));
     }
 
     const found = await this.drizzle
-      .select({ user: users })
+      .select({ user: users, seed: qualificationResults.seed })
       .from(soloParticipants)
       .innerJoin(users, eq(users.id, soloParticipants.userId))
+      .leftJoin(
+        stages,
+        and(
+          eq(stages.tournamentId, soloParticipants.tournamentId),
+          eq(stages.type, 'qualification'),
+        ),
+      )
+      .leftJoin(
+        qualificationResults,
+        and(
+          eq(qualificationResults.stageId, stages.id),
+          eq(qualificationResults.userId, soloParticipants.userId),
+        ),
+      )
       .where(and(eq(soloParticipants.tournamentId, id), search))
+      .orderBy(asc(qualificationResults.seed), asc(users.osuUsername))
       .limit(limit)
       .offset(offset);
 
-    return found.map(({ user }) => user);
+    return found.map(({ user, seed }) => ({ ...user, seed }));
   }
 
   public async getStaff(params: {
@@ -536,6 +551,7 @@ export class TournamentService {
     {
       id: TeamId;
       name: string;
+      seed: number | null;
       captainId: UserId;
       participants: DbUser[];
     }[]
@@ -549,18 +565,39 @@ export class TournamentService {
       .select({
         teamId: teams.id,
         teamName: teams.name,
+        teamSeed: qualificationResults.seed,
         captainId: teams.captainId,
         user: users,
       })
       .from(teams)
       .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
       .innerJoin(users, eq(users.id, teamParticipants.userId))
+      .leftJoin(
+        stages,
+        and(
+          eq(stages.tournamentId, teams.tournamentId),
+          eq(stages.type, 'qualification'),
+        ),
+      )
+      .leftJoin(
+        qualificationResults,
+        and(
+          eq(qualificationResults.stageId, stages.id),
+          eq(qualificationResults.teamId, teams.id),
+        ),
+      )
       .where(eq(teams.tournamentId, id))
       .orderBy(asc(teams.name), asc(users.osuUsername));
 
     const byTeam = new Map<
       TeamId,
-      { id: TeamId; name: string; captainId: UserId; participants: DbUser[] }
+      {
+        id: TeamId;
+        name: string;
+        seed: number | null;
+        captainId: UserId;
+        participants: DbUser[];
+      }
     >();
 
     for (const row of rows) {
@@ -573,12 +610,26 @@ export class TournamentService {
       byTeam.set(row.teamId, {
         id: row.teamId,
         name: row.teamName,
+        seed: row.teamSeed,
         captainId: row.captainId,
         participants: [row.user],
       });
     }
 
-    return [...byTeam.values()];
+    return [...byTeam.values()]
+      .sort(
+        (left, right) =>
+          (left.seed ?? Number.POSITIVE_INFINITY) -
+            (right.seed ?? Number.POSITIVE_INFINITY) ||
+          left.name.localeCompare(right.name),
+      )
+      .map(({ id, name, seed, captainId, participants }) => ({
+        id,
+        name,
+        seed,
+        captainId,
+        participants,
+      }));
   }
 
   public async getParticipantsCount(params: {
@@ -986,5 +1037,4 @@ export class TournamentService {
     });
     if (stage) await this.qualificationResults.invalidate(stage.id);
   }
-
 }
