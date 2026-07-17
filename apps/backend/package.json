@@ -25,6 +25,8 @@
     "mappool:import": "ts-node -r tsconfig-paths/register ./scripts/import-mappool-from-entries.ts",
     "players:sort-taiko": "ts-node ./scripts/sort-taiko-players.ts",
     "seed:schedule-tournaments": "ts-node -r tsconfig-paths/register ./scripts/seed-schedule-tournaments.ts",
+    "seed:twc-2026": "ts-node -r tsconfig-paths/register ./scripts/seed-twc-2026.ts",
+    "test:twc-2026": "bun test scripts/twc-2026-wiki.spec.ts",
     "teams:import": "ts-node -r tsconfig-paths/register ./scripts/import-teams.ts"
   },
   "dependencies": {
