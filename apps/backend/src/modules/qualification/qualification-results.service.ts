@@ -1,6 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { StageId } from 'lib/domain/stage/stage.id';
-import { QualificationResultsRepository } from './qualification-results.repository';
+import {
+  QualificationResultsRepository,
+  SetQualificationSeedParams,
+} from './qualification-results.repository';
 
 @Injectable()
 export class QualificationResultsService {
@@ -12,6 +15,10 @@ export class QualificationResultsService {
 
   public invalidate(stageId: StageId) {
     return this.repository.invalidate(stageId);
+  }
+
+  public setSeed(params: SetQualificationSeedParams) {
+    return this.repository.setSeed(params);
   }
 
   public isStale(stageId: StageId) {

@@ -1,10 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
+import type { SQL } from 'drizzle-orm';
 import { and, eq, min, sql } from 'drizzle-orm';
 import {
   StageException,
   StageExceptionCode,
 } from 'lib/domain/stage/stage.exception';
 import { StageId } from 'lib/domain/stage/stage.id';
+import { TeamId } from 'lib/domain/team/team.id';
+import { UserId } from 'lib/domain/user/user.id';
 import {
   beatmaps,
   mappools,
@@ -25,6 +28,11 @@ import {
 } from 'lib/infrastructure/db';
 import { calculateQualificationSeeds } from './qualification-seeding';
 import { lockQualificationStage } from './qualification-stage.lock';
+
+export type SetQualificationSeedParams = {
+  stageId: StageId;
+  seed: number | null;
+} & ({ userId: UserId } | { teamId: TeamId });
 
 @Injectable()
 export class QualificationResultsRepository {
@@ -101,7 +109,7 @@ export class QualificationResultsRepository {
           tieBreakId,
           userIds: [id],
         })),
-        isTeam: false,
+        isTeam: false as const,
       };
     }
 
@@ -122,7 +130,7 @@ export class QualificationResultsRepository {
         .from(qualificationLobbyTeams)
         .where(eq(qualificationLobbyTeams.stageId, stageId)),
     ]);
-    const byTeam = new Map<string, string[]>();
+    const byTeam = new Map<TeamId, UserId[]>();
     for (const member of members) {
       byTeam.set(member.teamId, [
         ...(byTeam.get(member.teamId) ?? []),
@@ -131,7 +139,7 @@ export class QualificationResultsRepository {
     }
     const assignedIds = new Set(assigned.map(({ id }) => id));
     return {
-      complete: [...byTeam.keys()].every((id) => assignedIds.has(id as never)),
+      complete: [...byTeam.keys()].every((id) => assignedIds.has(id)),
       beatmapIds,
       attempts,
       competitors: [...byTeam].map(([id, userIds]) => ({
@@ -139,7 +147,7 @@ export class QualificationResultsRepository {
         tieBreakId: id,
         userIds,
       })),
-      isTeam: true,
+      isTeam: true as const,
     };
   }
 
@@ -152,27 +160,66 @@ export class QualificationResultsRepository {
     });
   }
 
+  public setSeed(params: SetQualificationSeedParams) {
+    return this.db.transaction(async (tx) => {
+      await lockQualificationStage(tx, params.stageId);
+      let competitorData: { userId: UserId } | { teamId: TeamId };
+      let competitor: SQL;
+      if ('userId' in params) {
+        competitorData = { userId: params.userId };
+        competitor = eq(qualificationResults.userId, params.userId);
+      } else {
+        competitorData = { teamId: params.teamId };
+        competitor = eq(qualificationResults.teamId, params.teamId);
+      }
+      const where = and(
+        eq(qualificationResults.stageId, params.stageId),
+        competitor,
+      );
+
+      if (params.seed === null) {
+        await tx.delete(qualificationResults).where(where);
+        return;
+      }
+
+      const [updated] = await tx
+        .update(qualificationResults)
+        .set({ seed: params.seed, calculatedAt: new Date() })
+        .where(where)
+        .returning();
+      if (!updated) {
+        await tx.insert(qualificationResults).values({
+          stageId: params.stageId,
+          ...competitorData,
+          seed: params.seed,
+          aggregateScore: 0,
+        });
+      }
+    });
+  }
+
   public recalculate(stageId: StageId) {
     return this.db.transaction(async (tx) => {
       await lockQualificationStage(tx, stageId);
       const input = await this.load(stageId, tx as Schema);
       if (!input.complete || !input.beatmapIds.length) return;
-      const rows = calculateQualificationSeeds(input);
+      const rows = input.isTeam
+        ? calculateQualificationSeeds(input).map((row) => ({
+            stageId,
+            teamId: row.competitorId,
+            seed: row.seed,
+            aggregateScore: row.totalScore,
+          }))
+        : calculateQualificationSeeds(input).map((row) => ({
+            stageId,
+            userId: row.competitorId,
+            seed: row.seed,
+            aggregateScore: row.totalScore,
+          }));
       await tx
         .delete(qualificationResults)
         .where(eq(qualificationResults.stageId, stageId));
-      if (rows.length) {
-        await tx.insert(qualificationResults).values(
-          rows.map((row) => ({
-            stageId,
-            ...(input.isTeam
-              ? { teamId: row.competitorId as never }
-              : { userId: row.competitorId as never }),
-            seed: row.seed,
-            aggregateScore: row.totalScore,
-          })),
-        );
-      }
+      if (rows.length) await tx.insert(qualificationResults).values(rows);
     });
   }
 

@@ -12,6 +12,16 @@ const optionalPositiveInt = z.preprocess(
 	z.coerce.number().int().positive().nullable()
 );
 
+const optionalSeed = z.preprocess(
+	(value) =>
+		value === undefined
+			? undefined
+			: typeof value === 'string' && value.trim() === ''
+				? null
+				: value,
+	z.coerce.number().int().positive().nullable().optional()
+);
+
 const optionalInt = z.preprocess(
 	(value) =>
 		value === undefined || (typeof value === 'string' && value.trim() === '') ? null : value,
@@ -81,12 +91,13 @@ export const tournamentStaffFormSchema = z.object({
 
 export const qualificationCompetitorFormSchema = z
 	.object({
-		withdrawn: checkbox.default(false),
-		withdrawalReason: optionalText.default('')
+		seed: optionalSeed,
+		withdrawn: checkbox.optional(),
+		withdrawalReason: optionalText.optional()
 	})
 	.transform((value) => ({
 		...value,
-		withdrawalReason: value.withdrawn ? value.withdrawalReason : null
+		...(value.withdrawn === false ? { withdrawalReason: null } : {})
 	}));
 
 export const qualificationSoloFormSchema = qualificationCompetitorFormSchema.and(
@@ -101,12 +112,12 @@ export const qualificationTeamMemberFormSchema = z
 	.object({
 		teamId: z.string().trim().min(1, 'Team id is required'),
 		userId: z.string().trim().min(1, 'User id is required'),
-		withdrawn: checkbox.default(false),
-		withdrawalReason: optionalText.default('')
+		withdrawn: checkbox.optional(),
+		withdrawalReason: optionalText.optional()
 	})
 	.transform((value) => ({
 		...value,
-		withdrawalReason: value.withdrawn ? value.withdrawalReason : null
+		...(value.withdrawn === false ? { withdrawalReason: null } : {})
 	}));
 
 export const qualificationSoloUnregisterFormSchema = z.object({

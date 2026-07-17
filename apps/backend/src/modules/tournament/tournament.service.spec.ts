@@ -5,16 +5,21 @@ jest.mock('@paralleldrive/cuid2', () => ({
 
 import { TournamentService } from './tournament.service';
 
-const tournamentService = (db: never) =>
+const tournamentService = (
+  db: never,
+  results: { invalidate?: jest.Mock; setSeed?: jest.Mock } = {},
+) =>
   new TournamentService(
     {
       ...(db as object),
       query: {
         ...((db as { query?: object }).query ?? {}),
-        stages: { findFirst: jest.fn().mockResolvedValue(undefined) },
+        stages: (db as { query?: { stages?: object } }).query?.stages ?? {
+          findFirst: jest.fn().mockResolvedValue(undefined),
+        },
       },
     } as never,
-    { invalidate: jest.fn() } as never,
+    { invalidate: jest.fn(), setSeed: jest.fn(), ...results } as never,
     { assertAssignedTeamCapacity: jest.fn() } as never,
   );
 
@@ -138,7 +143,7 @@ describe('TournamentService', () => {
         return { returning };
       });
       const remove = jest.fn(() => ({ where }));
-      const invalidate = jest.fn();
+      const setSeed = jest.fn();
       const service = new TournamentService(
         {
           delete: remove,
@@ -148,12 +153,12 @@ describe('TournamentService', () => {
             },
           },
         } as never,
-        { invalidate } as never,
+        { setSeed } as never,
         {} as never,
       );
       return {
         service,
-        invalidate,
+        setSeed,
         get condition() {
           return condition;
         },
@@ -198,7 +203,8 @@ describe('TournamentService', () => {
 
     it('scopes team member updates to tournament, team, and user', async () => {
       const query = updateDb();
-      const service = tournamentService(query.db as never);
+      const invalidate = jest.fn();
+      const service = tournamentService(query.db as never, { invalidate });
 
       await service.updateQualificationTeamParticipant({
         id: tournamentId,
@@ -214,6 +220,54 @@ describe('TournamentService', () => {
       expect(containsValue(query.condition, tournamentId)).toBe(true);
       expect(containsValue(query.condition, teamId)).toBe(true);
       expect(containsValue(query.condition, userId)).toBe(true);
+      expect(invalidate).not.toHaveBeenCalled();
+    });
+
+    it('keeps qualification results when withdrawing a solo participant', async () => {
+      const query = updateDb();
+      const invalidate = jest.fn();
+      const setSeed = jest.fn();
+      const service = tournamentService(query.db as never, {
+        invalidate,
+        setSeed,
+      });
+
+      await service.updateSoloQualificationParticipant({
+        id: tournamentId,
+        userId,
+        data: { withdrawn: true },
+      });
+
+      expect(invalidate).not.toHaveBeenCalled();
+      expect(setSeed).not.toHaveBeenCalled();
+    });
+
+    it('updates only the selected team seed', async () => {
+      const query = updateDb();
+      const setSeed = jest.fn();
+      const service = tournamentService(
+        {
+          ...query.db,
+          query: {
+            stages: {
+              findFirst: jest.fn().mockResolvedValue({ id: 'stage-id' }),
+            },
+          },
+        } as never,
+        { setSeed },
+      );
+
+      await service.updateQualificationTeam({
+        id: tournamentId,
+        teamId,
+        data: { seed: 4, withdrawn: false },
+      });
+
+      expect(setSeed).toHaveBeenCalledWith({
+        stageId: 'stage-id',
+        teamId,
+        seed: 4,
+      });
     });
 
     it('reports scoped participants missing from the tournament', async () => {
@@ -239,7 +293,11 @@ describe('TournamentService', () => {
 
       expect(containsValue(query.condition, tournamentId)).toBe(true);
       expect(containsValue(query.condition, userId)).toBe(true);
-      expect(query.invalidate).toHaveBeenCalledWith('stage-id');
+      expect(query.setSeed).toHaveBeenCalledWith({
+        stageId: 'stage-id',
+        userId,
+        seed: null,
+      });
     });
 
     it('unregisters a team from the selected tournament', async () => {
@@ -249,7 +307,11 @@ describe('TournamentService', () => {
 
       expect(containsValue(query.condition, tournamentId)).toBe(true);
       expect(containsValue(query.condition, teamId)).toBe(true);
-      expect(query.invalidate).toHaveBeenCalledWith('stage-id');
+      expect(query.setSeed).toHaveBeenCalledWith({
+        stageId: 'stage-id',
+        teamId,
+        seed: null,
+      });
     });
   });
 

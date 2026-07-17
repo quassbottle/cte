@@ -1,5 +1,5 @@
-export type QualificationCompetitor = {
-  id: string;
+export type QualificationCompetitor<CompetitorId extends string = string> = {
+  id: CompetitorId;
   tieBreakId: string | number;
   userIds: readonly string[];
 };
@@ -11,14 +11,14 @@ export type QualificationAttempt = {
   score: number;
 };
 
-export type QualificationSeedingInput = {
+export type QualificationSeedingInput<CompetitorId extends string = string> = {
   beatmapIds: readonly string[];
-  competitors: readonly QualificationCompetitor[];
+  competitors: readonly QualificationCompetitor<CompetitorId>[];
   attempts: readonly QualificationAttempt[];
 };
 
-export type CalculatedSeed = {
-  competitorId: string;
+export type CalculatedSeed<CompetitorId extends string = string> = {
+  competitorId: CompetitorId;
   seed: number;
   averagePlace: number;
   totalScore: number;
@@ -29,18 +29,19 @@ const compareTieBreak = (left: string | number, right: string | number) =>
     ? left - right
     : String(left).localeCompare(String(right));
 
-export function calculateQualificationSeeds({
+export function calculateQualificationSeeds<CompetitorId extends string>({
   beatmapIds,
   competitors,
   attempts,
-}: QualificationSeedingInput): CalculatedSeed[] {
+}: QualificationSeedingInput<CompetitorId>): CalculatedSeed<CompetitorId>[] {
   const rows = competitors.map((competitor) => {
     const members = new Set(competitor.userIds);
     const gameTotalsByMap = new Map<string, Map<number, number>>();
 
     for (const attempt of attempts) {
       if (!members.has(attempt.userId)) continue;
-      const gameTotals = gameTotalsByMap.get(attempt.beatmapId) ?? new Map();
+      const gameTotals =
+        gameTotalsByMap.get(attempt.beatmapId) ?? new Map<number, number>();
       gameTotals.set(
         attempt.osuGameId,
         (gameTotals.get(attempt.osuGameId) ?? 0) + attempt.score,

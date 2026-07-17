@@ -32,19 +32,13 @@ describe('qualification management schemas', () => {
     });
   });
 
-  it('does not allow manual qualification seeds', () => {
-    expect(
-      updateQualificationCompetitorDtoSchema.safeParse({ seed: 1 }).success,
-    ).toBe(false);
+  it('allows host-managed competitor seeds but not member seeds', () => {
+    expect(updateQualificationCompetitorDtoSchema.parse({ seed: 1 })).toEqual({
+      seed: 1,
+    });
     expect(
       updateQualificationTeamParticipantDtoSchema.safeParse({ seed: 1 })
         .success,
-    ).toBe(false);
-    expect(
-      updateQualificationCompetitorDtoSchema.safeParse({
-        seed: 2,
-        withdrawn: true,
-      }).success,
     ).toBe(false);
   });
 

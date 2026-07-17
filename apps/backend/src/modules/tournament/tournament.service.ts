@@ -406,27 +406,38 @@ export class TournamentService {
     data: UpdateQualificationCompetitorInput;
   }): Promise<void> {
     const { id, userId, data } = params;
-    const [updated] = await this.drizzle
-      .update(soloParticipants)
-      .set({
-        ...data,
-        withdrawalReason:
-          data.withdrawn === false ? null : data.withdrawalReason,
-      })
-      .where(
-        and(
-          eq(soloParticipants.tournamentId, id),
-          eq(soloParticipants.userId, userId),
-        ),
-      )
-      .returning();
+    const { seed, ...participantData } = data;
+    const scope = and(
+      eq(soloParticipants.tournamentId, id),
+      eq(soloParticipants.userId, userId),
+    );
+    const [updated] = Object.values(participantData).some(
+      (value) => value !== undefined,
+    )
+      ? await this.drizzle
+          .update(soloParticipants)
+          .set({
+            ...participantData,
+            withdrawalReason:
+              participantData.withdrawn === false
+                ? null
+                : participantData.withdrawalReason,
+          })
+          .where(scope)
+          .returning()
+      : [
+          await this.drizzle.query.soloParticipants.findFirst({
+            where: scope,
+          }),
+        ];
 
     if (!updated)
       throw new TournamentException(
         'Participant not found in tournament',
         TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
       );
-    await this.invalidateQualification(id);
+    if (seed !== undefined)
+      await this.setQualificationSeed({ id, userId, seed });
   }
 
   public async removeSoloParticipant(params: {
@@ -449,7 +460,7 @@ export class TournamentService {
         'Participant not found in tournament',
         TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
       );
-    await this.invalidateQualification(id);
+    await this.setQualificationSeed({ id, userId, seed: null });
   }
 
   public async updateQualificationTeam(params: {
@@ -458,22 +469,29 @@ export class TournamentService {
     data: UpdateQualificationCompetitorInput;
   }): Promise<void> {
     const { id, teamId, data } = params;
-    const [updated] = await this.drizzle
-      .update(teams)
-      .set({
-        ...data,
-        withdrawalReason:
-          data.withdrawn === false ? null : data.withdrawalReason,
-      })
-      .where(and(eq(teams.tournamentId, id), eq(teams.id, teamId)))
-      .returning();
+    const { seed, ...teamData } = data;
+    const scope = and(eq(teams.tournamentId, id), eq(teams.id, teamId));
+    const [updated] = Object.values(teamData).some(
+      (value) => value !== undefined,
+    )
+      ? await this.drizzle
+          .update(teams)
+          .set({
+            ...teamData,
+            withdrawalReason:
+              teamData.withdrawn === false ? null : teamData.withdrawalReason,
+          })
+          .where(scope)
+          .returning()
+      : [await this.drizzle.query.teams.findFirst({ where: scope })];
 
     if (!updated)
       throw new TournamentException(
         'Team not found in tournament',
         TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
       );
-    await this.invalidateQualification(id);
+    if (seed !== undefined)
+      await this.setQualificationSeed({ id, teamId, seed });
   }
 
   public async removeTeam(params: {
@@ -491,14 +509,14 @@ export class TournamentService {
         'Team not found in tournament',
         TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
       );
-    await this.invalidateQualification(id);
+    await this.setQualificationSeed({ id, teamId, seed: null });
   }
 
   public async updateQualificationTeamParticipant(params: {
     id: TournamentId;
     teamId: TeamId;
     userId: UserId;
-    data: UpdateQualificationCompetitorInput;
+    data: Omit<UpdateQualificationCompetitorInput, 'seed'>;
   }): Promise<void> {
     const { id, teamId, userId, data } = params;
     if (data.withdrawn === false) {
@@ -539,7 +557,6 @@ export class TournamentService {
           teamId,
         );
       });
-      await this.invalidateQualification(id);
       return;
     }
     const [updated] = await this.drizzle
@@ -564,7 +581,6 @@ export class TournamentService {
         'Team participant not found in tournament',
         TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
       );
-    await this.invalidateQualification(id);
   }
 
   public async searchTeams(
@@ -1068,14 +1084,25 @@ export class TournamentService {
     }
   }
 
-  private async invalidateQualification(tournamentId: TournamentId) {
+  private async setQualificationSeed(
+    params: {
+      id: TournamentId;
+      seed: number | null;
+    } & ({ userId: UserId } | { teamId: TeamId }),
+  ) {
+    const { id, ...seed } = params;
     const stage = await this.drizzle.query.stages.findFirst({
       where: and(
-        eq(stages.tournamentId, tournamentId),
+        eq(stages.tournamentId, id),
         eq(stages.type, 'qualification'),
         isNull(stages.deletedAt),
       ),
     });
-    if (stage) await this.qualificationResults.invalidate(stage.id);
+    if (!stage)
+      throw new StageException(
+        'Qualification stage not found',
+        StageExceptionCode.STAGE_NOT_FOUND,
+      );
+    await this.qualificationResults.setSeed({ stageId: stage.id, ...seed });
   }
 }

@@ -4,6 +4,7 @@
 	import Group from '$lib/components/group/group.svelte';
 	import PlayerCard from '$lib/components/playerCard/playerCard.svelte';
 	import { Button } from '$lib/components/ui/button';
+	import Input from '$lib/components/ui/input/input.svelte';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { X } from 'lucide-svelte';
@@ -59,6 +60,18 @@
 							seed={participant.seed}
 						/>
 					</a>
+					<form method="post" action="?/updateQualificationSolo" use:enhance class="flex gap-2">
+						<input type="hidden" name="userId" value={participant.id} />
+						<Input
+							name="seed"
+							type="number"
+							min="1"
+							value={participant.seed ?? ''}
+							aria-label={`Seed for ${participant.osuUsername}`}
+							class="w-20"
+						/>
+						<Button type="submit" size="sm" variant="outline" class="flex-1">Save seed</Button>
+					</form>
 					<div class="flex gap-2">
 						<form method="post" action="?/updateQualificationSolo" use:enhance class="flex-1">
 							<input type="hidden" name="userId" value={participant.id} />
@@ -99,6 +112,18 @@
 							{team.name}
 						</Title>
 						<div class="flex gap-2">
+							<form method="post" action="?/updateQualificationTeam" use:enhance class="flex gap-2">
+								<input type="hidden" name="teamId" value={team.id} />
+								<Input
+									name="seed"
+									type="number"
+									min="1"
+									value={team.seed ?? ''}
+									aria-label={`Seed for ${team.name}`}
+									class="w-20"
+								/>
+								<Button type="submit" size="sm" variant="outline">Save seed</Button>
+							</form>
 							<form method="post" action="?/updateQualificationTeam" use:enhance>
 								<input type="hidden" name="teamId" value={team.id} />
 								<input type="hidden" name="withdrawn" value={team.withdrawn ? 'false' : 'true'} />

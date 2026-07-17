@@ -204,6 +204,7 @@ export class TournamentTeamSummaryDto extends createZodDto(
 
 export const updateQualificationCompetitorDtoSchema = z
   .object({
+    seed: z.number().int().positive().nullable().optional(),
     withdrawn: z.boolean().optional(),
     withdrawalReason: z.string().trim().max(1000).nullable().optional(),
   })

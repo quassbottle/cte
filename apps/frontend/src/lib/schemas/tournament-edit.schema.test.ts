@@ -25,6 +25,15 @@ describe('qualification forms', () => {
 			})
 		).toEqual({ withdrawn: false, withdrawalReason: null });
 	});
+
+	it('keeps an omitted seed unchanged and parses an entered seed', () => {
+		expect(qualificationCompetitorFormSchema.parse({ withdrawn: 'true' })).not.toHaveProperty(
+			'seed'
+		);
+		expect(
+			qualificationCompetitorFormSchema.parse({ seed: '4', withdrawn: 'false' })
+		).toMatchObject({ seed: 4 });
+	});
 });
 
 describe('scheduleMatchFormSchema', () => {

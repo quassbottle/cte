@@ -2667,6 +2667,13 @@
       "UpdateQualificationCompetitorDto": {
         "type": "object",
         "properties": {
+          "seed": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "nullable": true,
+            "minimum": 0
+          },
           "withdrawn": {
             "type": "boolean"
           },
