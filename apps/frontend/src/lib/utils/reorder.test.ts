@@ -1,16 +1,17 @@
 import { describe, expect, test } from 'bun:test';
-import { moveItem } from './reorder';
+import { orderedBeatmapIds, withDndIds } from './reorder';
 
-describe('moveItem', () => {
-	test('moves an item up', () => {
-		expect(moveItem(['a', 'b', 'c'], 2, 0)).toEqual(['c', 'a', 'b']);
+describe('mappool drag items', () => {
+	const beatmaps = [{ osuBeatmapId: 10 }, { osuBeatmapId: 20 }];
+
+	test('uses the osu beatmap id as the stable drag id', () => {
+		expect(withDndIds(beatmaps)).toEqual([
+			{ osuBeatmapId: 10, id: 10 },
+			{ osuBeatmapId: 20, id: 20 }
+		]);
 	});
 
-	test('moves an item down', () => {
-		expect(moveItem(['a', 'b', 'c'], 0, 2)).toEqual(['b', 'c', 'a']);
-	});
-
-	test('keeps the original order when source and target match', () => {
-		expect(moveItem(['a', 'b'], 1, 1)).toEqual(['a', 'b']);
+	test('extracts the final persisted order', () => {
+		expect(orderedBeatmapIds(withDndIds(beatmaps).reverse())).toEqual([20, 10]);
 	});
 });

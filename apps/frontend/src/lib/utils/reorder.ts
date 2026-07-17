@@ -1,6 +1,5 @@
-export function moveItem<T>(items: T[], from: number, to: number): T[] {
-	const next = [...items];
-	const [item] = next.splice(from, 1);
-	next.splice(to, 0, item);
-	return next;
-}
+export const withDndIds = <T extends { osuBeatmapId: number }>(items: T[]) =>
+	items.map((item) => ({ ...item, id: item.osuBeatmapId }));
+
+export const orderedBeatmapIds = (items: { osuBeatmapId: number }[]) =>
+	items.map(({ osuBeatmapId }) => osuBeatmapId);
