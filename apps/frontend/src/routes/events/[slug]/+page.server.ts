@@ -15,11 +15,7 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async (event) => {
 	const { locals, params } = event;
 	try {
-		return await getTournamentPage(
-			createBackendClient(event),
-			params.slug,
-			locals.session?.user.id
-		);
+		return await getTournamentPage(createBackendClient(event), params.slug, locals.session?.user);
 	} catch (cause) {
 		throwBackendError(cause, 404, 'Tournament not found');
 	}

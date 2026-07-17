@@ -1,9 +1,10 @@
 import type { BackendClient } from '$lib/server/backend/client';
+import type { Viewer } from '$lib/types/viewer';
 
 export async function getTournamentPage(
 	backend: BackendClient,
 	tournamentId: string,
-	viewerId?: string
+	viewer?: Pick<Viewer, 'id' | 'role'>
 ) {
 	const [
 		tournamentResponse,
@@ -25,7 +26,8 @@ export async function getTournamentPage(
 		backend.mappools.findByTournament(tournamentId)
 	]);
 	const tournament = tournamentResponse.data;
-	const canEditTournament = tournament.creatorId === viewerId;
+	const canEditTournament =
+		!!viewer && (tournament.creatorId === viewer.id || viewer.role === 'admin');
 	const host = (await backend.users.getById(tournament.creatorId)).data;
 	const visibleMappools = mappoolsResponse.data;
 
