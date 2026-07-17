@@ -477,6 +477,36 @@ export const tournamentControllerUpdateSoloQualificationParticipant = async (
 	);
 };
 
+export type tournamentControllerRemoveSoloParticipantResponse200 = {
+	data: AugmentedZodDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerRemoveSoloParticipantResponseSuccess =
+	tournamentControllerRemoveSoloParticipantResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerRemoveSoloParticipantResponse =
+	tournamentControllerRemoveSoloParticipantResponseSuccess;
+
+export const getTournamentControllerRemoveSoloParticipantUrl = (id: string, userId: string) => {
+	return `/api/tournaments/${id}/participants/${userId}/manage`;
+};
+
+export const tournamentControllerRemoveSoloParticipant = async (
+	id: string,
+	userId: string,
+	options?: RequestInit
+): Promise<tournamentControllerRemoveSoloParticipantResponse> => {
+	return backendFetch<tournamentControllerRemoveSoloParticipantResponse>(
+		getTournamentControllerRemoveSoloParticipantUrl(id, userId),
+		{
+			...options,
+			method: 'DELETE'
+		}
+	);
+};
+
 export type tournamentControllerUpdateQualificationTeamResponse200 = {
 	data: AugmentedZodDtoOutput;
 	status: 200;
@@ -506,6 +536,35 @@ export const tournamentControllerUpdateQualificationTeam = async (
 			method: 'PATCH',
 			headers: { 'Content-Type': 'application/json', ...options?.headers },
 			body: JSON.stringify(updateQualificationCompetitorDto)
+		}
+	);
+};
+
+export type tournamentControllerRemoveTeamResponse200 = {
+	data: AugmentedZodDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerRemoveTeamResponseSuccess =
+	tournamentControllerRemoveTeamResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerRemoveTeamResponse = tournamentControllerRemoveTeamResponseSuccess;
+
+export const getTournamentControllerRemoveTeamUrl = (id: string, teamId: string) => {
+	return `/api/tournaments/${id}/teams/${teamId}/manage`;
+};
+
+export const tournamentControllerRemoveTeam = async (
+	id: string,
+	teamId: string,
+	options?: RequestInit
+): Promise<tournamentControllerRemoveTeamResponse> => {
+	return backendFetch<tournamentControllerRemoveTeamResponse>(
+		getTournamentControllerRemoveTeamUrl(id, teamId),
+		{
+			...options,
+			method: 'DELETE'
 		}
 	);
 };

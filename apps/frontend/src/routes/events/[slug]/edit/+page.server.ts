@@ -13,8 +13,10 @@ import {
 	mappoolCreateFormSchema,
 	mappoolVisibilityFormSchema,
 	qualificationSoloFormSchema,
+	qualificationSoloUnregisterFormSchema,
 	qualificationTeamFormSchema,
 	qualificationTeamMemberFormSchema,
+	qualificationTeamUnregisterFormSchema,
 	scheduleMatchFormSchema,
 	stageCreateFormSchema,
 	stageDeleteFormSchema,
@@ -421,6 +423,28 @@ export const actions: Actions = {
 				},
 				(backend, input) =>
 					commands.updateQualificationTeamMember(backend, event.params.slug, input)
+			)
+		),
+	unregisterQualificationSolo: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'unregisterQualificationSolo',
+				qualificationSoloUnregisterFormSchema,
+				values,
+				{ userId: stringValue(values.userId) },
+				(backend, input) => commands.unregisterQualificationSolo(backend, event.params.slug, input)
+			)
+		),
+	unregisterQualificationTeam: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'unregisterQualificationTeam',
+				qualificationTeamUnregisterFormSchema,
+				values,
+				{ teamId: stringValue(values.teamId) },
+				(backend, input) => commands.unregisterQualificationTeam(backend, event.params.slug, input)
 			)
 		),
 	assignTournamentStaff: (event) =>

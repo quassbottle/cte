@@ -34,34 +34,6 @@
 	{#each qualificationStages as stage}
 		<section class="flex flex-col gap-3">
 			<h2 class="font-semibold">{stage.name}</h2>
-			<form
-				method="post"
-				action="?/createQualificationLobby"
-				use:enhance
-				class="grid gap-2 rounded-md border border-border p-3 md:grid-cols-3"
-			>
-				<input type="hidden" name="stageId" value={stage.id} />
-				<label for={`new-lobby-number-${stage.id}`}>Number</label>
-				<Input id={`new-lobby-number-${stage.id}`} name="number" type="number" min="1" required />
-				<label for={`new-lobby-referee-${stage.id}`}>Referee</label>
-				<select
-					id={`new-lobby-referee-${stage.id}`}
-					name="refereeId"
-					required
-					class="rounded-md border border-input bg-background px-3 text-sm"
-				>
-					<option value="">Select referee</option>
-					{#each referees as referee}<option value={referee.id}>{referee.osuUsername}</option
-						>{/each}
-				</select>
-				<label for={`new-lobby-start-${stage.id}`}>Starts at</label>
-				<Input id={`new-lobby-start-${stage.id}`} name="startsAt" type="datetime-local" required />
-				<label for={`new-lobby-end-${stage.id}`}>Ends at</label>
-				<Input id={`new-lobby-end-${stage.id}`} name="endsAt" type="datetime-local" required />
-				<label for={`new-lobby-room-${stage.id}`}>Room URL</label>
-				<Input id={`new-lobby-room-${stage.id}`} name="mpUrl" type="url" />
-				<Button type="submit">Add lobby</Button>
-			</form>
 
 			<div class="grid gap-3 md:grid-cols-2">
 				{#each lobbies.filter((lobby) => lobby.stageId === stage.id) as lobby (lobby.id)}

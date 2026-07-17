@@ -130,6 +130,36 @@ describe('TournamentService', () => {
       };
     };
 
+    const deleteDb = () => {
+      let condition: unknown;
+      const returning = jest.fn().mockResolvedValue([{}]);
+      const where = jest.fn((value: unknown) => {
+        condition = value;
+        return { returning };
+      });
+      const remove = jest.fn(() => ({ where }));
+      const invalidate = jest.fn();
+      const service = new TournamentService(
+        {
+          delete: remove,
+          query: {
+            stages: {
+              findFirst: jest.fn().mockResolvedValue({ id: 'stage-id' }),
+            },
+          },
+        } as never,
+        { invalidate } as never,
+        {} as never,
+      );
+      return {
+        service,
+        invalidate,
+        get condition() {
+          return condition;
+        },
+      };
+    };
+
     it('scopes solo updates to tournament and user and clears stale reason', async () => {
       const query = updateDb();
       const service = tournamentService(query.db as never);
@@ -197,6 +227,29 @@ describe('TournamentService', () => {
           data: { withdrawn: true },
         }),
       ).rejects.toThrow('Participant not found in tournament');
+    });
+
+    it('unregisters a solo participant from the selected tournament', async () => {
+      const query = deleteDb();
+
+      await query.service.removeSoloParticipant({
+        id: tournamentId,
+        userId,
+      });
+
+      expect(containsValue(query.condition, tournamentId)).toBe(true);
+      expect(containsValue(query.condition, userId)).toBe(true);
+      expect(query.invalidate).toHaveBeenCalledWith('stage-id');
+    });
+
+    it('unregisters a team from the selected tournament', async () => {
+      const query = deleteDb();
+
+      await query.service.removeTeam({ id: tournamentId, teamId });
+
+      expect(containsValue(query.condition, tournamentId)).toBe(true);
+      expect(containsValue(query.condition, teamId)).toBe(true);
+      expect(query.invalidate).toHaveBeenCalledWith('stage-id');
     });
   });
 

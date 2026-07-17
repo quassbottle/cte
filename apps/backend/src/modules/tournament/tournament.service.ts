@@ -429,6 +429,29 @@ export class TournamentService {
     await this.invalidateQualification(id);
   }
 
+  public async removeSoloParticipant(params: {
+    id: TournamentId;
+    userId: UserId;
+  }): Promise<void> {
+    const { id, userId } = params;
+    const [removed] = await this.drizzle
+      .delete(soloParticipants)
+      .where(
+        and(
+          eq(soloParticipants.tournamentId, id),
+          eq(soloParticipants.userId, userId),
+        ),
+      )
+      .returning();
+
+    if (!removed)
+      throw new TournamentException(
+        'Participant not found in tournament',
+        TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+      );
+    await this.invalidateQualification(id);
+  }
+
   public async updateQualificationTeam(params: {
     id: TournamentId;
     teamId: TeamId;
@@ -446,6 +469,24 @@ export class TournamentService {
       .returning();
 
     if (!updated)
+      throw new TournamentException(
+        'Team not found in tournament',
+        TournamentExceptionCode.TOURNAMENT_NOT_FOUND,
+      );
+    await this.invalidateQualification(id);
+  }
+
+  public async removeTeam(params: {
+    id: TournamentId;
+    teamId: TeamId;
+  }): Promise<void> {
+    const { id, teamId } = params;
+    const [removed] = await this.drizzle
+      .delete(teams)
+      .where(and(eq(teams.tournamentId, id), eq(teams.id, teamId)))
+      .returning();
+
+    if (!removed)
       throw new TournamentException(
         'Team not found in tournament',
         TournamentExceptionCode.TOURNAMENT_NOT_FOUND,

@@ -10,8 +10,10 @@ import type {
 	MappoolCreateForm,
 	MappoolVisibilityForm,
 	QualificationSoloForm,
+	QualificationSoloUnregisterForm,
 	QualificationTeamForm,
 	QualificationTeamMemberForm,
+	QualificationTeamUnregisterForm,
 	ScheduleMatchForm,
 	StageCreateForm,
 	StageDeleteForm,
@@ -113,6 +115,22 @@ export function updateQualificationTeamMember(
 ) {
 	const { teamId, userId, ...payload } = input;
 	return backend.tournaments.qualification.updateTeamMember(tournamentId, teamId, userId, payload);
+}
+
+export function unregisterQualificationSolo(
+	backend: BackendClient,
+	tournamentId: string,
+	input: QualificationSoloUnregisterForm
+) {
+	return backend.tournaments.qualification.removeSolo(tournamentId, input.userId);
+}
+
+export function unregisterQualificationTeam(
+	backend: BackendClient,
+	tournamentId: string,
+	input: QualificationTeamUnregisterForm
+) {
+	return backend.tournaments.qualification.removeTeam(tournamentId, input.teamId);
 }
 
 export function assignTournamentStaff(

@@ -81,7 +81,6 @@ export const tournamentStaffFormSchema = z.object({
 
 export const qualificationCompetitorFormSchema = z
 	.object({
-		seed: optionalPositiveInt,
 		withdrawn: checkbox.default(false),
 		withdrawalReason: optionalText.default('')
 	})
@@ -109,6 +108,14 @@ export const qualificationTeamMemberFormSchema = z
 		...value,
 		withdrawalReason: value.withdrawn ? value.withdrawalReason : null
 	}));
+
+export const qualificationSoloUnregisterFormSchema = z.object({
+	userId: z.string().trim().min(1, 'User id is required')
+});
+
+export const qualificationTeamUnregisterFormSchema = z.object({
+	teamId: z.string().trim().min(1, 'Team id is required')
+});
 
 export const mappoolCreateFormSchema = z
 	.object({
@@ -205,6 +212,8 @@ export type QualificationCompetitorForm = z.infer<typeof qualificationCompetitor
 export type QualificationSoloForm = z.infer<typeof qualificationSoloFormSchema>;
 export type QualificationTeamForm = z.infer<typeof qualificationTeamFormSchema>;
 export type QualificationTeamMemberForm = z.infer<typeof qualificationTeamMemberFormSchema>;
+export type QualificationSoloUnregisterForm = z.infer<typeof qualificationSoloUnregisterFormSchema>;
+export type QualificationTeamUnregisterForm = z.infer<typeof qualificationTeamUnregisterFormSchema>;
 export type MappoolCreateForm = z.infer<typeof mappoolCreateFormSchema>;
 export type MappoolVisibilityForm = z.infer<typeof mappoolVisibilityFormSchema>;
 export type MappoolBeatmapAddForm = z.infer<typeof mappoolBeatmapAddFormSchema>;

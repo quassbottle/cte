@@ -51,7 +51,9 @@ import {
 	tournamentControllerGetTeams,
 	tournamentControllerPatch,
 	tournamentControllerRegister,
+	tournamentControllerRemoveSoloParticipant,
 	tournamentControllerRemoveStaff,
+	tournamentControllerRemoveTeam,
 	tournamentControllerSearchTeams,
 	tournamentControllerUnregister,
 	tournamentControllerUpdateQualificationTeam,
@@ -154,6 +156,10 @@ export function createBackendClient(input?: BackendClientInput) {
 			unregister: (id: string) => tournamentControllerUnregister(id, options),
 			qualification: {
 				getRoster: (id: string) => tournamentControllerGetQualificationRoster(id, options),
+				removeSolo: (id: string, userId: string) =>
+					tournamentControllerRemoveSoloParticipant(id, userId, options),
+				removeTeam: (id: string, teamId: string) =>
+					tournamentControllerRemoveTeam(id, teamId, options),
 				updateSolo: (id: string, userId: string, input: UpdateQualificationCompetitorDto) =>
 					tournamentControllerUpdateSoloQualificationParticipant(id, userId, input, options),
 				updateTeam: (id: string, teamId: string, input: UpdateQualificationCompetitorDto) =>

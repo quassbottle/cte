@@ -17,6 +17,8 @@ export type EditAction =
 	| 'updateQualificationSolo'
 	| 'updateQualificationTeam'
 	| 'updateQualificationTeamMember'
+	| 'unregisterQualificationSolo'
+	| 'unregisterQualificationTeam'
 	| 'createMappool'
 	| 'updateMappoolVisibility'
 	| 'addMappoolBeatmap'

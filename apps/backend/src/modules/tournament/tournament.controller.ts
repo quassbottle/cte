@@ -153,6 +153,24 @@ export class TournamentController {
     return this.tournamentService.getQualificationRoster({ id });
   }
 
+  @Delete(':id/participants/:userId/manage')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ZodResponse({
+    status: 200,
+    description: 'Unregisters a solo participant.',
+    type: QualificationRosterDto,
+  })
+  public async removeSoloParticipant(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Param('userId', UserIdPipe) userId: UserId,
+  ): Promise<QualificationRosterInput> {
+    await this.tournamentService.removeSoloParticipant({ id, userId });
+    return this.tournamentService.getQualificationRoster({ id });
+  }
+
   @Patch(':id/teams/:teamId/manage')
   @UseGuards(JwtUserGuard, PoliciesGuard)
   @CheckPolicies((ability, context) =>
@@ -173,6 +191,24 @@ export class TournamentController {
       teamId,
       data: body,
     });
+    return this.tournamentService.getQualificationRoster({ id });
+  }
+
+  @Delete(':id/teams/:teamId/manage')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ZodResponse({
+    status: 200,
+    description: 'Unregisters a team.',
+    type: QualificationRosterDto,
+  })
+  public async removeTeam(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Param('teamId', TeamIdPipe) teamId: TeamId,
+  ): Promise<QualificationRosterInput> {
+    await this.tournamentService.removeTeam({ id, teamId });
     return this.tournamentService.getQualificationRoster({ id });
   }
 

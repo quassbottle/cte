@@ -558,6 +558,47 @@
         "tags": [
           "Tournament"
         ]
+      },
+      "delete": {
+        "operationId": "TournamentController_removeSoloParticipant",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "userId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unregisters a solo participant.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AugmentedZodDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
       }
     },
     "/api/tournaments/{id}/teams/{teamId}/manage": {
@@ -594,6 +635,47 @@
         "responses": {
           "200": {
             "description": "Updates a qualification team.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AugmentedZodDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Tournament"
+        ]
+      },
+      "delete": {
+        "operationId": "TournamentController_removeTeam",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "teamId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Unregisters a team.",
             "content": {
               "application/json": {
                 "schema": {

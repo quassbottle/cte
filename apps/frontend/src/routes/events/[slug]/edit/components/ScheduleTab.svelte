@@ -15,6 +15,7 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { Pencil, Plus, Trash2, X } from 'lucide-svelte';
 	import ScheduleMatchForm from './ScheduleMatchForm.svelte';
+	import QualificationLobbyForm from './QualificationLobbyForm.svelte';
 	import QualificationLobbiesTab from './QualificationLobbiesTab.svelte';
 
 	export let stages: StageDtoOutput[];
@@ -38,6 +39,10 @@
 		| {
 				mode: 'delete';
 				match: StageScheduleDtoOutputMatchesItem;
+		  }
+		| {
+				mode: 'create-lobby';
+				stageId: string;
 		  }
 		| null = null;
 
@@ -79,6 +84,15 @@
 		return Math.max(0, ...stage.matches.map((match, index) => match.matchNumber ?? index + 1)) + 1;
 	}
 
+	function getNextLobbyNumber(stageId: string) {
+		return (
+			Math.max(
+				0,
+				...lobbies.filter((lobby) => lobby.stageId === stageId).map((lobby) => lobby.number)
+			) + 1
+		);
+	}
+
 	const enhanceDeleteMatch: SubmitFunction = () => {
 		return async ({ result, update }) => {
 			await update({ invalidateAll: true });
@@ -101,15 +115,20 @@
 			{/if}
 		</p>
 
-		{#if activeStage?.type !== 'qualification'}
+		{#if activeStage}
 			<Button
 				type="button"
 				class="w-full gap-1 text-[12px] sm:w-[140px]"
-				on:click={() => activeStageId && (dialog = { mode: 'create', stageId: activeStageId })}
+				on:click={() =>
+					activeStageId &&
+					(dialog = {
+						mode: activeStage.type === 'qualification' ? 'create-lobby' : 'create',
+						stageId: activeStageId
+					})}
 				disabled={stages.length === 0 || !activeStageId}
 			>
 				<Plus class="h-4 w-4" />
-				Add match
+				{activeStage.type === 'qualification' ? 'Add lobby' : 'Add match'}
 			</Button>
 		{/if}
 	</div>
@@ -218,9 +237,11 @@
 					<p class="text-lg font-semibold">
 						{dialog.mode === 'create'
 							? 'Add match'
-							: dialog.mode === 'update'
-								? 'Edit match'
-								: 'Delete match'}
+							: dialog.mode === 'create-lobby'
+								? 'Add lobby'
+								: dialog.mode === 'update'
+									? 'Edit match'
+									: 'Delete match'}
 					</p>
 					<p class="text-sm text-muted-foreground">
 						{dialogStage?.name ?? activeStage?.name ?? 'Selected stage'}
@@ -231,7 +252,15 @@
 				</Button>
 			</div>
 
-			{#if dialog.mode === 'create'}
+			{#if dialog.mode === 'create-lobby'}
+				<QualificationLobbyForm
+					stageId={dialog.stageId}
+					{staff}
+					{form}
+					defaultNumber={getNextLobbyNumber(dialog.stageId)}
+					onCancel={() => (dialog = null)}
+				/>
+			{:else if dialog.mode === 'create'}
 				<ScheduleMatchForm
 					stage={dialogStage}
 					{tournamentId}

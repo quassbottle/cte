@@ -20,11 +20,10 @@ describe('qualification forms', () => {
 	it('clears the withdrawal reason when the competitor is active', () => {
 		expect(
 			qualificationCompetitorFormSchema.parse({
-				seed: '',
 				withdrawn: 'false',
 				withdrawalReason: 'old reason'
 			})
-		).toEqual({ seed: null, withdrawn: false, withdrawalReason: null });
+		).toEqual({ withdrawn: false, withdrawalReason: null });
 	});
 });
 
