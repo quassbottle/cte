@@ -17,6 +17,7 @@ export class QualificationSyncRepository {
       stageId: StageId;
       roomId: OsuRoomId;
       status: 'active' | 'stopped' | 'completed';
+      nextSyncAt: Date;
     }[]
   > {
     const rows = await this.db
@@ -24,6 +25,7 @@ export class QualificationSyncRepository {
         stageId: qualificationLobbies.stageId,
         roomId: qualificationLobbies.osuRoomId,
         status: osuMultiplayerRooms.status,
+        nextSyncAt: osuMultiplayerRooms.nextSyncAt,
       })
       .from(qualificationLobbies)
       .innerJoin(
@@ -35,6 +37,7 @@ export class QualificationSyncRepository {
       stageId: StageId;
       roomId: OsuRoomId;
       status: 'active' | 'stopped' | 'completed';
+      nextSyncAt: Date;
     }[];
   }
 }
