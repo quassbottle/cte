@@ -57,14 +57,18 @@ export class UserService {
 
     const parsedOsuId = Number(query);
     const hasOsuId = Number.isInteger(parsedOsuId);
+    const usernameQuery = `%${query}%`;
     const candidate = await this.drizzle.query.users.findFirst({
       where: hasOsuId
         ? or(
             eq(users.id, query as UserId),
             eq(users.osuId, parsedOsuId),
-            ilike(users.osuUsername, query),
+            ilike(users.osuUsername, usernameQuery),
           )
-        : or(eq(users.id, query as UserId), ilike(users.osuUsername, query)),
+        : or(
+            eq(users.id, query as UserId),
+            ilike(users.osuUsername, usernameQuery),
+          ),
     });
 
     if (!candidate) {
