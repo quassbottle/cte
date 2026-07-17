@@ -1,11 +1,15 @@
 import { createBackendClient } from '$lib/server/backend/client';
-import { backendErrorMessage, backendErrorStatus } from '$lib/server/backend/errors';
+import {
+	backendErrorMessage,
+	backendErrorStatus,
+	throwBackendError
+} from '$lib/server/backend/errors';
 import * as commands from '$lib/server/services/tournaments/tournament-page.commands';
 import { getTournamentPage } from '$lib/server/services/tournaments/tournament-page.query';
 import { tournamentRegisterFormSchema } from '$lib/schemas/tournament-page.schema';
 import type { BackendClient } from '$lib/server/backend/client';
 import type { SelectedUser } from '$lib/schemas/user.schema';
-import { error, fail, redirect } from '@sveltejs/kit';
+import { fail, redirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
@@ -17,7 +21,7 @@ export const load: PageServerLoad = async (event) => {
 			locals.session?.user.id
 		);
 	} catch (cause) {
-		throw error(backendErrorStatus(cause, 404), backendErrorMessage(cause, 'Tournament not found'));
+		throwBackendError(cause, 404, 'Tournament not found');
 	}
 };
 

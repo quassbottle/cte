@@ -1,5 +1,5 @@
 import { createBackendClient } from '$lib/server/backend/client';
-import { backendErrorMessage, backendErrorStatus } from '$lib/server/backend/errors';
+import { throwBackendError } from '$lib/server/backend/errors';
 import { normalizePlayers, normalizeTeams } from '$lib/utils/competitor-search';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
@@ -26,9 +26,6 @@ export const GET: RequestHandler = async ({ fetch, params, request, url }) => {
 		const response = await backend.tournaments.searchTeams(params.id, query, request.signal);
 		return json(normalizeTeams(response.data));
 	} catch (cause) {
-		throw error(
-			backendErrorStatus(cause, 502),
-			backendErrorMessage(cause, 'Competitor search failed')
-		);
+		return throwBackendError(cause, 502, 'Competitor search failed');
 	}
 };

@@ -1,5 +1,5 @@
 import { createBackendClient } from '$lib/server/backend/client';
-import { backendErrorMessage, backendErrorStatus } from '$lib/server/backend/errors';
+import { throwBackendError } from '$lib/server/backend/errors';
 import { osuBeatmapMetadataSchema } from '$lib/schemas/osu.schema';
 import { error, json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
@@ -15,9 +15,6 @@ export const GET: RequestHandler = async (event) => {
 		const response = await createBackendClient(event).osu.getBeatmapMetadata(beatmapId);
 		return json(osuBeatmapMetadataSchema.parse(response.data));
 	} catch (cause) {
-		throw error(
-			backendErrorStatus(cause, 404),
-			backendErrorMessage(cause, 'Beatmap metadata not found')
-		);
+		return throwBackendError(cause, 404, 'Beatmap metadata not found');
 	}
 };
