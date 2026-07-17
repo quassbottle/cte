@@ -9,7 +9,8 @@
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 	import type { CompetitorOption } from '$lib/utils/competitor-search';
 	import type { SubmitFunction } from '@sveltejs/kit';
-	import ScheduleCompetitorPicker from './ScheduleCompetitorPicker.svelte';
+	import TournamentTeamPicker from './TournamentTeamPicker.svelte';
+	import TournamentUserPicker from './TournamentUserPicker.svelte';
 	import ScheduleUserPicker from './ScheduleUserPicker.svelte';
 
 	export let stage: Pick<StageDtoOutput, 'id' | 'startsAt' | 'type'> | undefined;
@@ -155,20 +156,20 @@
 	{#if isTeam}
 		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleCompetitorPicker
+				<TournamentTeamPicker
 					label="Red team"
 					name="redTeamId"
 					{tournamentId}
-					type="team"
+					placeholder="Search tournament team"
 					initial={toTeamOption(match?.redTeam ?? null)}
 				/>
 			</div>
 			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleCompetitorPicker
+				<TournamentTeamPicker
 					label="Blue team"
 					name="blueTeamId"
 					{tournamentId}
-					type="team"
+					placeholder="Search tournament team"
 					initial={toTeamOption(match?.blueTeam ?? null)}
 				/>
 			</div>
@@ -176,20 +177,20 @@
 	{:else}
 		<div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
 			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleCompetitorPicker
+				<TournamentUserPicker
 					label="Player 1"
 					name="player1UserId"
 					{tournamentId}
-					type="player"
+					placeholder="Search user"
 					initial={toPlayerOption(match?.players[0])}
 				/>
 			</div>
 			<div class="flex flex-col gap-2 rounded-md border border-border p-3">
-				<ScheduleCompetitorPicker
+				<TournamentUserPicker
 					label="Player 2"
 					name="player2UserId"
 					{tournamentId}
-					type="player"
+					placeholder="Search user"
 					initial={toPlayerOption(match?.players[1])}
 				/>
 			</div>

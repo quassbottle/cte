@@ -13,7 +13,7 @@
 	import type { Viewer } from '$lib/types/viewer';
 	import { onDestroy } from 'svelte';
 
-	export let stages: StageDtoOutput[];
+	export let stages: Pick<StageDtoOutput, 'id' | 'name' | 'type'>[];
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let user: Viewer | null;
 	export let teams: TournamentTeamDto[];

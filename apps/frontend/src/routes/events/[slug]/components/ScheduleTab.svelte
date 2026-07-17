@@ -1,22 +1,30 @@
 <script lang="ts">
 	import { page } from '$app/stores';
-	import type { StageScheduleDtoOutput } from '$lib/api/generated/model';
+	import type {
+		QualificationLobbyDtoOutput,
+		StageScheduleDtoOutput,
+		TournamentTeamDto
+	} from '$lib/api/generated/model';
+	import type { Viewer } from '$lib/types/viewer';
 	import Schedule from '$lib/components/schedule/schedule.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
+	import QualificationLobbiesTab from './QualificationLobbiesTab.svelte';
 
 	export let schedule: StageScheduleDtoOutput[];
-	$: regularSchedule = schedule.filter((stage) => stage.type !== 'qualification');
+	export let lobbies: QualificationLobbyDtoOutput[];
+	export let user: Viewer | null;
+	export let teams: TournamentTeamDto[];
 
 	$: requestedStageId = $page.url.searchParams.get('stage');
 	$: activeStageId = getActiveStageId(requestedStageId);
 
 	function getActiveStageId(value: string | null) {
-		if (value && regularSchedule.some((stage) => stage.id === value)) {
+		if (value && schedule.some((stage) => stage.id === value)) {
 			return value;
 		}
 
-		return regularSchedule[0]?.id ?? '';
+		return schedule[0]?.id ?? '';
 	}
 
 	function getStageTabHref(stageId: string) {
@@ -29,7 +37,7 @@
 </script>
 
 <div class="flex flex-col gap-3">
-	{#if regularSchedule.length === 0}
+	{#if schedule.length === 0}
 		<p>No stages added yet.</p>
 	{:else}
 		<TabGroup
@@ -40,7 +48,7 @@
 		>
 			<div class="w-full md:sticky md:top-8 md:w-[160px] md:shrink-0 md:self-start">
 				<Head let:Item class="flex flex-col gap-2">
-					{#each regularSchedule as stage}
+					{#each schedule as stage}
 						<Item
 							value={stage.id}
 							href={getStageTabHref(stage.id)}
@@ -58,9 +66,11 @@
 			</div>
 
 			<div class="min-w-0 flex-1 md:border-l md:border-border md:pl-6">
-				{#each regularSchedule as stage}
+				{#each schedule as stage}
 					<ContentItem class="flex flex-col gap-3" value={stage.id}>
-						{#if stage.matches.length === 0}
+						{#if stage.type === 'qualification'}
+							<QualificationLobbiesTab stages={[stage]} {lobbies} {user} {teams} />
+						{:else if stage.matches.length === 0}
 							<p class="py-16 text-center text-sm text-muted-foreground">No matches added yet.</p>
 						{:else}
 							<Schedule matches={stage.matches} />

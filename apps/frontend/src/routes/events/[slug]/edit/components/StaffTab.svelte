@@ -4,23 +4,22 @@
 	import Group from '$lib/components/group/group.svelte';
 	import PlayerCard from '$lib/components/playerCard/playerCard.svelte';
 	import { Button } from '$lib/components/ui/button';
-	import type { SelectedUser } from '$lib/schemas/user.schema';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
 	import { X } from 'lucide-svelte';
 	import { sortedStaffRoles } from '../../components/staff-tab';
-	import ScheduleUserPicker from './ScheduleUserPicker.svelte';
+	import TournamentUserPicker from './TournamentUserPicker.svelte';
 
 	export let staff: TournamentStaffRoleDto[];
 	export let form: TournamentEditActionResult | undefined;
 
 	let selectedRole: TournamentStaffRoleDto | null = null;
-	let selectedUsers: SelectedUser[] = [];
+	let selectedUserId: string | undefined;
 
 	$: roles = sortedStaffRoles(staff);
 
 	const closeDialog = () => {
 		selectedRole = null;
-		selectedUsers = [];
+		selectedUserId = undefined;
 	};
 </script>
 
@@ -34,7 +33,6 @@
 					size="sm"
 					on:click={() => {
 						selectedRole = role;
-						selectedUsers = [];
 					}}>Add</Button
 				>
 			</div>
@@ -82,24 +80,26 @@
 			<form
 				method="post"
 				action="?/assignTournamentStaff"
-				use:enhance={() => async ({ result, update }) => {
-					await update({ reset: false });
-					if (result.type === 'success') closeDialog();
-				}}
+				use:enhance={() =>
+					async ({ result, update }) => {
+						await update({ reset: false });
+						if (result.type === 'success') closeDialog();
+					}}
 				class="flex flex-col gap-4"
 			>
 				<input type="hidden" name="roleId" value={selectedRole.id} />
-				<ScheduleUserPicker
+				<TournamentUserPicker
 					label="User"
 					name="userId"
-					bind:selectedUsers
+					placeholder="Search user"
+					bind:selectedId={selectedUserId}
 				/>
 				{#if form && !form.ok && form.roleId === selectedRole.id}
 					<p class="text-sm text-destructive">{form.message}</p>
 				{/if}
 				<div class="flex justify-end gap-2">
 					<Button type="button" variant="outline" on:click={closeDialog}>Cancel</Button>
-					<Button type="submit" disabled={selectedUsers.length === 0}>Assign</Button>
+					<Button type="submit" disabled={!selectedUserId}>Assign</Button>
 				</div>
 			</form>
 		</div>

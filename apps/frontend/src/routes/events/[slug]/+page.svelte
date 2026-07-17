@@ -20,7 +20,6 @@
 	import InfoTab from './components/InfoTab.svelte';
 	import ParticipantsTab from './components/ParticipantsTab.svelte';
 	import ScheduleTab from './components/ScheduleTab.svelte';
-	import QualificationLobbiesTab from './components/QualificationLobbiesTab.svelte';
 	import MappoolsTab from './components/MappoolsTab.svelte';
 	import StaffTab from './components/StaffTab.svelte';
 	import type { TournamentRegistrationForm } from './components/info/types';
@@ -41,14 +40,7 @@
 	};
 	export let form: TournamentRegistrationForm;
 
-	const tournamentTabs = [
-		'info',
-		'participants',
-		'staff',
-		'schedule',
-		'lobbies',
-		'mappools'
-	] as const;
+	const tournamentTabs = ['info', 'participants', 'staff', 'schedule', 'mappools'] as const;
 	type TournamentTab = (typeof tournamentTabs)[number];
 	let activeTab: TournamentTab = 'info';
 	let lastTabParam: string | null = null;
@@ -70,10 +62,10 @@
 
 	function getEditHref(tab: TournamentTab) {
 		const params = new URLSearchParams($page.url.searchParams);
-		const editTab = tab === 'schedule' || tab === 'lobbies' || tab === 'mappools' ? tab : 'info';
+		const editTab = tab === 'schedule' || tab === 'mappools' ? tab : 'info';
 		params.set('tab', editTab);
 
-		if (editTab !== 'schedule' && editTab !== 'lobbies' && editTab !== 'mappools') {
+		if (editTab !== 'schedule' && editTab !== 'mappools') {
 			params.delete('stage');
 		}
 
@@ -109,7 +101,6 @@
 			<Item value="participants" href={getTournamentTabHref('participants')}>Participants</Item>
 			<Item value="staff" href={getTournamentTabHref('staff')}>Staff</Item>
 			<Item value="schedule" href={getTournamentTabHref('schedule')}>Schedule</Item>
-			<Item value="lobbies" href={getTournamentTabHref('lobbies')}>Lobbies</Item>
 			<Item value="mappools" href={getTournamentTabHref('mappools')}>Mappools</Item>
 		</Head>
 
@@ -142,16 +133,13 @@
 	<ContentItem value="staff"><StaffTab staff={data.staff} /></ContentItem>
 
 	<ContentItem value="schedule">
-		<ScheduleTab schedule={data.schedule} />
-	</ContentItem>
-	<ContentItem value="lobbies"
-		><QualificationLobbiesTab
-			stages={data.stages}
+		<ScheduleTab
+			schedule={data.schedule}
 			lobbies={data.qualificationLobbies}
 			user={data.user}
 			teams={data.teams}
-		/></ContentItem
-	>
+		/>
+	</ContentItem>
 
 	<ContentItem value="mappools">
 		<MappoolsTab

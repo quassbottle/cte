@@ -2,9 +2,11 @@
 	import { enhance } from '$app/forms';
 	import { page } from '$app/stores';
 	import type {
+		QualificationLobbyDtoOutput,
 		StageDtoOutput,
 		StageScheduleDtoOutput,
-		StageScheduleDtoOutputMatchesItem
+		StageScheduleDtoOutputMatchesItem,
+		TournamentStaffRoleDto
 	} from '$lib/api/generated/model';
 	import Schedule from '$lib/components/schedule/schedule.svelte';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
@@ -13,14 +15,15 @@
 	import type { SubmitFunction } from '@sveltejs/kit';
 	import { Pencil, Plus, Trash2, X } from 'lucide-svelte';
 	import ScheduleMatchForm from './ScheduleMatchForm.svelte';
+	import QualificationLobbiesTab from './QualificationLobbiesTab.svelte';
 
 	export let stages: StageDtoOutput[];
 	export let schedule: StageScheduleDtoOutput[];
+	export let lobbies: QualificationLobbyDtoOutput[];
+	export let staff: TournamentStaffRoleDto[];
 	export let tournamentId: string;
 	export let isTeam = false;
 	export let form: TournamentEditActionResult | undefined;
-	$: regularStages = stages.filter((stage) => stage.type !== 'qualification');
-	$: regularSchedule = schedule.filter((stage) => stage.type !== 'qualification');
 
 	let dialog:
 		| {
@@ -38,13 +41,14 @@
 		  }
 		| null = null;
 
-	$: sortedSchedule = [...regularSchedule].sort(
+	$: sortedSchedule = [...schedule].sort(
 		(left, right) => new Date(left.startsAt).valueOf() - new Date(right.startsAt).valueOf()
 	);
 	$: matchesCount = sortedSchedule.reduce((total, stage) => total + stage.matches.length, 0);
 	$: requestedStageId = $page.url.searchParams.get('stage');
 	$: activeStageId = getActiveStageId(requestedStageId);
 	$: activeStage = sortedSchedule.find((stage) => stage.id === activeStageId) ?? sortedSchedule[0];
+	$: activeLobbyCount = lobbies.filter((lobby) => lobby.stageId === activeStage?.id).length;
 	$: currentDialog = dialog;
 	$: dialogStage =
 		currentDialog && currentDialog.mode !== 'delete'
@@ -56,7 +60,7 @@
 			return value;
 		}
 
-		return sortedSchedule[0]?.id ?? regularStages[0]?.id ?? '';
+		return sortedSchedule[0]?.id ?? stages[0]?.id ?? '';
 	}
 
 	function getStageTabHref(stageId: string) {
@@ -89,22 +93,28 @@
 <div class="flex flex-col gap-5">
 	<div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
 		<p class="text-sm text-muted-foreground">
-			{matchesCount}
-			{matchesCount === 1 ? 'match' : 'matches'}
+			{activeStage?.type === 'qualification' ? activeLobbyCount : matchesCount}
+			{#if activeStage?.type === 'qualification'}
+				{activeLobbyCount === 1 ? 'lobby' : 'lobbies'}
+			{:else}
+				{matchesCount === 1 ? 'match' : 'matches'}
+			{/if}
 		</p>
 
-		<Button
-			type="button"
-			class="w-full gap-1 text-[12px] sm:w-[140px]"
-			on:click={() => activeStageId && (dialog = { mode: 'create', stageId: activeStageId })}
-			disabled={regularStages.length === 0 || !activeStageId}
-		>
-			<Plus class="h-4 w-4" />
-			Add match
-		</Button>
+		{#if activeStage?.type !== 'qualification'}
+			<Button
+				type="button"
+				class="w-full gap-1 text-[12px] sm:w-[140px]"
+				on:click={() => activeStageId && (dialog = { mode: 'create', stageId: activeStageId })}
+				disabled={stages.length === 0 || !activeStageId}
+			>
+				<Plus class="h-4 w-4" />
+				Add match
+			</Button>
+		{/if}
 	</div>
 
-	{#if regularStages.length === 0 || sortedSchedule.length === 0}
+	{#if stages.length === 0 || sortedSchedule.length === 0}
 		<div class="rounded-md border border-border p-6 text-sm text-muted-foreground">
 			Add at least one stage before creating schedule matches.
 		</div>
@@ -137,44 +147,48 @@
 			<div class="min-w-0 flex-1 md:border-l md:border-border md:pl-6">
 				{#each sortedSchedule as stage}
 					<ContentItem class="flex flex-col gap-3" value={stage.id}>
-						<div class="flex items-center justify-between gap-3">
-							<p class="font-semibold">{stage.name}</p>
-							<p class="text-xs text-muted-foreground">
-								{stage.matches.length}
-								{stage.matches.length === 1 ? 'match' : 'matches'}
-							</p>
-						</div>
-
-						{#if stage.matches.length === 0}
-							<div
-								class="rounded-md border border-border p-8 text-center text-sm text-muted-foreground"
-							>
-								No matches added yet.
-							</div>
+						{#if stage.type === 'qualification'}
+							<QualificationLobbiesTab stages={[stage]} {lobbies} {staff} />
 						{:else}
-							<Schedule matches={stage.matches} editable>
-								<div slot="actions" let:match class="flex justify-end gap-2">
-									<Button
-										type="button"
-										variant="outline"
-										class="gap-1 text-[12px]"
-										on:click={() => (dialog = { mode: 'update', stageId: stage.id, match })}
-									>
-										<Pencil class="h-3 w-3" />
-										Edit
-									</Button>
+							<div class="flex items-center justify-between gap-3">
+								<p class="font-semibold">{stage.name}</p>
+								<p class="text-xs text-muted-foreground">
+									{stage.matches.length}
+									{stage.matches.length === 1 ? 'match' : 'matches'}
+								</p>
+							</div>
 
-									<Button
-										type="button"
-										variant="destructive"
-										class="gap-1 text-[12px]"
-										on:click={() => (dialog = { mode: 'delete', match })}
-									>
-										<Trash2 class="h-3 w-3" />
-										Delete
-									</Button>
+							{#if stage.matches.length === 0}
+								<div
+									class="rounded-md border border-border p-8 text-center text-sm text-muted-foreground"
+								>
+									No matches added yet.
 								</div>
-							</Schedule>
+							{:else}
+								<Schedule matches={stage.matches} editable>
+									<div slot="actions" let:match class="flex justify-end gap-2">
+										<Button
+											type="button"
+											variant="outline"
+											class="gap-1 text-[12px]"
+											on:click={() => (dialog = { mode: 'update', stageId: stage.id, match })}
+										>
+											<Pencil class="h-3 w-3" />
+											Edit
+										</Button>
+
+										<Button
+											type="button"
+											variant="destructive"
+											class="gap-1 text-[12px]"
+											on:click={() => (dialog = { mode: 'delete', match })}
+										>
+											<Trash2 class="h-3 w-3" />
+											Delete
+										</Button>
+									</div>
+								</Schedule>
+							{/if}
 						{/if}
 					</ContentItem>
 				{/each}
