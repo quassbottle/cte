@@ -33,7 +33,11 @@ import {
   users,
 } from '../src/lib/infrastructure/db';
 import { OsuService } from '../src/lib/infrastructure/osu/osu.service';
-import { parseTwc2026Wiki, TwcMappoolBeatmap } from './twc-2026-wiki';
+import {
+  parseTwc2026Wiki,
+  toTwcUser,
+  TwcMappoolBeatmap,
+} from './twc-2026-wiki';
 
 const TOURNAMENT_NAME = 'osu!taiko World Cup 2026';
 const WIKI_URL =
@@ -117,10 +121,12 @@ const main = async () => {
         { osuId: number; osuUsername: string; countryCode: string }
       >();
       for (const team of data.teams) {
-        for (const member of team.members) allUsers.set(member.osuId, member);
+        for (const member of team.members)
+          allUsers.set(member.osuId, toTwcUser(member));
       }
       for (const member of data.staff) {
-        if (!allUsers.has(member.osuId)) allUsers.set(member.osuId, member);
+        if (!allUsers.has(member.osuId))
+          allUsers.set(member.osuId, toTwcUser(member));
       }
 
       await tx
@@ -134,7 +140,10 @@ const main = async () => {
         )
         .onConflictDoUpdate({
           target: users.osuId,
-          set: { defaultMode: 'taiko' },
+          set: {
+            defaultMode: 'taiko',
+            role: sql`case when ${users.role} in ('default', 'admin') then ${users.role} else 'default' end`,
+          },
         });
       const userRows = await tx
         .select({ id: users.id, osuId: users.osuId })

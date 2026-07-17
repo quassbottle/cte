@@ -1,4 +1,4 @@
-import { parseTwc2026Wiki } from './twc-2026-wiki';
+import { parseTwc2026Wiki, toTwcUser } from './twc-2026-wiki';
 
 const wiki = `
 ## Organisation
@@ -49,6 +49,11 @@ describe('TWC 2026 wiki parser', () => {
       captainOsuId: 3,
     });
     expect(data.staff.map(({ role }) => role)).toEqual(['Host', 'Referee']);
+    expect(toTwcUser(data.staff[0])).toEqual({
+      osuId: 1,
+      osuUsername: 'Host',
+      countryCode: 'CA',
+    });
     expect(data.qualifiers[0]).toMatchObject({
       seed: 1,
       teamName: 'Japan',

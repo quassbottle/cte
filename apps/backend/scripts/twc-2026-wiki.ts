@@ -20,6 +20,12 @@ export type TwcTeam = {
 
 export type TwcStaff = TwcUser & { role: TwcStaffRole };
 
+export const toTwcUser = ({
+  osuId,
+  osuUsername,
+  countryCode,
+}: TwcUser): TwcUser => ({ osuId, osuUsername, countryCode });
+
 export type TwcQualifier = {
   seed: number;
   teamName: string;
