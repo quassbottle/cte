@@ -171,6 +171,7 @@ export class BeatmapService {
       beatmapId: beatmap.id,
       mod: mappoolBeatmap.mod,
       index: mappoolBeatmap.index,
+      position: mappoolBeatmap.position,
       osuBeatmapsetId: beatmap.osuBeatmapsetId,
       osuBeatmapId: beatmap.osuBeatmapId,
       artist: beatmap.artist,

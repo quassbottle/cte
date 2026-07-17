@@ -9,6 +9,7 @@ import {
 	mappoolBeatmapAddFormSchema,
 	mappoolBeatmapDeleteFormSchema,
 	mappoolBeatmapReplaceFormSchema,
+	mappoolBeatmapReorderFormSchema,
 	mappoolBeatmapUpdateFormSchema,
 	mappoolCreateFormSchema,
 	mappoolVisibilityFormSchema,
@@ -514,6 +515,17 @@ export const actions: Actions = {
 					beatmapId: stringValue(values.osuBeatmapId)
 				},
 				(backend, input) => commands.updateMappoolBeatmap(backend, input)
+			)
+		),
+	reorderMappoolBeatmaps: (event) =>
+		withFormValues(event, (values) =>
+			submitForm(
+				event,
+				'reorderMappoolBeatmaps',
+				mappoolBeatmapReorderFormSchema,
+				values,
+				{ mappoolId: stringValue(values.mappoolId) },
+				(backend, input) => commands.reorderMappoolBeatmaps(backend, input)
 			)
 		),
 	replaceMappoolBeatmap: (event) =>

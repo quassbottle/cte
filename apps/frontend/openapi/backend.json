@@ -2034,6 +2034,54 @@
         ]
       }
     },
+    "/api/mappools/{id}/beatmaps/reorder": {
+      "post": {
+        "operationId": "MappoolController_reorderBeatmaps",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReorderMappoolBeatmapsDto"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Reorders all beatmaps in a mappool.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MappoolBeatmapDto_Output"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Mappool"
+        ]
+      }
+    },
     "/api/mappools/{id}/beatmaps/{osuBeatmapId}": {
       "patch": {
         "operationId": "MappoolController_updateBeatmap",
@@ -3829,6 +3877,11 @@
             "maximum": 9007199254740991,
             "minimum": 0
           },
+          "position": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 9007199254740991
+          },
           "osuBeatmapsetId": {
             "type": "integer",
             "exclusiveMinimum": true,
@@ -3885,6 +3938,7 @@
           "beatmapId",
           "mod",
           "index",
+          "position",
           "osuBeatmapsetId",
           "osuBeatmapId",
           "artist",
@@ -3948,6 +4002,23 @@
           "mod",
           "beatmapsetId",
           "beatmapId"
+        ]
+      },
+      "ReorderMappoolBeatmapsDto": {
+        "type": "object",
+        "properties": {
+          "beatmapIds": {
+            "type": "array",
+            "items": {
+              "type": "integer",
+              "exclusiveMinimum": true,
+              "maximum": 9007199254740991,
+              "minimum": 0
+            }
+          }
+        },
+        "required": [
+          "beatmapIds"
         ]
       },
       "UpdateMappoolBeatmapDto": {
@@ -4050,6 +4121,11 @@
                   "maximum": 9007199254740991,
                   "minimum": 0
                 },
+                "position": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "maximum": 9007199254740991
+                },
                 "osuBeatmapsetId": {
                   "type": "integer",
                   "exclusiveMinimum": true,
@@ -4106,6 +4182,7 @@
                 "beatmapId",
                 "mod",
                 "index",
+                "position",
                 "osuBeatmapsetId",
                 "osuBeatmapId",
                 "artist",

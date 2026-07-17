@@ -6,6 +6,7 @@ import type {
 	MappoolBeatmapAddForm,
 	MappoolBeatmapDeleteForm,
 	MappoolBeatmapReplaceForm,
+	MappoolBeatmapReorderForm,
 	MappoolBeatmapUpdateForm,
 	MappoolCreateForm,
 	MappoolVisibilityForm,
@@ -188,4 +189,8 @@ export async function replaceMappoolBeatmap(
 
 export function deleteMappoolBeatmap(backend: BackendClient, input: MappoolBeatmapDeleteForm) {
 	return backend.mappools.deleteBeatmap(input.mappoolId, input.osuBeatmapId);
+}
+
+export function reorderMappoolBeatmaps(backend: BackendClient, input: MappoolBeatmapReorderForm) {
+	return backend.mappools.reorderBeatmaps(input.mappoolId, { beatmapIds: input.beatmapIds });
 }

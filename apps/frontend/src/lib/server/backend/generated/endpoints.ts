@@ -24,6 +24,7 @@ import type {
 	QualificationLobbyDtoOutput,
 	QualificationLobbyUpsertDto,
 	RegisterTournamentDto,
+	ReorderMappoolBeatmapsDto,
 	ScheduleMatchUpsertDto,
 	SelectQualificationLobbyTeamDto,
 	StageDtoOutput,
@@ -1555,6 +1556,38 @@ export const mappoolControllerAddBeatmap = async (
 		headers: { 'Content-Type': 'application/json', ...options?.headers },
 		body: JSON.stringify(addMappoolBeatmapDto)
 	});
+};
+
+export type mappoolControllerReorderBeatmapsResponse201 = {
+	data: MappoolBeatmapDtoOutput[];
+	status: 201;
+};
+
+export type mappoolControllerReorderBeatmapsResponseSuccess =
+	mappoolControllerReorderBeatmapsResponse201 & {
+		headers: Headers;
+	};
+export type mappoolControllerReorderBeatmapsResponse =
+	mappoolControllerReorderBeatmapsResponseSuccess;
+
+export const getMappoolControllerReorderBeatmapsUrl = (id: string) => {
+	return `/api/mappools/${id}/beatmaps/reorder`;
+};
+
+export const mappoolControllerReorderBeatmaps = async (
+	id: string,
+	reorderMappoolBeatmapsDto: ReorderMappoolBeatmapsDto,
+	options?: RequestInit
+): Promise<mappoolControllerReorderBeatmapsResponse> => {
+	return backendFetch<mappoolControllerReorderBeatmapsResponse>(
+		getMappoolControllerReorderBeatmapsUrl(id),
+		{
+			...options,
+			method: 'POST',
+			headers: { 'Content-Type': 'application/json', ...options?.headers },
+			body: JSON.stringify(reorderMappoolBeatmapsDto)
+		}
+	);
 };
 
 export type mappoolControllerUpdateBeatmapResponse200 = {

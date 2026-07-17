@@ -110,6 +110,14 @@ export class UpdateMappoolBeatmapDto extends createZodDto(
   updateMappoolBeatmapDtoSchema,
 ) {}
 
+export const reorderMappoolBeatmapsDtoSchema = z.object({
+  beatmapIds: z.array(z.number().int().positive()),
+});
+
+export class ReorderMappoolBeatmapsDto extends createZodDto(
+  reorderMappoolBeatmapsDtoSchema,
+) {}
+
 export const mappoolBeatmapDtoSchema = mappoolBeatmapViewSchema.extend({
   createdAt: dateToIsoString,
   updatedAt: dateToIsoString,

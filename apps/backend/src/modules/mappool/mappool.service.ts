@@ -106,7 +106,11 @@ export class MappoolService {
           includeHidden ? undefined : eq(mappools.hidden, false),
         ),
       )
-      .orderBy(asc(mappools.startsAt), asc(mappoolsBeatmaps.createdAt));
+      .orderBy(
+        asc(mappools.startsAt),
+        asc(mappoolsBeatmaps.position),
+        asc(mappoolsBeatmaps.createdAt),
+      );
 
     const byId = new Map<
       MappoolId,
@@ -153,7 +157,7 @@ export class MappoolService {
       .from(mappoolsBeatmaps)
       .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
       .where(eq(mappoolsBeatmaps.mappoolId, id))
-      .orderBy(asc(mappoolsBeatmaps.createdAt));
+      .orderBy(asc(mappoolsBeatmaps.position), asc(mappoolsBeatmaps.createdAt));
 
     return rows.map((row) =>
       this.beatmapService.toMappoolBeatmapView({
@@ -241,6 +245,7 @@ export class MappoolService {
       id,
       mod: normalizedMod,
     });
+    const position = await this.getNextBeatmapPosition(id);
 
     const [created] = await this.drizzle
       .insert(mappoolsBeatmaps)
@@ -249,6 +254,7 @@ export class MappoolService {
         beatmapId: beatmap.id,
         mod: normalizedMod,
         index: nextIndex,
+        position,
       })
       .returning();
 
@@ -357,6 +363,59 @@ export class MappoolService {
     });
   }
 
+  public async reorderBeatmaps(params: {
+    id: MappoolId;
+    osuBeatmapIds: number[];
+  }): Promise<void> {
+    const { id, osuBeatmapIds } = params;
+    const mappool = await this.getById({ id });
+    const current = await this.drizzle
+      .select({
+        beatmapId: mappoolsBeatmaps.beatmapId,
+        osuBeatmapId: beatmaps.osuBeatmapId,
+      })
+      .from(mappoolsBeatmaps)
+      .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
+      .where(eq(mappoolsBeatmaps.mappoolId, id));
+    const requested = new Set(osuBeatmapIds);
+
+    if (
+      requested.size !== osuBeatmapIds.length ||
+      current.length !== osuBeatmapIds.length ||
+      current.some(({ osuBeatmapId }) => !requested.has(osuBeatmapId))
+    ) {
+      throw new MappoolException(
+        'Beatmap order must contain every mappool beatmap exactly once',
+        MappoolExceptionCode.MAPPOOL_BEATMAP_INVALID,
+      );
+    }
+
+    const beatmapIdByOsuId = new Map(
+      current.map(({ beatmapId, osuBeatmapId }) => [osuBeatmapId, beatmapId]),
+    );
+
+    await this.drizzle.transaction(async (tx) => {
+      await Promise.all(
+        osuBeatmapIds.map((osuBeatmapId, index) =>
+          tx
+            .update(mappoolsBeatmaps)
+            .set({ position: index + 1 })
+            .where(
+              and(
+                eq(mappoolsBeatmaps.mappoolId, id),
+                eq(
+                  mappoolsBeatmaps.beatmapId,
+                  beatmapIdByOsuId.get(osuBeatmapId)!,
+                ),
+              ),
+            ),
+        ),
+      );
+    });
+
+    await this.qualificationResults.invalidate(mappool.stageId);
+  }
+
   public async deleteBeatmap(params: {
     id: MappoolId;
     osuBeatmapId: number;
@@ -450,6 +509,15 @@ export class MappoolService {
       );
 
     return (row?.maxIndex ?? 0) + 1;
+  }
+
+  private async getNextBeatmapPosition(id: MappoolId): Promise<number> {
+    const [row] = await this.drizzle
+      .select({ maxPosition: max(mappoolsBeatmaps.position) })
+      .from(mappoolsBeatmaps)
+      .where(eq(mappoolsBeatmaps.mappoolId, id));
+
+    return (row?.maxPosition ?? 0) + 1;
   }
 
   private async getBeatmapInMappoolByOsuBeatmapId(params: {

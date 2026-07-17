@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 
 describe('migration journal', () => {
-  it('contains one generated baseline migration', () => {
+  it('contains the generated migrations in order', () => {
     const journal = JSON.parse(
       readFileSync(
         resolve(process.cwd(), 'drizzle/meta/_journal.json'),
@@ -14,6 +14,10 @@ describe('migration journal', () => {
       expect.objectContaining({
         idx: 0,
         tag: '0000_ambitious_bastion',
+      }),
+      expect.objectContaining({
+        idx: 1,
+        tag: '0001_mappool-beatmap-position',
       }),
     ]);
   });

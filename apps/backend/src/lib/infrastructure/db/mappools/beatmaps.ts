@@ -32,6 +32,7 @@ export const mappoolsBeatmaps = pgTable(
       }),
     mod: text('mod').notNull(),
     index: integer('index').notNull(),
+    position: integer('position').notNull().default(0),
 
     createdAt,
     updatedAt,

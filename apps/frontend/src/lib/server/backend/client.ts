@@ -5,6 +5,7 @@ import type {
 	CreateMappoolDto,
 	CreateStageDto,
 	QualificationLobbyUpsertDto,
+	ReorderMappoolBeatmapsDto,
 	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
@@ -24,6 +25,7 @@ import {
 	mappoolControllerDeleteBeatmap,
 	mappoolControllerFindBeatmaps,
 	mappoolControllerPatch,
+	mappoolControllerReorderBeatmaps,
 	mappoolControllerUpdateBeatmap,
 	qualificationLobbyControllerCreate,
 	qualificationLobbyControllerDelete,
@@ -221,6 +223,8 @@ export function createBackendClient(input?: BackendClientInput) {
 				mappoolControllerAddBeatmap(mappoolId, input, options),
 			updateBeatmap: (mappoolId: string, osuBeatmapId: number, input: UpdateMappoolBeatmapDto) =>
 				mappoolControllerUpdateBeatmap(mappoolId, osuBeatmapId, input, options),
+			reorderBeatmaps: (mappoolId: string, input: ReorderMappoolBeatmapsDto) =>
+				mappoolControllerReorderBeatmaps(mappoolId, input, options),
 			deleteBeatmap: (mappoolId: string, osuBeatmapId: number) =>
 				mappoolControllerDeleteBeatmap(mappoolId, osuBeatmapId, options)
 		},

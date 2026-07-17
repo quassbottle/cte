@@ -25,6 +25,7 @@ export type EditAction =
 	| 'updateMappoolBeatmap'
 	| 'replaceMappoolBeatmap'
 	| 'deleteMappoolBeatmap'
+	| 'reorderMappoolBeatmaps'
 	| 'assignTournamentStaff'
 	| 'removeTournamentStaff';
 

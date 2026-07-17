@@ -6,11 +6,15 @@
 	import Input from '$lib/components/ui/input/input.svelte';
 	import { Label } from '$lib/components/ui/label';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
+	import { GripVertical } from 'lucide-svelte';
 
 	export let mappool: MappoolDto;
 	export let beatmap: MappoolBeatmapDto;
 	export let tournamentMode: OsuMode;
 	export let result: TournamentEditActionResult | undefined;
+	export let dragDisabled = false;
+	export let onDragStart: (event: DragEvent) => void;
+	export let onDragEnd: () => void;
 
 	const normalizeMod = (value: string) => value.trim().toUpperCase();
 	$: rowError =
@@ -25,7 +29,18 @@
 			: undefined;
 </script>
 
-<div class="rounded-md border border-border p-2">
+<div class="relative rounded-md border border-border p-2 pl-10">
+	<button
+		type="button"
+		class="absolute left-2 top-3 cursor-grab rounded p-1 text-muted-foreground hover:bg-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
+		draggable={!dragDisabled}
+		disabled={dragDisabled}
+		aria-label="Drag to reorder map"
+		on:dragstart={onDragStart}
+		on:dragend={onDragEnd}
+	>
+		<GripVertical class="h-5 w-5" />
+	</button>
 	<Beatmap
 		difficultyName={beatmap.difficultyName}
 		artist={beatmap.artist}

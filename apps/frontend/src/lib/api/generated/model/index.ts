@@ -34,6 +34,7 @@ export * from './qualificationLobbyDtoOutputTeamsItem';
 export * from './qualificationLobbyUpsertDto';
 export * from './registerTournamentDto';
 export * from './registerTournamentDtoTeam';
+export * from './reorderMappoolBeatmapsDto';
 export * from './scheduleMatchUpsertDto';
 export * from './scheduleMatchUpsertDtoPlayersItem';
 export * from './scheduleMatchUpsertDtoStaffItem';

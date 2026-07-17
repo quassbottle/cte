@@ -8,6 +8,13 @@
       "when": 1784207307793,
       "tag": "0000_ambitious_bastion",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1784292229329,
+      "tag": "0001_mappool-beatmap-position",
+      "breakpoints": true
     }
   ]
 }

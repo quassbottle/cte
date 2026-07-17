@@ -17,6 +17,11 @@ export type MappoolWithBeatmapsDtoOutputBeatmapsItem = {
 	 */
 	index: number;
 	/**
+	 * @minimum 0
+	 * @maximum 9007199254740991
+	 */
+	position: number;
+	/**
 	 * @maximum 9007199254740991
 	 * @exclusiveMinimum 0
 	 */

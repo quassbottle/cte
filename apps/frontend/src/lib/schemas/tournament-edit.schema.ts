@@ -165,6 +165,21 @@ export const mappoolBeatmapDeleteFormSchema = z.object({
 	osuBeatmapId: positiveInt
 });
 
+export const mappoolBeatmapReorderFormSchema = z.object({
+	mappoolId: z.string().trim().min(1, 'Mappool id is required'),
+	beatmapIds: z
+		.string()
+		.transform((value, context) => {
+			try {
+				return JSON.parse(value);
+			} catch {
+				context.addIssue({ code: 'custom', message: 'Invalid beatmap order' });
+				return z.NEVER;
+			}
+		})
+		.pipe(z.array(z.number().int().positive()))
+});
+
 export const scheduleMatchFormSchema = z
 	.object({
 		matchId: z.string().trim().optional(),
@@ -231,4 +246,5 @@ export type MappoolBeatmapAddForm = z.infer<typeof mappoolBeatmapAddFormSchema>;
 export type MappoolBeatmapUpdateForm = z.infer<typeof mappoolBeatmapUpdateFormSchema>;
 export type MappoolBeatmapReplaceForm = z.infer<typeof mappoolBeatmapReplaceFormSchema>;
 export type MappoolBeatmapDeleteForm = z.infer<typeof mappoolBeatmapDeleteFormSchema>;
+export type MappoolBeatmapReorderForm = z.infer<typeof mappoolBeatmapReorderFormSchema>;
 export type ScheduleMatchForm = z.infer<typeof scheduleMatchFormSchema>;

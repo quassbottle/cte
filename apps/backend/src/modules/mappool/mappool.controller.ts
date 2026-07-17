@@ -26,6 +26,7 @@ import {
   MappoolBeatmapDto,
   MappoolDto,
   MappoolWithBeatmapsDto,
+  ReorderMappoolBeatmapsDto,
   UpdateMappoolBeatmapDto,
   UpdateMappoolDto,
 } from './dto';
@@ -141,6 +142,27 @@ export class MappoolController {
       osuBeatmapsetId: body.beatmapsetId,
       osuBeatmapId: body.beatmapId,
     });
+  }
+
+  @Post(':id/beatmaps/reorder')
+  @UseGuards(JwtUserGuard, PoliciesGuard)
+  @CheckPolicies((ability, context) =>
+    ability.can('update', context.subjectData),
+  )
+  @ZodResponse({
+    status: 201,
+    description: 'Reorders all beatmaps in a mappool.',
+    type: [MappoolBeatmapDto],
+  })
+  public async reorderBeatmaps(
+    @Param('id', MappoolIdPipe) id: MappoolId,
+    @Body() body: ReorderMappoolBeatmapsDto,
+  ) {
+    await this.mappoolService.reorderBeatmaps({
+      id,
+      osuBeatmapIds: body.beatmapIds,
+    });
+    return this.mappoolService.findBeatmaps({ id });
   }
 
   @Patch(':id/beatmaps/:osuBeatmapId')
