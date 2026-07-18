@@ -21,7 +21,7 @@
 	export let form: TournamentEditActionResult | undefined;
 	export let mode: 'create' | 'update' = 'create';
 	export let onCancel: (() => void) | undefined = undefined;
-	export let defaultMatchNumber: number | undefined = undefined;
+	export let defaultMatchNumber: string | undefined = undefined;
 
 	const toDateTimeLocalValue = (value: Date | string) => {
 		const date = new Date(value);
@@ -114,8 +114,7 @@
 			<Input
 				id={`match-number-${match?.id ?? 'new'}`}
 				name="matchNumber"
-				type="number"
-				min="1"
+				type="text"
 				value={match?.matchNumber ?? defaultMatchNumber ?? ''}
 			/>
 		</div>

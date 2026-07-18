@@ -23,7 +23,7 @@ export type MatchDisplayStatus = 'live' | 'finished' | 'soon';
 
 export type MatchView = {
 	id: string;
-	number: number;
+	number: string;
 	date: string;
 	time: string;
 	status: MatchDisplayStatus;

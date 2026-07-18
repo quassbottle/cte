@@ -23,6 +23,10 @@ describe('migration journal', () => {
         idx: 2,
         tag: '0002_qualification-calculated-at-nullable',
       }),
+      expect.objectContaining({
+        idx: 3,
+        tag: '0003_complete_hulk',
+      }),
     ]);
   });
 

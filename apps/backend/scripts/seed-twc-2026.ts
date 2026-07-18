@@ -363,15 +363,12 @@ const main = async () => {
         })),
       );
 
-      const matchNumber = new Map<string, number>();
       const seededMatches = data.matches.map((match) => {
-        const number = (matchNumber.get(match.stageName) ?? 0) + 1;
-        matchNumber.set(match.stageName, number);
         return {
           id: matchId(),
           name: `${match.id}: ${match.redTeamName} vs ${match.blueTeamName}`,
           stageId: stageIds.get(match.stageName)!,
-          matchNumber: number,
+          matchNumber: match.id,
           creatorId: hostId,
           startsAt: new Date(match.startsAt),
           endsAt: new Date(

@@ -9,6 +9,7 @@
 		TournamentStaffRoleDto
 	} from '$lib/api/generated/model';
 	import Schedule from '$lib/components/schedule/schedule.svelte';
+	import { getNextMatchNumber } from '$lib/components/schedule/schedule-view';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
 	import { Button, buttonVariants } from '$lib/components/ui/button';
 	import type { TournamentEditActionResult } from '$lib/types/tournament-edit-action';
@@ -76,12 +77,8 @@
 		return query ? `${$page.url.pathname}?${query}` : $page.url.pathname;
 	}
 
-	function getNextMatchNumber(stage: StageScheduleDtoOutput | undefined) {
-		if (!stage) {
-			return 1;
-		}
-
-		return Math.max(0, ...stage.matches.map((match, index) => match.matchNumber ?? index + 1)) + 1;
+	function getNextMatchNumberForStage(stage: StageScheduleDtoOutput | undefined) {
+		return getNextMatchNumber(stage?.matches ?? []);
 	}
 
 	function getNextLobbyNumber(stageId: string) {
@@ -268,7 +265,7 @@
 					{form}
 					{isTeam}
 					mode="create"
-					defaultMatchNumber={getNextMatchNumber(dialogStage)}
+					defaultMatchNumber={getNextMatchNumberForStage(dialogStage)}
 					onCancel={() => (dialog = null)}
 				/>
 			{:else if dialog.mode === 'update'}

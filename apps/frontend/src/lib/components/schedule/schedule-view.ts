@@ -4,6 +4,14 @@ import type {
 } from '$lib/api/generated/model';
 import type { MatchDisplayStatus, MatchPlayerView, MatchView } from '$lib/components/match/types';
 
+export const getNextMatchNumber = (matches: { matchNumber: string | null }[]) => {
+	const numbers = matches
+		.map(({ matchNumber }) => matchNumber)
+		.filter((value): value is string => /^\d+$/.test(value ?? ''))
+		.map(Number);
+	return String(Math.max(0, ...numbers) + 1);
+};
+
 export const getMatchDisplayStatus = (
 	status: StageScheduleDtoOutputMatchesItem['syncStatus']
 ): MatchDisplayStatus => {
@@ -57,7 +65,7 @@ export const toMatchView = (
 	index: number
 ): MatchView => ({
 	id: match.id,
-	number: match.matchNumber ?? index + 1,
+	number: match.matchNumber ?? String(index + 1),
 	date: formatDate(match.startsAt),
 	time: formatTime(match.startsAt),
 	status: getMatchDisplayStatus(match.syncStatus),

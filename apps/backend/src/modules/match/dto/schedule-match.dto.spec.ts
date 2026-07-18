@@ -16,7 +16,7 @@ describe('scheduleMatchUpsertDtoSchema', () => {
     const parsed = scheduleMatchUpsertDtoSchema.parse({
       name: 'Grand Finals',
       stageId: 'ckm123456789012345678901',
-      matchNumber: 1,
+      matchNumber: '43c',
       startsAt: '2026-07-10T16:00:00.000Z',
       endsAt: '2026-07-10T17:00:00.000Z',
       mpUrl: null,
@@ -32,6 +32,7 @@ describe('scheduleMatchUpsertDtoSchema', () => {
     });
 
     expect(parsed.players).toHaveLength(2);
+    expect(parsed.matchNumber).toBe('43c');
     expect(parsed.staff).toHaveLength(2);
     expect(parsed).not.toHaveProperty('redScore');
     expect(parsed).not.toHaveProperty('blueScore');

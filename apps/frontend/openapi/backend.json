@@ -2954,9 +2954,7 @@
                   "type": "string"
                 },
                 "matchNumber": {
-                  "type": "integer",
-                  "minimum": -9007199254740991,
-                  "maximum": 9007199254740991,
+                  "type": "string",
                   "nullable": true
                 },
                 "startsAt": {
@@ -3178,11 +3176,9 @@
             "pattern": "^[0-9a-z]+$"
           },
           "matchNumber": {
-            "type": "integer",
-            "exclusiveMinimum": true,
-            "maximum": 9007199254740991,
-            "nullable": true,
-            "minimum": 0
+            "type": "string",
+            "minLength": 1,
+            "nullable": true
           },
           "startsAt": {
             "type": "string",
@@ -3286,9 +3282,7 @@
             "nullable": true
           },
           "matchNumber": {
-            "type": "integer",
-            "minimum": -9007199254740991,
-            "maximum": 9007199254740991,
+            "type": "string",
             "nullable": true
           },
           "creatorId": {

@@ -185,7 +185,7 @@ export const scheduleMatchFormSchema = z
 		matchId: z.string().trim().optional(),
 		name: z.string().trim().min(1, 'Match name is required'),
 		stageId: z.string().trim().min(1, 'Stage is required'),
-		matchNumber: optionalPositiveInt,
+		matchNumber: z.preprocess((value) => value ?? '', optionalText),
 		startsAt: z.coerce.date(),
 		endsAt: z.coerce.date(),
 		mpUrl: optionalText,

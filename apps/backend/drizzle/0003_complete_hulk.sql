@@ -1,0 +1,1 @@
+ALTER TABLE "matches" ALTER COLUMN "match_number" SET DATA TYPE text;

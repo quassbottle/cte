@@ -1,5 +1,5 @@
 import { InferInsertModel, InferSelectModel, sql } from 'drizzle-orm';
-import { check, integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
+import { check, pgTable, text, timestamp } from 'drizzle-orm/pg-core';
 import { createdAt, updatedAt } from 'lib/common/utils/drizzle/date';
 import { MatchId } from 'lib/domain/match/match.id';
 import { OsuRoomId } from 'lib/domain/osu-multiplayer/osu-room.id';
@@ -20,7 +20,7 @@ export const matches = pgTable(
     stageId: text('stage_id')
       .$type<StageId>()
       .references(() => stages.id, { onDelete: 'cascade' }),
-    matchNumber: integer('match_number'),
+    matchNumber: text('match_number'),
 
     creatorId: text('creator_id')
       .notNull()

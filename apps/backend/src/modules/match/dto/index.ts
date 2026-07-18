@@ -28,7 +28,7 @@ export const matchDtoSchema = z.object({
   id: matchIdSchema,
   name: z.string(),
   stageId: stageIdSchema.nullable(),
-  matchNumber: z.number().int().nullable(),
+  matchNumber: z.string().nullable(),
   creatorId: userIdSchema,
   startsAt: isoStringToDate,
   endsAt: isoStringToDate,
@@ -79,7 +79,7 @@ const scheduleStaffMemberDtoSchema = z.object({
 export const scheduleMatchDtoSchema = z.object({
   id: matchIdSchema,
   name: z.string(),
-  matchNumber: z.number().int().nullable(),
+  matchNumber: z.string().nullable(),
   startsAt: scheduleDate,
   endsAt: scheduleDate,
   mpUrl: z.string().nullable(),
@@ -136,7 +136,7 @@ export const scheduleMatchUpsertDtoSchema = z
   .object({
     name: z.string().trim().min(1),
     stageId: stageIdSchema,
-    matchNumber: z.number().int().positive().nullable().optional(),
+    matchNumber: z.string().trim().min(1).nullable().optional(),
     startsAt: isoStringToDate,
     endsAt: isoStringToDate,
     mpUrl: nullableMpUrl,

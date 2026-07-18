@@ -458,7 +458,7 @@ const createTournamentSeed = async (
       id: currentMatchId,
       name: `Match ${index + 1}`,
       stageId: finals,
-      matchNumber: index + 1,
+      matchNumber: String(index + 1),
       creatorId: params.hostId,
       startsAt: new Date(Date.UTC(2026, 6, 10 + index, 16, 0, 0)),
       endsAt: new Date(Date.UTC(2026, 6, 10 + index, 17, 30, 0)),

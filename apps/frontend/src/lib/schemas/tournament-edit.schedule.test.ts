@@ -6,7 +6,7 @@ describe('scheduleMatchFormSchema', () => {
 		const parsed = scheduleMatchFormSchema.parse({
 			name: 'Grand Finals',
 			stageId: 'stage-1',
-			matchNumber: '7',
+			matchNumber: '43c',
 			startsAt: '2026-07-10T16:00',
 			endsAt: '2026-07-10T17:00',
 			mpUrl: '',
@@ -18,7 +18,7 @@ describe('scheduleMatchFormSchema', () => {
 			commentatorIds: 'com-1, com-2'
 		});
 
-		expect(parsed.matchNumber).toBe(7);
+		expect(parsed.matchNumber).toBe('43c');
 		expect(parsed.mpUrl).toBeNull();
 		expect(parsed.players).toEqual([{ userId: 'user-1' }, { userId: 'user-2' }]);
 		expect(parsed.staff).toEqual([
