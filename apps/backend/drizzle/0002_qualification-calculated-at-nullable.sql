@@ -1,0 +1,1 @@
+ALTER TABLE "qualification_results" ALTER COLUMN "calculated_at" DROP NOT NULL;

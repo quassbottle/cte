@@ -155,7 +155,8 @@ export class QualificationResultsRepository {
     return this.db.transaction(async (tx) => {
       await lockQualificationStage(tx, stageId);
       await tx
-        .delete(qualificationResults)
+        .update(qualificationResults)
+        .set({ calculatedAt: null })
         .where(eq(qualificationResults.stageId, stageId));
     });
   }
@@ -216,10 +217,11 @@ export class QualificationResultsRepository {
             seed: row.seed,
             aggregateScore: row.totalScore,
           }));
+      if (!rows.length) return;
       await tx
         .delete(qualificationResults)
         .where(eq(qualificationResults.stageId, stageId));
-      if (rows.length) await tx.insert(qualificationResults).values(rows);
+      await tx.insert(qualificationResults).values(rows);
     });
   }
 

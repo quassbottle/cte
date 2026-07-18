@@ -42,13 +42,14 @@ describe('QualificationResultsRepository', () => {
     expect(containsValue(condition, 'team')).toBe(true);
   });
 
-  it('serializes invalidation with recalculation on the same stage lock', async () => {
+  it('marks results stale without deleting seeds while holding the stage lock', async () => {
     const calls: string[] = [];
+    const set = jest.fn(() => ({
+      where: jest.fn(() => calls.push('update')),
+    }));
     const tx = {
       execute: jest.fn(() => calls.push('lock')),
-      delete: jest.fn(() => ({
-        where: jest.fn(() => calls.push('delete')),
-      })),
+      update: jest.fn(() => ({ set })),
     };
     const db = {
       transaction: jest.fn((callback: (tx: never) => unknown) =>
@@ -60,7 +61,8 @@ describe('QualificationResultsRepository', () => {
       'stage' as never,
     );
 
-    expect(calls).toEqual(['lock', 'delete']);
+    expect(calls).toEqual(['lock', 'update']);
+    expect(set).toHaveBeenCalledWith({ calculatedAt: null });
   });
 
   it('loads and replaces results while holding the stage lock', async () => {
@@ -91,5 +93,26 @@ describe('QualificationResultsRepository', () => {
     await repository.recalculate('stage' as never);
 
     expect(calls).toEqual(['lock', 'load', 'delete', 'insert']);
+  });
+
+  it('keeps existing results when recalculation produces no competitors', async () => {
+    const tx = {
+      execute: jest.fn(),
+      delete: jest.fn(),
+    };
+    const repository = new QualificationResultsRepository({
+      transaction: (callback: (tx: never) => unknown) => callback(tx as never),
+    } as never);
+    jest.spyOn(repository, 'load').mockResolvedValue({
+      complete: true,
+      isTeam: true,
+      beatmapIds: ['map'],
+      competitors: [],
+      attempts: [],
+    } as never);
+
+    await repository.recalculate('stage' as never);
+
+    expect(tx.delete).not.toHaveBeenCalled();
   });
 });

@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { eq, isNotNull } from 'drizzle-orm';
+import { and, eq, isNotNull } from 'drizzle-orm';
 import { OsuRoomId } from 'lib/domain/osu-multiplayer/osu-room.id';
 import { StageId } from 'lib/domain/stage/stage.id';
 import {
@@ -32,7 +32,12 @@ export class QualificationSyncRepository {
         osuMultiplayerRooms,
         eq(osuMultiplayerRooms.id, qualificationLobbies.osuRoomId),
       )
-      .where(isNotNull(qualificationLobbies.osuRoomId));
+      .where(
+        and(
+          isNotNull(qualificationLobbies.osuRoomId),
+          eq(osuMultiplayerRooms.status, 'active'),
+        ),
+      );
     return rows as {
       stageId: StageId;
       roomId: OsuRoomId;

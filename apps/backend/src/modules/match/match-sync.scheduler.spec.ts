@@ -59,5 +59,6 @@ describe('MatchSyncScheduler', () => {
     expect(sync.sync).toHaveBeenCalledTimes(1);
     expect(roomIds).toHaveBeenCalledTimes(1);
     expect(contains(roomIds.mock.calls[0][0], 'regular')).toBe(true);
+    expect(contains(roomIds.mock.calls[0][0], 'active')).toBe(true);
   });
 });

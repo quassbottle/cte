@@ -30,9 +30,9 @@ export const qualificationResults = pgTable(
       .references(() => teams.id, { onDelete: 'cascade' }),
     seed: integer('seed').notNull(),
     aggregateScore: bigint('aggregate_score', { mode: 'number' }).notNull(),
-    calculatedAt: timestamp('calculated_at', { withTimezone: true })
-      .notNull()
-      .defaultNow(),
+    calculatedAt: timestamp('calculated_at', {
+      withTimezone: true,
+    }).defaultNow(),
   },
   (table) => [
     uniqueIndex('qualification_results_stage_user_unique')

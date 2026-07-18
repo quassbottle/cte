@@ -41,7 +41,7 @@ describe('QualificationSyncScheduler', () => {
     expect(results.recalculate).not.toHaveBeenCalled();
   });
 
-  it('retries stale completed stages after a failed recalculation', async () => {
+  it('does not recalculate stages whose rooms are already closed', async () => {
     const repository = {
       roomsByStage: jest.fn().mockResolvedValue([
         {
@@ -55,10 +55,7 @@ describe('QualificationSyncScheduler', () => {
     const sync = { sync: jest.fn() };
     const results = {
       isStale: jest.fn().mockResolvedValue(true),
-      recalculate: jest
-        .fn()
-        .mockRejectedValueOnce(new Error('temporary failure'))
-        .mockResolvedValueOnce(undefined),
+      recalculate: jest.fn(),
     };
     const scheduler = new QualificationSyncScheduler(
       repository as never,
@@ -67,10 +64,39 @@ describe('QualificationSyncScheduler', () => {
       { get: jest.fn().mockReturnValue(1) } as never,
     );
 
-    await expect(scheduler.sync()).rejects.toThrow('temporary failure');
-    await expect(scheduler.sync()).resolves.toBeUndefined();
+    await scheduler.sync();
 
     expect(sync.sync).not.toHaveBeenCalled();
-    expect(results.recalculate).toHaveBeenCalledTimes(2);
+    expect(results.isStale).not.toHaveBeenCalled();
+    expect(results.recalculate).not.toHaveBeenCalled();
+  });
+
+  it('recalculates after successfully syncing the last due active room', async () => {
+    const repository = {
+      roomsByStage: jest.fn().mockResolvedValue([
+        {
+          stageId: 'stage',
+          roomId: 'room',
+          status: 'active',
+          nextSyncAt: new Date(0),
+        },
+      ]),
+    };
+    const sync = { sync: jest.fn() };
+    const results = {
+      isStale: jest.fn().mockResolvedValue(true),
+      recalculate: jest.fn(),
+    };
+    const scheduler = new QualificationSyncScheduler(
+      repository as never,
+      sync as never,
+      results as never,
+      { get: jest.fn().mockReturnValue(1) } as never,
+    );
+
+    await scheduler.sync();
+
+    expect(sync.sync).toHaveBeenCalledWith('room');
+    expect(results.recalculate).toHaveBeenCalledWith('stage');
   });
 });

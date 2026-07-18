@@ -19,6 +19,10 @@ describe('migration journal', () => {
         idx: 1,
         tag: '0001_mappool-beatmap-position',
       }),
+      expect.objectContaining({
+        idx: 2,
+        tag: '0002_qualification-calculated-at-nullable',
+      }),
     ]);
   });
 

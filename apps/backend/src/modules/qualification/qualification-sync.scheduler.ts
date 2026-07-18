@@ -33,6 +33,7 @@ export class QualificationSyncScheduler {
         const due = stageRooms.filter(
           ({ status, nextSyncAt }) => status === 'active' && nextSyncAt <= now,
         );
+        if (!due.length) continue;
         const batch = due.slice(0, remaining);
         const synced = await Promise.allSettled(
           batch.map(({ roomId }) => this.syncService.sync(roomId)),

@@ -15,6 +15,13 @@
       "when": 1784292229329,
       "tag": "0001_mappool-beatmap-position",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1784301377862,
+      "tag": "0002_qualification-calculated-at-nullable",
+      "breakpoints": true
     }
   ]
 }
