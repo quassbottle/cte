@@ -8,7 +8,12 @@ describe('qualification lobby view', () => {
 	});
 
 	it('allows an existing occupant to move while a full lobby rejects newcomers', () => {
-		expect(canSelectLobby(16, true)).toBe(true);
-		expect(canSelectLobby(16, false)).toBe(false);
+		expect(canSelectLobby(16, true, '2030-01-01T00:00:00Z', new Date(0))).toBe(true);
+		expect(canSelectLobby(16, false, '2030-01-01T00:00:00Z', new Date(0))).toBe(false);
+	});
+
+	it('disables selection when the qualification stage starts', () => {
+		const startsAt = '2030-01-01T00:00:00Z';
+		expect(canSelectLobby(1, false, startsAt, new Date(startsAt))).toBe(false);
 	});
 });

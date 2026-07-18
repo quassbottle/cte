@@ -1,10 +1,10 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, count, eq, inArray } from 'drizzle-orm';
-import { QualificationLobbyId } from 'lib/domain/qualification-lobby/qualification-lobby.id';
 import {
   QualificationLobbyException,
   QualificationLobbyExceptionCode,
 } from 'lib/domain/qualification-lobby/qualification-lobby.exception';
+import { QualificationLobbyId } from 'lib/domain/qualification-lobby/qualification-lobby.id';
 import { StageId } from 'lib/domain/stage/stage.id';
 import { TeamId } from 'lib/domain/team/team.id';
 import { UserId } from 'lib/domain/user/user.id';
@@ -12,6 +12,7 @@ import {
   qualificationLobbyPlayers,
   qualificationLobbyTeams,
   Schema,
+  stages,
   teamParticipants,
 } from 'lib/infrastructure/db';
 import { lockQualificationStage } from './qualification-stage.lock';
@@ -29,6 +30,7 @@ export class QualificationLobbyRepository {
   }) {
     return this.db.transaction(async (tx) => {
       await lockQualificationStage(tx, input.stageId);
+      await this.assertStageOpen(tx as Schema, input.stageId);
       await tx
         .delete(qualificationLobbyPlayers)
         .where(
@@ -50,6 +52,7 @@ export class QualificationLobbyRepository {
   }) {
     return this.db.transaction(async (tx) => {
       await lockQualificationStage(tx, input.stageId);
+      await this.assertStageOpen(tx as Schema, input.stageId);
       await tx
         .delete(qualificationLobbyTeams)
         .where(
@@ -116,6 +119,20 @@ export class QualificationLobbyRepository {
       throw new QualificationLobbyException(
         'Qualification lobby is full',
         QualificationLobbyExceptionCode.LOBBY_FULL,
+      );
+    }
+  }
+
+  private async assertStageOpen(db: Schema, stageId: StageId) {
+    const [stage] = await db
+      .select({ startsAt: stages.startsAt })
+      .from(stages)
+      .where(eq(stages.id, stageId))
+      .limit(1);
+    if (stage && stage.startsAt <= new Date()) {
+      throw new QualificationLobbyException(
+        'Qualification stage has started',
+        QualificationLobbyExceptionCode.LOBBY_STAGE_STARTED,
       );
     }
   }

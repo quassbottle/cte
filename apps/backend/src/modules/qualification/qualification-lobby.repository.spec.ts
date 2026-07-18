@@ -19,6 +19,34 @@ import { Pool } from 'pg';
 import { QualificationLobbyRepository } from './qualification-lobby.repository';
 
 describe('QualificationLobbyRepository', () => {
+  it('rejects selection after locking a started qualification stage', async () => {
+    const tx = {
+      execute: jest.fn(),
+      select: jest.fn(() => ({
+        from: () => ({
+          where: () => ({
+            limit: async () => [{ startsAt: new Date(0) }],
+          }),
+        }),
+      })),
+      delete: jest.fn(),
+    };
+    const repository = new QualificationLobbyRepository({
+      transaction: (callback: (tx: never) => unknown) => callback(tx as never),
+    } as never);
+
+    await expect(
+      repository.selectSolo({
+        lobbyId: 'lobby' as never,
+        stageId: 'stage' as never,
+        userId: 'user' as never,
+      }),
+    ).rejects.toThrow('Qualification stage has started');
+
+    expect(tx.execute).toHaveBeenCalledTimes(1);
+    expect(tx.delete).not.toHaveBeenCalled();
+  });
+
   it('locks the lobby before replacing an assignment and counting the final seat', async () => {
     const calls: string[] = [];
     const tx = {
@@ -30,6 +58,13 @@ describe('QualificationLobbyRepository', () => {
       })),
       select: jest
         .fn()
+        .mockImplementationOnce(() => ({
+          from: () => ({
+            where: () => ({
+              limit: async () => [{ startsAt: new Date('2030-01-01') }],
+            }),
+          }),
+        }))
         .mockImplementationOnce(() => ({
           from: () => ({
             where: async () => {

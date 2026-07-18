@@ -138,6 +138,7 @@
 			lobbies={data.qualificationLobbies}
 			user={data.user}
 			teams={data.teams}
+			isTeam={data.tournament.isTeam}
 		/>
 	</ContentItem>
 

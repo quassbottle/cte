@@ -16,6 +16,7 @@ export enum QualificationLobbyExceptionCode {
   LOBBY_TEAM_CAPTAIN_REQUIRED = 'QUALIFICATION_LOBBY_TEAM_CAPTAIN_REQUIRED',
   LOBBY_TEAM_EMPTY = 'QUALIFICATION_LOBBY_TEAM_EMPTY',
   LOBBY_STAGE_INVALID = 'QUALIFICATION_LOBBY_STAGE_INVALID',
+  LOBBY_STAGE_STARTED = 'QUALIFICATION_LOBBY_STAGE_STARTED',
   LOBBY_REFEREE_INVALID = 'QUALIFICATION_LOBBY_REFEREE_INVALID',
   LOBBY_STAFF_CANNOT_PARTICIPATE = 'QUALIFICATION_LOBBY_STAFF_CANNOT_PARTICIPATE',
 }
@@ -28,10 +29,10 @@ const QualificationLobbyExceptionHTTPStatus = {
   [QualificationLobbyExceptionCode.LOBBY_ROOM_REQUIRED]: HttpStatus.BAD_REQUEST,
   [QualificationLobbyExceptionCode.LOBBY_PARTICIPANT_INACTIVE]:
     HttpStatus.BAD_REQUEST,
-  [QualificationLobbyExceptionCode.LOBBY_TEAM_INACTIVE]:
-    HttpStatus.BAD_REQUEST,
+  [QualificationLobbyExceptionCode.LOBBY_TEAM_INACTIVE]: HttpStatus.BAD_REQUEST,
   [QualificationLobbyExceptionCode.LOBBY_TEAM_EMPTY]: HttpStatus.BAD_REQUEST,
   [QualificationLobbyExceptionCode.LOBBY_STAGE_INVALID]: HttpStatus.BAD_REQUEST,
+  [QualificationLobbyExceptionCode.LOBBY_STAGE_STARTED]: HttpStatus.CONFLICT,
   [QualificationLobbyExceptionCode.LOBBY_REFEREE_INVALID]:
     HttpStatus.BAD_REQUEST,
   [QualificationLobbyExceptionCode.LOBBY_STAFF_CANNOT_PARTICIPATE]:

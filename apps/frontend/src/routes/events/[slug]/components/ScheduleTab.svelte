@@ -15,6 +15,7 @@
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let user: Viewer | null;
 	export let teams: TournamentTeamDto[];
+	export let isTeam: boolean;
 
 	$: requestedStageId = $page.url.searchParams.get('stage');
 	$: activeStageId = getActiveStageId(requestedStageId);
@@ -69,7 +70,7 @@
 				{#each schedule as stage}
 					<ContentItem class="flex flex-col gap-3" value={stage.id}>
 						{#if stage.type === 'qualification'}
-							<QualificationLobbiesTab stages={[stage]} {lobbies} {user} {teams} />
+							<QualificationLobbiesTab stages={[stage]} {lobbies} {user} {teams} {isTeam} />
 						{:else if stage.matches.length === 0}
 							<p class="py-16 text-center text-sm text-muted-foreground">No matches added yet.</p>
 						{:else}
