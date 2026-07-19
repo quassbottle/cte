@@ -1,8 +1,11 @@
 <script lang="ts">
 	import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
+	import type { MappoolBeatmapDto } from '$lib/api/types';
+	import MultiplayerScore from '$lib/components/multiplayerScore/multiplayerScore.svelte';
 	import { getLobbySeats } from './qualificationLobby-view';
 
 	export let lobby: QualificationLobbyDtoOutput;
+	export let beatmaps: MappoolBeatmapDto[] = [];
 
 	$: attemptsByBeatmap = Object.entries(
 		lobby.attempts.reduce<Record<string, typeof lobby.attempts>>((groups, attempt) => {
@@ -43,16 +46,37 @@
 	{#if attemptsByBeatmap.length}
 		<div class="space-y-2 text-sm">
 			{#each attemptsByBeatmap as [beatmapId, attempts]}
-				<div>
-					<p class="font-medium">Beatmap {beatmapId}</p>
-					<p class="text-muted-foreground">
-						{attempts
-							.map(
-								(attempt) => `${attempt.userName ?? `osu! ${attempt.osuUserId}`}: ${attempt.score}`
-							)
-							.join(' · ')}
-					</p>
-				</div>
+				{@const beatmap = beatmaps.find(({ osuBeatmapId }) => osuBeatmapId === Number(beatmapId))}
+				{#if beatmap}
+					<MultiplayerScore
+						result={{
+							beatmap: {
+								artist: beatmap.artist,
+								title: beatmap.title,
+								difficultyName: beatmap.difficultyName,
+								beatmapsetId: beatmap.osuBeatmapsetId,
+								beatmapId: beatmap.osuBeatmapId,
+								mod: beatmap.mod,
+								tournamentMode: beatmap.mode,
+								index: beatmap.index,
+								difficulty: beatmap.difficulty,
+								deleted: beatmap.deleted
+							},
+							scores: attempts
+						}}
+					/>
+				{:else}
+					<div>
+						<a class="font-medium underline" href={`https://osu.ppy.sh/b/${beatmapId}`}>
+							Beatmap {beatmapId}
+						</a>
+						{#each attempts as attempt (`${attempt.gameId}-${attempt.osuUserId}`)}
+							<p class="text-muted-foreground">
+								{attempt.userName ?? `osu! ${attempt.osuUserId}`}: {attempt.score}
+							</p>
+						{/each}
+					</div>
+				{/if}
 			{/each}
 		</div>
 	{/if}

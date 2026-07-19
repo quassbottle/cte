@@ -26,11 +26,29 @@ describe('OsuService', () => {
               {
                 user_id: 16536516,
                 legacy_total_score: 966909,
+                mods: ['HD', 'HR'],
+                max_combo: 1457,
+                accuracy: 0.9872,
+                rank: 'A',
+                statistics: {
+                  count_300: 1463,
+                  count_100: 16,
+                  count_miss: 11,
+                },
                 match: { team: 'blue' },
               },
               {
                 user_id: 4050738,
                 legacy_total_score: 920079,
+                mods: [],
+                max_combo: 814,
+                accuracy: 0.9735,
+                rank: 'A',
+                statistics: {
+                  count_300: 1440,
+                  count_100: 21,
+                  count_miss: 29,
+                },
                 match: { team: 'red' },
               },
             ],
@@ -54,7 +72,17 @@ describe('OsuService', () => {
           {
             beatmapId: 5616113,
             scores: [
-              { userId: 16536516, score: 966909 },
+              {
+                userId: 16536516,
+                score: 966909,
+                mods: ['HD', 'HR'],
+                maxCombo: 1457,
+                accuracy: 0.9872,
+                rank: 'A',
+                great: 1463,
+                ok: 16,
+                miss: 11,
+              },
               { userId: 4050738, score: 920079 },
             ],
           },

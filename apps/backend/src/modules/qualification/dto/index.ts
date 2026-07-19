@@ -50,6 +50,13 @@ export const qualificationLobbyDtoSchema = z.object({
       userId: userIdSchema.nullable(),
       userName: z.string().nullable(),
       score: z.number().int(),
+      mods: z.array(z.string()).nullable(),
+      maxCombo: z.number().int().nullable(),
+      accuracy: z.number().nullable(),
+      rank: z.string().nullable(),
+      great: z.number().int().nullable(),
+      ok: z.number().int().nullable(),
+      miss: z.number().int().nullable(),
     }),
   ),
 });

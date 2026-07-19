@@ -27,6 +27,10 @@ describe('migration journal', () => {
         idx: 3,
         tag: '0003_complete_hulk',
       }),
+      expect.objectContaining({
+        idx: 4,
+        tag: '0004_multiplayer-score-details',
+      }),
     ]);
   });
 

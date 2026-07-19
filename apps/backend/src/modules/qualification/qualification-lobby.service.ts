@@ -100,6 +100,13 @@ export class QualificationLobbyService {
                   userId: users.id,
                   userName: users.osuUsername,
                   score: osuMultiplayerScores.score,
+                  mods: osuMultiplayerScores.mods,
+                  maxCombo: osuMultiplayerScores.maxCombo,
+                  accuracy: osuMultiplayerScores.accuracy,
+                  rank: osuMultiplayerScores.rank,
+                  great: osuMultiplayerScores.great,
+                  ok: osuMultiplayerScores.ok,
+                  miss: osuMultiplayerScores.miss,
                 })
                 .from(osuMultiplayerScores)
                 .leftJoin(

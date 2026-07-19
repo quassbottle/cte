@@ -1,11 +1,13 @@
 <script lang="ts">
 	import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
+	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import MatchLink from '$lib/components/match/MatchLink.svelte';
 	import ScheduleTable from '$lib/components/schedule/ScheduleTable.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import QualificationLobbyDetailDialog from './QualificationLobbyDetailDialog.svelte';
 
 	export let lobbies: QualificationLobbyDtoOutput[];
+	export let beatmaps: MappoolBeatmapDto[];
 	export let isTeam: boolean;
 
 	let selectedLobby: QualificationLobbyDtoOutput | null = null;
@@ -110,5 +112,5 @@
 </ScheduleTable>
 
 {#if selectedLobby}
-	<QualificationLobbyDetailDialog lobby={selectedLobby} onClose={() => (selectedLobby = null)} />
+	<QualificationLobbyDetailDialog lobby={selectedLobby} {beatmaps} onClose={() => (selectedLobby = null)} />
 {/if}

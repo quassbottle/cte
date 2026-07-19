@@ -34,4 +34,34 @@ export type QualificationLobbyDtoOutputAttemptsItem = {
 	 * @maximum 9007199254740991
 	 */
 	score: number;
+	/** @nullable */
+	mods: string[] | null;
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
+	maxCombo: number | null;
+	/** @nullable */
+	accuracy: number | null;
+	/** @nullable */
+	rank: string | null;
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
+	great: number | null;
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
+	ok: number | null;
+	/**
+	 * @minimum -9007199254740991
+	 * @maximum 9007199254740991
+	 * @nullable
+	 */
+	miss: number | null;
 };

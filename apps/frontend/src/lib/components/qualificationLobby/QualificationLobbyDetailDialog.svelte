@@ -1,10 +1,12 @@
 <script lang="ts">
 	import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
+	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import QualificationLobbyCard from './qualificationLobby.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import { X } from 'lucide-svelte';
 
 	export let lobby: QualificationLobbyDtoOutput;
+	export let beatmaps: MappoolBeatmapDto[];
 	export let onClose: () => void;
 </script>
 
@@ -27,6 +29,6 @@
 				<X class="h-4 w-4" />
 			</Button>
 		</header>
-		<QualificationLobbyCard {lobby} />
+		<QualificationLobbyCard {lobby} {beatmaps} />
 	</div>
 </div>

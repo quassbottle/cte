@@ -13,6 +13,13 @@ export type OsuMatchScore = {
   userId: number;
   score: number;
   team: 'red' | 'blue' | null;
+  mods: string[];
+  maxCombo: number;
+  accuracy: number;
+  rank: string;
+  great: number;
+  ok: number;
+  miss: number;
 };
 
 export type OsuMatchGame = {

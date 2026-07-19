@@ -136,6 +136,7 @@
 		<ScheduleTab
 			schedule={data.schedule}
 			lobbies={data.qualificationLobbies}
+			beatmaps={data.mappoolBeatmaps.flatMap(({ beatmaps }) => beatmaps)}
 			user={data.user}
 			teams={data.teams}
 			isTeam={data.tournament.isTeam}

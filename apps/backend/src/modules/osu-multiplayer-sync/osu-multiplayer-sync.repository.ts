@@ -145,6 +145,13 @@ export class OsuMultiplayerSyncRepository {
             osuBeatmapId: game.beatmapId,
             score: score.score,
             team: score.team,
+            mods: score.mods,
+            maxCombo: score.maxCombo,
+            accuracy: score.accuracy,
+            rank: score.rank,
+            great: score.great,
+            ok: score.ok,
+            miss: score.miss,
           })),
         );
         await tx
@@ -183,6 +190,13 @@ export class OsuMultiplayerSyncRepository {
                 osuBeatmapId: sql`excluded.osu_beatmap_id`,
                 score: sql`excluded.score`,
                 team: sql`excluded.team`,
+                mods: sql`excluded.mods`,
+                maxCombo: sql`excluded.max_combo`,
+                accuracy: sql`excluded.accuracy`,
+                rank: sql`excluded.rank`,
+                great: sql`excluded.great`,
+                ok: sql`excluded.ok`,
+                miss: sql`excluded.miss`,
                 updatedAt: now,
               },
             });

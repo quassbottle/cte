@@ -29,13 +29,39 @@ const snapshot = {
       id: 2,
       beatmapId: 999_002,
       endedAt: new Date('2026-01-02T00:00:00Z'),
-      scores: [{ userId: 888_002, score: 20, team: 'blue' as const }],
+      scores: [
+        {
+          userId: 888_002,
+          score: 20,
+          team: 'blue' as const,
+          mods: [],
+          maxCombo: 814,
+          accuracy: 0.9735,
+          rank: 'A',
+          great: 1440,
+          ok: 21,
+          miss: 29,
+        },
+      ],
     },
     {
       id: 1,
       beatmapId: 999_001,
       endedAt: new Date('2026-01-01T00:00:00Z'),
-      scores: [{ userId: 888_001, score: 10, team: null }],
+      scores: [
+        {
+          userId: 888_001,
+          score: 10,
+          team: null,
+          mods: ['HD', 'HR'],
+          maxCombo: 1457,
+          accuracy: 0.9872,
+          rank: 'A',
+          great: 1463,
+          ok: 16,
+          miss: 11,
+        },
+      ],
     },
   ],
 };
@@ -102,6 +128,13 @@ describe('OsuMultiplayerSyncRepository', () => {
             expect.objectContaining({
               osuUserId: 888_001,
               osuBeatmapId: 999_001,
+              mods: ['HD', 'HR'],
+              maxCombo: 1457,
+              accuracy: 0.9872,
+              rank: 'A',
+              great: 1463,
+              ok: 16,
+              miss: 11,
             }),
             expect.objectContaining({
               osuUserId: 888_002,
@@ -158,7 +191,6 @@ describe('OsuMultiplayerSyncRepository', () => {
   });
 
 });
-
 describe('OsuMultiplayerSyncRepository with PostgreSQL', () => {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
   const db = drizzle(pool, { schema });
@@ -195,6 +227,8 @@ describe('OsuMultiplayerSyncRepository with PostgreSQL', () => {
       create table osu_multiplayer_scores (
         room_id text not null, osu_game_id bigint not null, osu_user_id bigint not null,
         osu_beatmap_id bigint not null, score bigint not null, team text,
+        mods text[], max_combo integer, accuracy double precision, rank text,
+        great integer, ok integer, miss integer,
         created_at timestamptz not null default now(), updated_at timestamptz not null default now(),
         primary key (room_id, osu_game_id, osu_user_id),
         foreign key (room_id, osu_game_id) references osu_multiplayer_games(room_id, osu_game_id) on delete cascade

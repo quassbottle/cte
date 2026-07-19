@@ -7,6 +7,7 @@
 		StageDtoOutput,
 		TournamentTeamDto
 	} from '$lib/api/generated/model';
+	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import QualificationLobbyTable from '$lib/components/qualificationLobby/QualificationLobbyTable.svelte';
 	import { canSelectLobby } from '$lib/components/qualificationLobby/qualificationLobby-view';
 	import { Button } from '$lib/components/ui/button';
@@ -15,6 +16,7 @@
 
 	export let stages: Pick<StageDtoOutput, 'id' | 'name' | 'type' | 'startsAt'>[];
 	export let lobbies: QualificationLobbyDtoOutput[];
+	export let beatmaps: MappoolBeatmapDto[];
 	export let user: Viewer | null;
 	export let teams: TournamentTeamDto[];
 	export let isTeam: boolean;
@@ -44,6 +46,7 @@
 				{#if lobbies.some((lobby) => lobby.stageId === stage.id)}
 					<QualificationLobbyTable
 						lobbies={lobbies.filter((lobby) => lobby.stageId === stage.id)}
+						{beatmaps}
 						{isTeam}
 					>
 						<svelte:fragment slot="actions" let:lobby>

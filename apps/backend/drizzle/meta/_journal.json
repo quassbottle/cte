@@ -29,6 +29,13 @@
       "when": 1784353912732,
       "tag": "0003_complete_hulk",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1784469277382,
+      "tag": "0004_multiplayer-score-details",
+      "breakpoints": true
     }
   ]
 }

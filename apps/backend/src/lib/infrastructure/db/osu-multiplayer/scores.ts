@@ -1,7 +1,9 @@
 import { InferInsertModel, InferSelectModel } from 'drizzle-orm';
 import {
   bigint,
+  doublePrecision,
   foreignKey,
+  integer,
   pgTable,
   primaryKey,
   text,
@@ -19,6 +21,13 @@ export const osuMultiplayerScores = pgTable(
     osuBeatmapId: bigint('osu_beatmap_id', { mode: 'number' }).notNull(),
     score: bigint('score', { mode: 'number' }).notNull(),
     team: text('team').$type<'red' | 'blue'>(),
+    mods: text('mods').array(),
+    maxCombo: integer('max_combo'),
+    accuracy: doublePrecision('accuracy'),
+    rank: text('rank'),
+    great: integer('great'),
+    ok: integer('ok'),
+    miss: integer('miss'),
     createdAt,
     updatedAt,
   },

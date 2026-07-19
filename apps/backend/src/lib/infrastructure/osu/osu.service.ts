@@ -1,53 +1,22 @@
 import { Injectable } from '@nestjs/common';
 import { EnvService } from 'lib/common/env/env.service';
 import { auth, v2 } from 'osu-api-extended';
-import { z } from 'zod';
+import { osuMatchDetailsSchema } from './osu-match.schema';
+import {
+  OsuApiMode,
+  OsuBeatmapDetails,
+  OsuMatchGame,
+  OsuMatchSnapshot,
+  OsuUserClient,
+  OsuUserDetails,
+} from './osu.types';
 
-export enum OsuApiMode {
-  Osu = 'osu',
-  Taiko = 'taiko',
-  Fruits = 'fruits',
-  Mania = 'mania',
-}
+export { OsuApiMode } from './osu.types';
 
 const OSU_API_MODE_VALUES = new Set<string>(Object.values(OsuApiMode));
 
-type OsuUserClient = {
-  users: {
-    getSelf(params?: {
-      urlParams?: {
-        mode?: OsuApiMode;
-      };
-    }): Promise<OsuUserProfile>;
-  };
-};
-
 const DEFAULT_SCOPES = ['identify'] as const;
 const CACHED_TOKEN_PATH = './osu-api-backend-token.json';
-
-const osuMatchDetailsSchema = z.object({
-  match: z.object({ end_time: z.string().nullable() }),
-  latest_event_id: z.number(),
-  events: z.array(
-    z.object({
-      id: z.number(),
-      game: z
-        .object({
-          id: z.number(),
-          beatmap_id: z.number(),
-          end_time: z.string().nullable(),
-          scores: z.array(
-            z.object({
-              user_id: z.number(),
-              legacy_total_score: z.number(),
-              match: z.object({ team: z.enum(['red', 'blue', 'none']) }),
-            }),
-          ),
-        })
-        .optional(),
-    }),
-  ),
-});
 
 @Injectable()
 export class OsuService {
@@ -177,6 +146,13 @@ export class OsuService {
             userId: score.user_id,
             score: score.legacy_total_score,
             team: score.match.team === 'none' ? null : score.match.team,
+            mods: score.mods,
+            maxCombo: score.max_combo,
+            accuracy: score.accuracy,
+            rank: score.rank,
+            great: score.statistics.count_300,
+            ok: score.statistics.count_100,
+            miss: score.statistics.count_miss,
           })),
         });
       }
@@ -253,48 +229,3 @@ export class OsuService {
     return OsuApiMode.Osu;
   }
 }
-
-type OsuUserProfile = {
-  id: number;
-  username: string;
-  country_code?: string | null;
-  cover_url?: string | null;
-  playmode?: string | null;
-  statistics?: {
-    pp?: number | null;
-    global_rank?: number | null;
-  } | null;
-  error?: unknown;
-};
-
-type OsuMatchSnapshot = {
-  closedAt: Date | null;
-  games: OsuMatchGame[];
-};
-
-type OsuMatchGame = {
-  id: number;
-  beatmapId: number;
-  endedAt: Date | null;
-  scores: { userId: number; score: number; team: 'red' | 'blue' | null }[];
-};
-
-type OsuBeatmapDetails = {
-  id: number;
-  beatmapset_id: number;
-  mode: OsuApiMode;
-  difficulty_rating: number;
-  version: string;
-  ranked: number;
-  beatmapset: {
-    artist: string;
-    title: string;
-  };
-  error?: unknown;
-};
-
-type OsuUserDetails = {
-  id: number;
-  username: string;
-  countryCode: string | null;
-};
