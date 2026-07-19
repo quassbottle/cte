@@ -9,11 +9,11 @@ Replace each `Beatmap <id>` heading in qualification lobby details with the exis
 The lobby detail groups attempts by beatmap as it does today. Each group renders:
 
 1. the existing `Beatmap` component populated from the qualification stage's mappool, including the map's tournament mod;
-2. one new score-row component per player attempt.
+2. one reusable `BeatmapScore` component per player attempt.
 
-The score-row component owns only presentation of one result. It receives the player's osu! id and name, mods, combo, accuracy, score, hit statistics, and rank. It renders an osu! avatar instead of the country flag, followed by the player identity and a responsive result summary matching the supplied reference. It does not fetch data or render beatmap metadata.
+`BeatmapScore` belongs to the shared component library, not the qualification domain. It owns presentation of one player's result on a beatmap and defines a generic props type containing the player's osu! id and name, mods, combo, accuracy, score, hit statistics, and rank. It renders an osu! avatar instead of the country flag, followed by the player identity and a responsive result summary matching the supplied reference. It neither imports qualification DTOs nor fetches data or renders beatmap metadata, so match and multiplayer views can reuse it later.
 
-The lobby card remains responsible for grouping and composition. Mappool beatmap data already loaded by the tournament page is passed through the schedule and lobby detail components; no duplicate beatmap request is added.
+The lobby card remains responsible for adapting its attempt DTO to `BeatmapScore` props, grouping attempts, and composing score rows with beatmaps. Mappool beatmap data already loaded by the tournament page is passed through the schedule and lobby detail components; no duplicate beatmap request is added.
 
 ## Synchronized Score Data
 
@@ -31,7 +31,7 @@ New score fields remain nullable so previously synchronized rows continue to loa
 
 ## Presentation
 
-The existing `Beatmap` component keeps its current banner, metadata, links, copy actions, and tournament mod badge. The new score row visually follows the reference:
+The existing `Beatmap` component keeps its current banner, metadata, links, copy actions, and tournament mod badge. The shared `BeatmapScore` row visually follows the reference:
 
 - circular player avatar and player name;
 - individual mod badges;
@@ -47,7 +47,7 @@ On narrow screens the same information wraps into a compact readable layout with
 - Osu service test proves match score details are parsed into the snapshot.
 - Multiplayer sync repository test proves the new values are persisted.
 - Qualification lobby repository/service test proves the values reach the DTO.
-- A focused frontend test covers score-row display data or markup using the project's existing test style.
+- A focused frontend test covers generic `BeatmapScore` formatting without qualification-domain imports.
 - Run relevant frontend and backend tests, typechecks, build, `git diff --check`, and `graphify update .`.
 
 ## Out of Scope
