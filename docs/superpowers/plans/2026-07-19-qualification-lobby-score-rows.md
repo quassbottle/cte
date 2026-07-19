@@ -4,7 +4,7 @@
 
 **Goal:** Render qualification attempts as reusable player score rows beneath the existing `Beatmap` card, including synchronized mods, combo, accuracy, score, hit counts, rank, and avatar.
 
-**Architecture:** Extend the existing osu! match snapshot and multiplayer-score row rather than adding another fetch path. Add a domain-neutral `BeatmapScore` presentation component, then pass the tournament page's already-loaded mappool beatmaps through the schedule modal and adapt qualification attempts into `BeatmapScore` props.
+**Architecture:** Extend the existing osu! match snapshot and multiplayer-score row rather than adding another fetch path. Add domain-neutral `MultiplayerScore` and `PlayerMultiplayerScore` components where `MultiplayerScore = Beatmap + PlayerMultiplayerScore[]`, then adapt qualification attempts into that shared model.
 
 **Tech Stack:** NestJS, Zod, Drizzle/PostgreSQL, Jest, Svelte 5, Tailwind CSS, Bun/Svelte Check.
 
@@ -191,34 +191,35 @@ git add apps/backend/src/modules/qualification apps/frontend/openapi/backend.jso
 git commit -m "feat(qualification): expose player score details"
 ```
 
-### Task 4: Build the reusable beatmap score row
+### Task 4: Build reusable multiplayer score components
 
 **Files:**
-- Create: `apps/frontend/src/lib/components/beatmapScore/beatmapScore.svelte`
-- Create: `apps/frontend/src/lib/components/beatmapScore/beatmapScore.ts`
-- Create: `apps/frontend/src/lib/components/beatmapScore/beatmapScore.test.ts`
+- Create: `apps/frontend/src/lib/components/multiplayerScore/multiplayerScore.svelte`
+- Create: `apps/frontend/src/lib/components/multiplayerScore/playerMultiplayerScore.svelte`
+- Create: `apps/frontend/src/lib/components/multiplayerScore/multiplayerScore.ts`
+- Create: `apps/frontend/src/lib/components/multiplayerScore/multiplayerScore.test.ts`
 
 **Interfaces:**
-- Produces: generic `BeatmapScoreData`, `formatBeatmapScore(score: number): string`, `formatBeatmapAccuracy(accuracy: number | null): string | null`, and the `BeatmapScore` component. These files do not import qualification DTOs.
+- Produces: generic `MultiplayerScoreData`, `PlayerMultiplayerScoreData`, formatting helpers, `MultiplayerScore`, and `PlayerMultiplayerScore`. These files do not import qualification DTOs.
 
 - [ ] **Step 1: Write failing formatter tests**
 
 ```ts
 import { describe, expect, it } from 'bun:test';
-import { formatBeatmapAccuracy, formatBeatmapScore } from './beatmapScore';
+import { formatMultiplayerAccuracy, formatMultiplayerScore } from './multiplayerScore';
 
-describe('qualification score row formatting', () => {
+describe('multiplayer score formatting', () => {
   it('formats score and accuracy for display', () => {
-    expect(formatBeatmapScore(961684)).toBe('961,684');
-    expect(formatBeatmapAccuracy(0.9872)).toBe('98.72%');
-    expect(formatBeatmapAccuracy(null)).toBeNull();
+    expect(formatMultiplayerScore(961684)).toBe('961,684');
+    expect(formatMultiplayerAccuracy(0.9872)).toBe('98.72%');
+    expect(formatMultiplayerAccuracy(null)).toBeNull();
   });
 });
 ```
 
 - [ ] **Step 2: Run the formatter test and verify RED**
 
-Run: `pnpm --filter frontend exec bun test src/lib/components/beatmapScore/beatmapScore.test.ts`
+Run: `pnpm --filter frontend exec bun test src/lib/components/multiplayerScore/multiplayerScore.test.ts`
 
 Expected: FAIL because the formatter module does not exist.
 
@@ -228,16 +229,16 @@ Use `Intl.NumberFormat` for score and `Intl.NumberFormat(undefined, { style: 'pe
 
 - [ ] **Step 4: Run the formatter test and verify GREEN**
 
-Run: `pnpm --filter frontend exec bun test src/lib/components/beatmapScore/beatmapScore.test.ts`
+Run: `pnpm --filter frontend exec bun test src/lib/components/multiplayerScore/multiplayerScore.test.ts`
 
 Expected: PASS.
 
-- [ ] **Step 5: Create the presentation-only score row**
+- [ ] **Step 5: Define generic multiplayer score data**
 
 Define this qualification-independent input and accept it as a `score` prop:
 
 ```ts
-export type BeatmapScoreData = {
+export type PlayerMultiplayerScoreData = {
   osuUserId: number;
   userName: string | null;
   mods: string[] | null;
@@ -249,9 +250,27 @@ export type BeatmapScoreData = {
   miss: number | null;
   rank: string | null;
 };
+
+export type MultiplayerScoreData = {
+  beatmap: {
+    artist: string;
+    title: string;
+    difficultyName: string;
+    beatmapsetId: number;
+    beatmapId: number;
+    mod: string;
+    tournamentMode?: 'osu' | 'taiko' | 'fruits' | 'mania';
+    index?: number | null;
+    difficulty?: number | null;
+    deleted?: boolean;
+  };
+  scores: PlayerMultiplayerScoreData[];
+};
 ```
 
-Render:
+- [ ] **Step 6: Create `PlayerMultiplayerScore`**
+
+Accept a `PlayerMultiplayerScoreData` prop named `score` and render:
 
 - `<img src={`https://a.ppy.sh/${score.osuUserId}`} alt={`${displayName} avatar`}>`;
 - `score.userName ?? `osu! ${score.osuUserId}``;
@@ -260,20 +279,24 @@ Render:
 
 Use a single responsive flex/grid container with wrapping; add no new dependency and no data fetching.
 
-- [ ] **Step 6: Run frontend check**
+- [ ] **Step 7: Create `MultiplayerScore` composition**
+
+Accept a `MultiplayerScoreData` prop named `result`, pass `result.beatmap` into the existing `Beatmap`, and render `result.scores` as keyed `PlayerMultiplayerScore` children. Keep all beatmap layout and player-row layout inside this shared component.
+
+- [ ] **Step 8: Run frontend check**
 
 Run: `pnpm --filter frontend check`
 
 Expected: exit 0.
 
-- [ ] **Step 7: Commit**
+- [ ] **Step 9: Commit**
 
 ```bash
-git add apps/frontend/src/lib/components/beatmapScore
-git commit -m "feat(frontend): add reusable beatmap score row"
+git add apps/frontend/src/lib/components/multiplayerScore
+git commit -m "feat(frontend): add reusable multiplayer score components"
 ```
 
-### Task 5: Compose Beatmap and player score rows in lobby details
+### Task 5: Use MultiplayerScore in lobby details
 
 **Files:**
 - Modify: `apps/frontend/src/routes/events/[slug]/+page.svelte`
@@ -284,8 +307,8 @@ git commit -m "feat(frontend): add reusable beatmap score row"
 - Modify: `apps/frontend/src/lib/components/qualificationLobby/qualificationLobby.svelte`
 
 **Interfaces:**
-- Consumes: page `mappoolBeatmaps`, existing `Beatmap`, and generic `BeatmapScore`.
-- Produces: lobby detail groups rendered as one beatmap card followed by player rows.
+- Consumes: page `mappoolBeatmaps` and generic `MultiplayerScore`.
+- Produces: lobby detail groups adapted into `MultiplayerScore = Beatmap + PlayerMultiplayerScore[]`.
 
 - [ ] **Step 1: Pass mappool beatmaps through the existing component chain**
 
@@ -299,33 +322,33 @@ Forward the same prop without copying or fetching.
 
 - [ ] **Step 2: Replace the textual attempt group with component composition**
 
-In `qualificationLobby.svelte`, import `Beatmap` and `BeatmapScore`, resolve the group map with `beatmaps.find(({ osuBeatmapId }) => osuBeatmapId === Number(beatmapId))`, and when present render:
+In `qualificationLobby.svelte`, import only `MultiplayerScore`, resolve the group map with `beatmaps.find(({ osuBeatmapId }) => osuBeatmapId === Number(beatmapId))`, and when present render:
 
 ```svelte
-<Beatmap
-  artist={beatmap.artist}
-  title={beatmap.title}
-  difficultyName={beatmap.difficultyName}
-  beatmapsetId={beatmap.osuBeatmapsetId}
-  beatmapId={beatmap.osuBeatmapId}
-  mod={beatmap.mod}
-  tournamentMode={beatmap.mode}
-  index={beatmap.index}
-  difficulty={beatmap.difficulty}
-  deleted={beatmap.deleted}
+<MultiplayerScore
+  result={{
+    beatmap: {
+      artist: beatmap.artist,
+      title: beatmap.title,
+      difficultyName: beatmap.difficultyName,
+      beatmapsetId: beatmap.osuBeatmapsetId,
+      beatmapId: beatmap.osuBeatmapId,
+      mod: beatmap.mod,
+      tournamentMode: beatmap.mode,
+      index: beatmap.index,
+      difficulty: beatmap.difficulty,
+      deleted: beatmap.deleted
+    },
+    scores: attempts
+  }}
 />
-<div class="space-y-2">
-  {#each attempts as attempt (`${attempt.gameId}-${attempt.osuUserId}`)}
-    <BeatmapScore score={attempt} />
-  {/each}
-</div>
 ```
 
 If a synchronized beatmap is absent from the visible mappool, retain the linked fallback heading `Beatmap {beatmapId}` so its scores are never hidden.
 
 - [ ] **Step 3: Run frontend tests and check**
 
-Run: `pnpm --filter frontend exec bun test src/lib/components/beatmapScore src/lib/components/qualificationLobby && pnpm --filter frontend check`
+Run: `pnpm --filter frontend exec bun test src/lib/components/multiplayerScore src/lib/components/qualificationLobby && pnpm --filter frontend check`
 
 Expected: all tests PASS and check exits 0.
 
