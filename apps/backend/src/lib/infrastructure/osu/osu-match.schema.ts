@@ -52,11 +52,13 @@ const gameSchema = z
     id: z.number(),
     beatmap_id: z.number(),
     end_time: z.string().nullable(),
+    scoring_type: z.string(),
     mods: z.array(modSchema),
     scores: z.array(scoreSchema),
   })
-  .transform(({ mods, scores, ...game }) => ({
+  .transform(({ mods, scores, scoring_type, ...game }) => ({
     ...game,
+    scoringType: scoring_type,
     scores: scores.map((score) => ({
       ...score,
       mods: [...new Set([...mods, ...score.mods])],

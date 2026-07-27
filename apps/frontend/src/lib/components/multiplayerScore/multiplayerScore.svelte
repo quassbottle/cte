@@ -19,18 +19,18 @@
 		difficulty={result.beatmap.difficulty}
 		deleted={result.beatmap.deleted}
 	/>
+	{#each result.scores as score}
+		<PlayerMultiplayerScore {score} />
+	{/each}
 	{#if result.standings?.length}
 		<div class="flex flex-wrap justify-end gap-3 text-sm">
 			{#each result.standings as standing}
 				<p>
-					{standing.name}:
+					Total score:
 					<strong>{standing.score.toLocaleString()}</strong>
 					<span class="text-muted-foreground">· #{standing.place}</span>
 				</p>
 			{/each}
 		</div>
 	{/if}
-	{#each result.scores as score}
-		<PlayerMultiplayerScore {score} />
-	{/each}
 </section>

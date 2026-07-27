@@ -138,7 +138,7 @@ export class OsuService {
 
       for (const event of match.events) {
         const game = event.game;
-        if (!game) continue;
+        if (!game || game.scoringType !== 'scorev2') continue;
         games.set(game.id, {
           id: game.id,
           beatmapId: game.beatmap_id,

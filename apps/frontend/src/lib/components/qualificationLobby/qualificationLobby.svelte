@@ -18,8 +18,6 @@
 			}, new Map())
 			.entries()
 	];
-	const competitorName = (id: string) =>
-		[...lobby.teams, ...lobby.players].find((competitor) => competitor.id === id)?.name ?? id;
 </script>
 
 <article class="flex flex-col gap-3 rounded-md border border-border p-4">
@@ -73,7 +71,6 @@
 							standings: lobby.standings
 								.filter((standing) => standing.beatmapId === beatmapId)
 								.map((standing) => ({
-									name: competitorName(standing.competitorId),
 									score: standing.score,
 									place: standing.place
 								}))

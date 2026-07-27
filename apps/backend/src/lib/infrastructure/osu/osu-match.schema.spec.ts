@@ -12,6 +12,7 @@ describe('osuMatchDetailsSchema', () => {
             id: 2,
             beatmap_id: 3,
             end_time: null,
+            scoring_type: 'scorev2',
             mods: ['NF'],
             scores: [
               {
