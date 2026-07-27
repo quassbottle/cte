@@ -1,0 +1,82 @@
+# Qualification Statistics Tab Design
+
+## Goal
+
+Make qualification statistics part of the tournament page, support server-side
+two-way sorting, show qualification seeds, and reuse the existing lobby detail
+dialog for match history.
+
+## Page structure
+
+- Qualification statistics are a real tab on `/events/[slug]`, not a separate
+  page with its own shell.
+- The standalone `/events/[slug]/qualification` route is removed.
+- The tab is shown only when the tournament has a qualification stage.
+- The existing tournament page load supplies statistics, qualification
+  lobbies, and mappool beatmaps to the tab.
+
+## Matrix
+
+- Rows represent teams for team tournaments and players for solo tournaments.
+- The sticky first column displays the persisted qualification seed and
+  competitor name.
+- An `Open` button resolves the competitor's assigned qualification lobby and
+  opens the existing `QualificationLobbyDetailDialog`. The dialog remains the
+  single implementation of qualification match history.
+- Map columns preserve mappool order when no map sort is active.
+- The matrix container scrolls horizontally when all columns do not fit.
+
+## Map headers
+
+Each map column uses a compact header made specifically for the matrix. It is
+not the existing full beatmap component.
+
+The header shows:
+
+- a small cover background;
+- mod and index, such as `NM1`;
+- beatmap title;
+- difficulty name.
+
+The text remains readable over the cover through a compact overlay. Header
+width stays bounded so a large pool remains usable through horizontal
+scrolling.
+
+## Server-side sorting
+
+`GET /api/tournaments/:id/qualification-results` accepts optional:
+
+- `sortBeatmapId`;
+- `sortDirection` with `asc` or `desc`.
+
+The backend remains the sole owner of ordering:
+
+- without `sortBeatmapId`, competitors use their persisted qualification seed;
+- with a map selected, competitors use the backend-calculated place for that
+  map;
+- missing results always follow populated results;
+- persisted seed is the deterministic tie-breaker;
+- `sortDirection` reverses populated places without moving missing results
+  ahead of populated ones.
+
+The frontend stores sorting in page query parameters. Clicking a map header
+navigates with `sortBeatmapId`; clicking the active header toggles
+`sortDirection`. Server load calls the endpoint with those parameters. No
+frontend standings or sorting helper remains.
+
+## Data contract
+
+Map metadata adds the compact cover URL required by the header. Competitor
+statistics keep persisted `seed` and per-map score/place/game data. Lobby
+details are not duplicated in the statistics DTO; the tab reuses the
+qualification lobbies already loaded for the tournament page.
+
+## Verification
+
+- Backend tests cover default seed order, ascending map order, descending map
+  order, seed tie-breaking, and missing results last in both directions.
+- Frontend checks cover query-parameter toggling and rendering through
+  Svelte/TypeScript checks.
+- Backend and frontend production builds must pass.
+- Generated OpenAPI output must be refreshed from the live backend and remain
+  reproducible.
