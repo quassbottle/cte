@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { eq, inArray, sql } from 'drizzle-orm';
+import { and, eq, inArray, notExists, sql } from 'drizzle-orm';
 import { AppModule } from '../src/app.module';
 import { beatmapId, BeatmapId } from '../src/lib/domain/beatmap/beatmap.id';
 import { mappoolId } from '../src/lib/domain/mappool/mappool.id';
@@ -33,6 +33,7 @@ import {
   users,
 } from '../src/lib/infrastructure/db';
 import { OsuService } from '../src/lib/infrastructure/osu/osu.service';
+import { OsuMultiplayerSyncService } from '../src/modules/osu-multiplayer-sync/osu-multiplayer-sync.service';
 import {
   parseTwc2026Wiki,
   toTwcUser,
@@ -92,6 +93,7 @@ const main = async () => {
   try {
     const db = app.get<Schema>('DB');
     const osuService = app.get(OsuService);
+    const syncService = app.get(OsuMultiplayerSyncService);
     const uniqueMaps = new Map(
       data.mappools.map((map) => [map.osuBeatmapId, map]),
     );
@@ -115,7 +117,7 @@ const main = async () => {
       }
     }
 
-    await db.transaction(async (tx) => {
+    const seededRoomIds = await db.transaction(async (tx) => {
       const allUsers = new Map<
         number,
         { osuId: number; osuUsername: string; countryCode: string }
@@ -169,7 +171,6 @@ const main = async () => {
         .select({
           id: osuMultiplayerRooms.id,
           osuMatchId: osuMultiplayerRooms.osuMatchId,
-          snapshotHash: osuMultiplayerRooms.snapshotHash,
         })
         .from(osuMultiplayerRooms)
         .where(inArray(osuMultiplayerRooms.osuMatchId, osuMatchIds));
@@ -181,15 +182,6 @@ const main = async () => {
       );
       for (const osuMatchId of missingRooms)
         roomIds.set(osuMatchId, osuRoomId());
-      const unsyncedRooms = existingRooms
-        .filter(({ snapshotHash }) => !snapshotHash)
-        .map(({ id }) => id);
-      if (unsyncedRooms.length) {
-        await tx
-          .update(osuMultiplayerRooms)
-          .set({ status: 'active', nextSyncAt: new Date() })
-          .where(inArray(osuMultiplayerRooms.id, unsyncedRooms));
-      }
       if (missingRooms.length) {
         await tx.insert(osuMultiplayerRooms).values(
           missingRooms.map((osuMatchId) => ({
@@ -385,7 +377,33 @@ const main = async () => {
       console.log(
         `Seeded ${TOURNAMENT_NAME}: ${data.teams.length} teams, ${data.qualifiers.length} qualifier lobbies, ${data.matches.length} matches, ${data.mappools.length} beatmaps`,
       );
+      return [...roomIds.values()];
     });
+
+    try {
+      for (const roomId of seededRoomIds) await syncService.sync(roomId, true);
+    } finally {
+      await db
+        .delete(osuMultiplayerRooms)
+        .where(
+          and(
+            notExists(
+              db
+                .select({ id: matches.id })
+                .from(matches)
+                .where(eq(matches.osuRoomId, osuMultiplayerRooms.id)),
+            ),
+            notExists(
+              db
+                .select({ id: qualificationLobbies.id })
+                .from(qualificationLobbies)
+                .where(
+                  eq(qualificationLobbies.osuRoomId, osuMultiplayerRooms.id),
+                ),
+            ),
+          ),
+        );
+    }
   } finally {
     await app.close();
   }
