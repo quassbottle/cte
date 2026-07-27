@@ -146,14 +146,14 @@ export class OsuService {
           scores: game.scores.map((score) => ({
             userId: score.user_id,
             score: score.legacy_total_score,
-            team: score.match.team === 'none' ? null : score.match.team,
-            mods: [...new Set([...game.mods, ...score.mods])],
+            team: score.team,
+            mods: score.mods,
             maxCombo: score.max_combo,
             accuracy: score.accuracy,
             rank: score.rank,
-            great: score.statistics.count_300,
-            ok: score.statistics.count_100,
-            miss: score.statistics.count_miss,
+            great: score.statistics.great,
+            ok: score.statistics.ok,
+            miss: score.statistics.miss,
           })),
         });
       }
