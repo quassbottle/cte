@@ -13,7 +13,7 @@ const lobbyInput = z
     refereeId: userIdSchema,
     startsAt: isoStringToDate,
     endsAt: isoStringToDate,
-    mpUrl: z.string().url().nullable().optional(),
+    mpUrl: z.url().nullable().optional(),
   })
   .refine(({ startsAt, endsAt }) => endsAt > startsAt, {
     path: ['endsAt'],
@@ -32,11 +32,16 @@ export const qualificationLobbyDtoSchema = z.object({
   id: qualificationLobbyIdSchema,
   stageId: stageIdSchema,
   number: z.number().int().positive(),
-  refereeId: userIdSchema,
-  refereeName: z.string(),
-  startsAt: z.string().datetime(),
-  endsAt: z.string().datetime(),
-  mpUrl: z.string().url().nullable().optional(),
+  referee: z.object({
+    id: userIdSchema,
+    osuId: z.number().int(),
+    osuUsername: z.string(),
+    avatarUrl: z.url(),
+    role: z.literal('referee'),
+  }),
+  startsAt: z.iso.datetime(),
+  endsAt: z.iso.datetime(),
+  mpUrl: z.url().nullable().optional(),
   players: z.array(z.object({ id: userIdSchema, name: z.string() })),
   teams: z.array(z.object({ id: teamIdSchema, name: z.string() })),
   seatCount: z.number().int().min(0).max(16),
@@ -57,6 +62,16 @@ export const qualificationLobbyDtoSchema = z.object({
       great: z.number().int().nullable(),
       ok: z.number().int().nullable(),
       miss: z.number().int().nullable(),
+      counted: z.boolean(),
+    }),
+  ),
+  standings: z.array(
+    z.object({
+      competitorId: z.string(),
+      beatmapId: z.number().int(),
+      gameId: z.number().int(),
+      score: z.number().int(),
+      place: z.number().int().positive(),
     }),
   ),
 });

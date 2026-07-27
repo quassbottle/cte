@@ -1,28 +1,35 @@
 <script lang="ts">
 	import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
 	import type { MappoolBeatmapDto } from '$lib/api/types';
+	import StaffList from '$lib/components/match/StaffList.svelte';
 	import MultiplayerScore from '$lib/components/multiplayerScore/multiplayerScore.svelte';
-	import { getLobbySeats } from './qualificationLobby-view';
+	import { getLobbySeats, toRefereeView } from './qualificationLobby-view';
 
 	export let lobby: QualificationLobbyDtoOutput;
 	export let beatmaps: MappoolBeatmapDto[] = [];
 
-	$: attemptsByBeatmap = Object.entries(
-		lobby.attempts.reduce<Record<string, typeof lobby.attempts>>((groups, attempt) => {
-			(groups[String(attempt.beatmapId)] ??= []).push(attempt);
-			return groups;
-		}, {})
-	);
+	$: attemptsByBeatmap = [
+		...lobby.attempts
+			.reduce<Map<number, typeof lobby.attempts>>((groups, attempt) => {
+				const attempts = groups.get(attempt.beatmapId) ?? [];
+				attempts.push(attempt);
+				groups.set(attempt.beatmapId, attempts);
+				return groups;
+			}, new Map())
+			.entries()
+	];
+	const competitorName = (id: string) =>
+		[...lobby.teams, ...lobby.players].find((competitor) => competitor.id === id)?.name ?? id;
 </script>
 
 <article class="flex flex-col gap-3 rounded-md border border-border p-4">
-	<header class="flex items-start justify-between gap-3">
+	<header class="flex items-start justify-between gap-3 pr-12">
 		<div>
 			<h3 class="font-semibold">Lobby {lobby.number}</h3>
 			<p class="text-xs text-muted-foreground">
 				{new Date(lobby.startsAt).toLocaleString()}–{new Date(lobby.endsAt).toLocaleTimeString()}
 			</p>
-			<p class="text-xs text-muted-foreground">Referee: {lobby.refereeName}</p>
+			<StaffList staff={[toRefereeView(lobby.referee)]} />
 		</div>
 		<span class="rounded bg-muted px-2 py-1 text-xs font-medium">
 			{lobby.syncStatus ?? 'not linked'}
@@ -46,7 +53,7 @@
 	{#if attemptsByBeatmap.length}
 		<div class="space-y-2 text-sm">
 			{#each attemptsByBeatmap as [beatmapId, attempts]}
-				{@const beatmap = beatmaps.find(({ osuBeatmapId }) => osuBeatmapId === Number(beatmapId))}
+				{@const beatmap = beatmaps.find(({ osuBeatmapId }) => osuBeatmapId === beatmapId)}
 				{#if beatmap}
 					<MultiplayerScore
 						result={{
@@ -62,7 +69,14 @@
 								difficulty: beatmap.difficulty,
 								deleted: beatmap.deleted
 							},
-							scores: attempts
+							scores: attempts,
+							standings: lobby.standings
+								.filter((standing) => standing.beatmapId === beatmapId)
+								.map((standing) => ({
+									name: competitorName(standing.competitorId),
+									score: standing.score,
+									place: standing.place
+								}))
 						}}
 					/>
 				{:else}

@@ -7,6 +7,8 @@
  */
 import type { QualificationLobbyDtoOutputAttemptsItem } from './qualificationLobbyDtoOutputAttemptsItem';
 import type { QualificationLobbyDtoOutputPlayersItem } from './qualificationLobbyDtoOutputPlayersItem';
+import type { QualificationLobbyDtoOutputReferee } from './qualificationLobbyDtoOutputReferee';
+import type { QualificationLobbyDtoOutputStandingsItem } from './qualificationLobbyDtoOutputStandingsItem';
 import type { QualificationLobbyDtoOutputSyncStatus } from './qualificationLobbyDtoOutputSyncStatus';
 import type { QualificationLobbyDtoOutputTeamsItem } from './qualificationLobbyDtoOutputTeamsItem';
 
@@ -20,9 +22,7 @@ export interface QualificationLobbyDtoOutput {
 	 * @exclusiveMinimum 0
 	 */
 	number: number;
-	/** @pattern ^[0-9a-z]+$ */
-	refereeId: string;
-	refereeName: string;
+	referee: QualificationLobbyDtoOutputReferee;
 	/** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
 	startsAt: string;
 	/** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d(?::[0-5]\d(?:\.\d+)?)?(?:Z))$ */
@@ -41,4 +41,5 @@ export interface QualificationLobbyDtoOutput {
 	/** @nullable */
 	lastSyncedAt: string | null;
 	attempts: QualificationLobbyDtoOutputAttemptsItem[];
+	standings: QualificationLobbyDtoOutputStandingsItem[];
 }

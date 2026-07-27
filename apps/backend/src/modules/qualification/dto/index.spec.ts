@@ -22,14 +22,20 @@ describe('qualificationLobbyDtoSchema', () => {
       great: 1463,
       ok: 16,
       miss: 11,
+      counted: true,
     };
 
     const lobby = qualificationLobbyDtoSchema.parse({
       id: 'lobby',
       stageId: 'stage',
       number: 1,
-      refereeId: 'referee',
-      refereeName: 'Referee',
+      referee: {
+        id: 'referee',
+        osuId: 4,
+        osuUsername: 'Referee',
+        avatarUrl: 'https://a.ppy.sh/4',
+        role: 'referee',
+      },
       startsAt: '2026-07-19T10:00:00.000Z',
       endsAt: '2026-07-19T12:00:00.000Z',
       players: [],
@@ -38,9 +44,19 @@ describe('qualificationLobbyDtoSchema', () => {
       syncStatus: 'completed',
       lastSyncedAt: null,
       attempts: [attempt],
+      standings: [
+        {
+          competitorId: 'team',
+          beatmapId: 1,
+          gameId: 2,
+          score: 961684,
+          place: 1,
+        },
+      ],
     });
 
     expect(lobby.attempts[0]).toEqual(attempt);
+    expect(lobby.referee.avatarUrl).toBe('https://a.ppy.sh/4');
   });
 
   it.each(['mods', 'maxCombo', 'accuracy', 'rank'] as const)(
@@ -61,6 +77,7 @@ describe('qualificationLobbyDtoSchema', () => {
           great: null,
           ok: null,
           miss: null,
+          counted: false,
           [field]: null,
         }),
       ).toThrow();

@@ -83,7 +83,7 @@
 								>
 									{#each referees as referee}<option
 											value={referee.id}
-											selected={referee.id === lobby.refereeId}>{referee.osuUsername}</option
+											selected={referee.id === lobby.referee.id}>{referee.osuUsername}</option
 										>{/each}
 								</select>
 								<label for={`lobby-start-${lobby.id}`}>Starts at</label>

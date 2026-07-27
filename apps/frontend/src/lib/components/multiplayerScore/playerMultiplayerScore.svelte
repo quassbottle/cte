@@ -13,7 +13,9 @@
 </script>
 
 <article
-	class="grid gap-3 rounded-xl border border-border bg-muted/40 p-4 sm:grid-cols-[minmax(12rem,1fr)_auto] sm:items-center"
+	class="grid gap-3 rounded-xl border p-4 sm:grid-cols-[minmax(12rem,1fr)_auto] sm:items-center {score.counted
+		? 'border-primary bg-primary/10'
+		: 'border-border bg-muted/40'}"
 >
 	<div class="flex min-w-0 items-center gap-3">
 		<img

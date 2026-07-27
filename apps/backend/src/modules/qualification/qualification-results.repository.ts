@@ -53,7 +53,10 @@ export class QualificationResultsRepository {
 
     const [maps, attempts] = await Promise.all([
       db
-        .select({ beatmapId: beatmaps.id })
+        .select({
+          beatmapId: beatmaps.id,
+          osuBeatmapId: beatmaps.osuBeatmapId,
+        })
         .from(mappools)
         .innerJoin(
           mappoolsBeatmaps,
@@ -102,6 +105,7 @@ export class QualificationResultsRepository {
       const assignedIds = new Set(assigned.map(({ id }) => id));
       return {
         complete: competitors.every(({ id }) => assignedIds.has(id)),
+        beatmaps: maps,
         beatmapIds,
         attempts,
         competitors: competitors.map(({ id, tieBreakId }) => ({
@@ -140,6 +144,7 @@ export class QualificationResultsRepository {
     const assignedIds = new Set(assigned.map(({ id }) => id));
     return {
       complete: [...byTeam.keys()].every((id) => assignedIds.has(id)),
+      beatmaps: maps,
       beatmapIds,
       attempts,
       competitors: [...byTeam].map(([id, userIds]) => ({

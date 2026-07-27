@@ -9,6 +9,7 @@ export type PlayerMultiplayerScoreData = {
 	ok: number | null;
 	miss: number | null;
 	rank: string;
+	counted?: boolean;
 };
 
 export type MultiplayerScoreData = {
@@ -25,6 +26,7 @@ export type MultiplayerScoreData = {
 		deleted?: boolean;
 	};
 	scores: PlayerMultiplayerScoreData[];
+	standings?: { name: string; score: number; place: number }[];
 };
 
 export const formatMultiplayerScore = (score: number) => new Intl.NumberFormat().format(score);

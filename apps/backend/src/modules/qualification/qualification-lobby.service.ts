@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, count, eq, inArray, notInArray } from 'drizzle-orm';
+import { and, asc, count, eq, inArray, notInArray } from 'drizzle-orm';
 import {
   QualificationLobbyException,
   QualificationLobbyExceptionCode,
@@ -13,6 +13,7 @@ import { TeamId } from 'lib/domain/team/team.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import {
+  osuMultiplayerGames,
   osuMultiplayerRooms,
   osuMultiplayerScores,
   qualificationLobbies,
@@ -67,7 +68,11 @@ export class QualificationLobbyService {
     const lobbies = await this.db
       .select({
         lobby: qualificationLobbies,
-        refereeName: users.osuUsername,
+        referee: {
+          id: users.id,
+          osuId: users.osuId,
+          osuUsername: users.osuUsername,
+        },
       })
       .from(qualificationLobbies)
       .innerJoin(stages, eq(stages.id, qualificationLobbies.stageId))
@@ -78,44 +83,107 @@ export class QualificationLobbyService {
           eq(stages.type, 'qualification'),
         ),
       );
+    const breakdowns = new Map<
+      StageId,
+      ReturnType<QualificationResultsService['getBreakdown']>
+    >();
+    const getBreakdown = (stageId: StageId) => {
+      const existing = breakdowns.get(stageId);
+      if (existing) return existing;
+      const breakdown = this.results.getBreakdown(stageId);
+      breakdowns.set(stageId, breakdown);
+      return breakdown;
+    };
     return Promise.all(
-      lobbies.map(async ({ lobby, refereeName }) => {
-        const [players, selectedTeams, attempts] = await Promise.all([
-          this.db
-            .select({ id: users.id, name: users.osuUsername })
-            .from(qualificationLobbyPlayers)
-            .innerJoin(users, eq(users.id, qualificationLobbyPlayers.userId))
-            .where(eq(qualificationLobbyPlayers.lobbyId, lobby.id)),
-          this.db
-            .select({ id: teams.id, name: teams.name })
-            .from(qualificationLobbyTeams)
-            .innerJoin(teams, eq(teams.id, qualificationLobbyTeams.teamId))
-            .where(eq(qualificationLobbyTeams.lobbyId, lobby.id)),
-          lobby.osuRoomId
-            ? this.db
-                .select({
-                  beatmapId: osuMultiplayerScores.osuBeatmapId,
-                  gameId: osuMultiplayerScores.osuGameId,
-                  osuUserId: osuMultiplayerScores.osuUserId,
-                  userId: users.id,
-                  userName: users.osuUsername,
-                  score: osuMultiplayerScores.score,
-                  mods: osuMultiplayerScores.mods,
-                  maxCombo: osuMultiplayerScores.maxCombo,
-                  accuracy: osuMultiplayerScores.accuracy,
-                  rank: osuMultiplayerScores.rank,
-                  great: osuMultiplayerScores.great,
-                  ok: osuMultiplayerScores.ok,
-                  miss: osuMultiplayerScores.miss,
-                })
-                .from(osuMultiplayerScores)
-                .leftJoin(
-                  users,
-                  eq(users.osuId, osuMultiplayerScores.osuUserId),
-                )
-                .where(eq(osuMultiplayerScores.roomId, lobby.osuRoomId))
-            : [],
-        ]);
+      lobbies.map(async ({ lobby, referee }) => {
+        const [players, selectedTeams, rawAttempts, breakdown] =
+          await Promise.all([
+            this.db
+              .select({ id: users.id, name: users.osuUsername })
+              .from(qualificationLobbyPlayers)
+              .innerJoin(users, eq(users.id, qualificationLobbyPlayers.userId))
+              .where(eq(qualificationLobbyPlayers.lobbyId, lobby.id)),
+            this.db
+              .select({ id: teams.id, name: teams.name })
+              .from(qualificationLobbyTeams)
+              .innerJoin(teams, eq(teams.id, qualificationLobbyTeams.teamId))
+              .where(eq(qualificationLobbyTeams.lobbyId, lobby.id)),
+            lobby.osuRoomId
+              ? this.db
+                  .select({
+                    beatmapId: osuMultiplayerScores.osuBeatmapId,
+                    gameId: osuMultiplayerScores.osuGameId,
+                    osuUserId: osuMultiplayerScores.osuUserId,
+                    userId: users.id,
+                    userName: users.osuUsername,
+                    score: osuMultiplayerScores.score,
+                    mods: osuMultiplayerScores.mods,
+                    maxCombo: osuMultiplayerScores.maxCombo,
+                    accuracy: osuMultiplayerScores.accuracy,
+                    rank: osuMultiplayerScores.rank,
+                    great: osuMultiplayerScores.great,
+                    ok: osuMultiplayerScores.ok,
+                    miss: osuMultiplayerScores.miss,
+                  })
+                  .from(osuMultiplayerScores)
+                  .innerJoin(
+                    osuMultiplayerGames,
+                    and(
+                      eq(
+                        osuMultiplayerGames.roomId,
+                        osuMultiplayerScores.roomId,
+                      ),
+                      eq(
+                        osuMultiplayerGames.osuGameId,
+                        osuMultiplayerScores.osuGameId,
+                      ),
+                    ),
+                  )
+                  .leftJoin(
+                    users,
+                    eq(users.osuId, osuMultiplayerScores.osuUserId),
+                  )
+                  .where(eq(osuMultiplayerScores.roomId, lobby.osuRoomId))
+                  .orderBy(
+                    asc(osuMultiplayerGames.endedAt),
+                    asc(osuMultiplayerScores.osuGameId),
+                  )
+              : [],
+            getBreakdown(lobby.stageId),
+          ]);
+        const competitors = breakdown.filter(({ competitorId }) =>
+          (selectedTeams.length ? selectedTeams : players).some(
+            ({ id }) => id === competitorId,
+          ),
+        );
+        const standings = competitors.flatMap((competitor) =>
+          competitor.maps.flatMap((map) =>
+            map.osuGameId === null || map.osuBeatmapId === undefined
+              ? []
+              : [
+                  {
+                    competitorId: competitor.competitorId,
+                    beatmapId: map.osuBeatmapId,
+                    gameId: map.osuGameId,
+                    score: map.score,
+                    place: map.place,
+                  },
+                ],
+          ),
+        );
+        const attempts = rawAttempts.map((attempt) => ({
+          ...attempt,
+          counted: competitors.some(
+            (competitor) =>
+              attempt.userId !== null &&
+              competitor.userIds.includes(attempt.userId) &&
+              competitor.maps.some(
+                (map) =>
+                  map.osuBeatmapId === attempt.beatmapId &&
+                  map.osuGameId === attempt.gameId,
+              ),
+          ),
+        }));
         const room = lobby.osuRoomId
           ? await this.db.query.osuMultiplayerRooms.findFirst({
               where: eq(osuMultiplayerRooms.id, lobby.osuRoomId),
@@ -139,13 +207,18 @@ export class QualificationLobbyService {
           ...lobby,
           startsAt: lobby.startsAt.toISOString(),
           endsAt: lobby.endsAt.toISOString(),
-          refereeName,
+          referee: {
+            ...referee,
+            avatarUrl: `https://a.ppy.sh/${referee.osuId}`,
+            role: 'referee' as const,
+          },
           players,
           teams: selectedTeams,
           seatCount: players.length + (teamSeats?.value ?? 0),
           syncStatus: room?.status ?? null,
           lastSyncedAt: room?.lastSyncedAt?.toISOString() ?? null,
           attempts,
+          standings,
         };
       }),
     );

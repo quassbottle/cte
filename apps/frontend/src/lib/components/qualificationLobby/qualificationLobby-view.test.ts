@@ -3,7 +3,8 @@ import {
 	canSelectLobby,
 	findQualificationLobby,
 	getLobbySeats,
-	isLobbyFull
+	isLobbyFull,
+	toRefereeView
 } from './qualificationLobby-view';
 
 describe('qualification lobby view', () => {
@@ -28,5 +29,24 @@ describe('qualification lobby view', () => {
 
 		expect(findQualificationLobby([fresh], stale.id)).toBe(fresh);
 		expect(findQualificationLobby([fresh], null)).toBeNull();
+	});
+
+	it('adapts a referee to the shared schedule staff view', () => {
+		expect(
+			toRefereeView({
+				id: 'referee',
+				osuId: 42,
+				osuUsername: 'Ref Name',
+				avatarUrl: 'https://a.ppy.sh/42',
+				role: 'referee'
+			})
+		).toEqual({
+			id: 'referee',
+			name: 'Ref Name',
+			osuId: 42,
+			avatarUrl: 'https://a.ppy.sh/42',
+			initials: 'RN',
+			role: 'referee'
+		});
 	});
 });

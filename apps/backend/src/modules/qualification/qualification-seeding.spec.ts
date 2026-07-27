@@ -45,6 +45,17 @@ describe('calculateQualificationSeeds', () => {
     expect(byId.get('C')?.totalScore).toBeGreaterThan(
       byId.get('A')?.totalScore ?? 0,
     );
+    expect(byId.get('A')?.maps).toEqual([
+      { beatmapId: 'map-1', osuGameId: 2, score: 120, place: 1 },
+      { beatmapId: 'map-2', osuGameId: 3, score: 100, place: 1 },
+      { beatmapId: 'map-3', osuGameId: null, score: 0, place: 3 },
+    ]);
+    expect(byId.get('C')?.maps[0]).toEqual({
+      beatmapId: 'map-1',
+      osuGameId: 1,
+      score: 120,
+      place: 1,
+    });
   });
 
   it.each([

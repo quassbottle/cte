@@ -22,13 +22,19 @@
 		if (event.key === 'Escape') onClose();
 	}}
 >
-	<div class="max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-popover p-6 shadow-2xl">
-		<header class="mb-4 flex items-center justify-between gap-4">
-			<h2 class="text-xl font-semibold">Lobby {lobby.number}</h2>
-			<Button type="button" variant="ghost" size="icon" on:click={onClose} aria-label="Close lobby">
-				<X class="h-4 w-4" />
-			</Button>
-		</header>
+	<div
+		class="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-popover shadow-2xl"
+	>
+		<Button
+			type="button"
+			variant="ghost"
+			size="icon"
+			class="absolute right-4 top-4 z-10"
+			on:click={onClose}
+			aria-label="Close lobby"
+		>
+			<X class="h-4 w-4" />
+		</Button>
 		<QualificationLobbyCard {lobby} {beatmaps} />
 	</div>
 </div>

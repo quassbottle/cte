@@ -3480,13 +3480,41 @@
             "maximum": 9007199254740991,
             "minimum": 0
           },
-          "refereeId": {
-            "type": "string",
-            "format": "cuid2",
-            "pattern": "^[0-9a-z]+$"
-          },
-          "refereeName": {
-            "type": "string"
+          "referee": {
+            "type": "object",
+            "properties": {
+              "id": {
+                "type": "string",
+                "format": "cuid2",
+                "pattern": "^[0-9a-z]+$"
+              },
+              "osuId": {
+                "type": "integer",
+                "minimum": -9007199254740991,
+                "maximum": 9007199254740991
+              },
+              "osuUsername": {
+                "type": "string"
+              },
+              "avatarUrl": {
+                "type": "string",
+                "format": "uri"
+              },
+              "role": {
+                "type": "string",
+                "enum": [
+                  "referee"
+                ]
+              }
+            },
+            "required": [
+              "id",
+              "osuId",
+              "osuUsername",
+              "avatarUrl",
+              "role"
+            ],
+            "additionalProperties": false
           },
           "startsAt": {
             "type": "string",
@@ -3633,6 +3661,9 @@
                   "minimum": -9007199254740991,
                   "maximum": 9007199254740991,
                   "nullable": true
+                },
+                "counted": {
+                  "type": "boolean"
                 }
               },
               "required": [
@@ -3648,7 +3679,48 @@
                 "rank",
                 "great",
                 "ok",
-                "miss"
+                "miss",
+                "counted"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "standings": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "competitorId": {
+                  "type": "string"
+                },
+                "beatmapId": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "gameId": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "score": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "place": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991,
+                  "minimum": 0
+                }
+              },
+              "required": [
+                "competitorId",
+                "beatmapId",
+                "gameId",
+                "score",
+                "place"
               ],
               "additionalProperties": false
             }
@@ -3658,8 +3730,7 @@
           "id",
           "stageId",
           "number",
-          "refereeId",
-          "refereeName",
+          "referee",
           "startsAt",
           "endsAt",
           "players",
@@ -3667,7 +3738,8 @@
           "seatCount",
           "syncStatus",
           "lastSyncedAt",
-          "attempts"
+          "attempts",
+          "standings"
         ],
         "additionalProperties": false
       },

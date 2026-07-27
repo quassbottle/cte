@@ -36,7 +36,7 @@ const formatTime = (value: string) =>
 		timeZone: 'UTC'
 	}).format(new Date(value));
 
-const getInitials = (name: string) =>
+export const getInitials = (name: string) =>
 	name
 		.split(/\s+/)
 		.map((part) => part[0])

@@ -2,10 +2,11 @@
 	import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
 	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import MatchLink from '$lib/components/match/MatchLink.svelte';
+	import StaffList from '$lib/components/match/StaffList.svelte';
 	import ScheduleTable from '$lib/components/schedule/ScheduleTable.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import QualificationLobbyDetailDialog from './QualificationLobbyDetailDialog.svelte';
-	import { findQualificationLobby } from './qualificationLobby-view';
+	import { findQualificationLobby, toRefereeView } from './qualificationLobby-view';
 
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let beatmaps: MappoolBeatmapDto[];
@@ -46,7 +47,7 @@
 						</p>
 					</td>
 					<td class="px-4 py-4 font-medium">{registeredNames(lobby)}</td>
-					<td class="px-4 py-4">{lobby.refereeName}</td>
+					<td class="px-4 py-4"><StaffList staff={[toRefereeView(lobby.referee)]} /></td>
 					<td class="px-4 py-4">
 						<span class="rounded bg-muted px-2 py-1 text-xs font-medium">
 							{lobby.syncStatus ?? 'not linked'}
@@ -90,10 +91,7 @@
 					<span class="text-muted-foreground">{isTeam ? 'Teams' : 'Players'}:</span>
 					{registeredNames(lobby)}
 				</p>
-				<p class="text-sm">
-					<span class="text-muted-foreground">Referee:</span>
-					{lobby.refereeName}
-				</p>
+				<StaffList staff={[toRefereeView(lobby.referee)]} compact />
 				<div class="flex items-center justify-between gap-2">
 					<MatchLink href={lobby.mpUrl ?? null} type="mp" />
 					<div class="flex gap-2">

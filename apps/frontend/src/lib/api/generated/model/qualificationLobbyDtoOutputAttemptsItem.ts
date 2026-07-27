@@ -60,4 +60,5 @@ export type QualificationLobbyDtoOutputAttemptsItem = {
 	 * @nullable
 	 */
 	miss: number | null;
+	counted: boolean;
 };

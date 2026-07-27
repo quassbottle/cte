@@ -22,4 +22,39 @@ describe('QualificationResultsService', () => {
     );
     await expect(service.isStale('stage' as never)).resolves.toBe(true);
   });
+
+  it('returns the counted game and per-map place with the osu beatmap id', async () => {
+    const repository = {
+      load: jest.fn().mockResolvedValue({
+        beatmaps: [{ beatmapId: 'map', osuBeatmapId: 42 }],
+        beatmapIds: ['map'],
+        attempts: [
+          { osuGameId: 1, beatmapId: 'map', userId: 'a', score: 100 },
+          { osuGameId: 2, beatmapId: 'map', userId: 'a', score: 200 },
+          { osuGameId: 3, beatmapId: 'map', userId: 'b', score: 150 },
+        ],
+        competitors: [
+          { id: 'team-a', tieBreakId: 'a', userIds: ['a'] },
+          { id: 'team-b', tieBreakId: 'b', userIds: ['b'] },
+        ],
+      }),
+    };
+
+    const result = await new QualificationResultsService(
+      repository as never,
+    ).getBreakdown('stage' as never);
+
+    expect(result[0]).toMatchObject({
+      competitorId: 'team-a',
+      userIds: ['a'],
+      maps: [
+        {
+          osuBeatmapId: 42,
+          osuGameId: 2,
+          score: 200,
+          place: 1,
+        },
+      ],
+    });
+  });
 });
