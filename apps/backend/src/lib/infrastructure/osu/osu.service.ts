@@ -143,18 +143,7 @@ export class OsuService {
           id: game.id,
           beatmapId: game.beatmap_id,
           endedAt: game.end_time ? new Date(game.end_time) : null,
-          scores: game.scores.map((score) => ({
-            userId: score.user_id,
-            score: score.legacy_total_score,
-            team: score.team,
-            mods: score.mods,
-            maxCombo: score.max_combo,
-            accuracy: score.accuracy,
-            rank: score.rank,
-            great: score.statistics.great,
-            ok: score.statistics.ok,
-            miss: score.statistics.miss,
-          })),
+          scores: game.scores,
         });
       }
 

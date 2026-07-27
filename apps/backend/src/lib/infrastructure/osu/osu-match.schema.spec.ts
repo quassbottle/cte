@@ -1,8 +1,7 @@
-import { z } from 'zod';
 import { osuMatchDetailsSchema } from './osu-match.schema';
 
 describe('osuMatchDetailsSchema', () => {
-  it('decodes and encodes Score V2 mods, team, and sparse statistics', () => {
+  it('decodes Score V2 mods, team, and sparse statistics', () => {
     const input = {
       match: { end_time: null },
       latest_event_id: 1,
@@ -34,24 +33,16 @@ describe('osuMatchDetailsSchema', () => {
     const decoded = osuMatchDetailsSchema.parse(input);
 
     expect(decoded.events[0].game?.scores[0]).toMatchObject({
+      userId: 4,
+      score: 5,
       mods: ['NF', 'HD'],
       team: null,
-      statistics: { great: 7, ok: 0, miss: 0 },
-    });
-    expect(z.encode(osuMatchDetailsSchema, decoded)).toMatchObject({
-      events: [
-        {
-          game: {
-            mods: [],
-            scores: [
-              {
-                mods: [{ acronym: 'NF' }, { acronym: 'HD' }],
-                match: { team: 'none' },
-              },
-            ],
-          },
-        },
-      ],
+      maxCombo: 6,
+      accuracy: 1,
+      rank: 'X',
+      great: 7,
+      ok: 0,
+      miss: 0,
     });
   });
 });
