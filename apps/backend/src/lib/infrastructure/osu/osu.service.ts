@@ -137,16 +137,17 @@ export class OsuService {
       const eventIds = match.events.map((event) => event.id);
 
       for (const event of match.events) {
-        if (!event.game) continue;
-        games.set(event.game.id, {
-          id: event.game.id,
-          beatmapId: event.game.beatmap_id,
-          endedAt: event.game.end_time ? new Date(event.game.end_time) : null,
-          scores: event.game.scores.map((score) => ({
+        const game = event.game;
+        if (!game) continue;
+        games.set(game.id, {
+          id: game.id,
+          beatmapId: game.beatmap_id,
+          endedAt: game.end_time ? new Date(game.end_time) : null,
+          scores: game.scores.map((score) => ({
             userId: score.user_id,
             score: score.legacy_total_score,
             team: score.match.team === 'none' ? null : score.match.team,
-            mods: score.mods,
+            mods: [...new Set([...game.mods, ...score.mods])],
             maxCombo: score.max_combo,
             accuracy: score.accuracy,
             rank: score.rank,

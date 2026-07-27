@@ -22,6 +22,7 @@ describe('OsuService', () => {
             id: 10,
             beatmap_id: 5616113,
             end_time: '2026-04-18T03:23:19Z',
+            mods: ['NF'],
             scores: [
               {
                 user_id: 16536516,
@@ -57,36 +58,38 @@ describe('OsuService', () => {
       ],
     });
     const env = {
-      get: jest.fn((key: string) =>
-        ({
-          OSU_CLIENT_ID: 1,
-          OSU_CLIENT_SECRET: 'secret',
-          OSU_REDIRECT_URL: 'http://localhost',
-        })[key],
+      get: jest.fn(
+        (key: string) =>
+          ({
+            OSU_CLIENT_ID: 1,
+            OSU_CLIENT_SECRET: 'secret',
+            OSU_REDIRECT_URL: 'http://localhost',
+          })[key],
       ),
     } as unknown as EnvService;
 
-    await expect(new OsuService(env).getMatchSnapshot({ osuMatchId: 120962349 }))
-      .resolves.toMatchObject({
-        games: [
-          {
-            beatmapId: 5616113,
-            scores: [
-              {
-                userId: 16536516,
-                score: 966909,
-                mods: ['HD', 'HR'],
-                maxCombo: 1457,
-                accuracy: 0.9872,
-                rank: 'A',
-                great: 1463,
-                ok: 16,
-                miss: 11,
-              },
-              { userId: 4050738, score: 920079 },
-            ],
-          },
-        ],
-      });
+    await expect(
+      new OsuService(env).getMatchSnapshot({ osuMatchId: 120962349 }),
+    ).resolves.toMatchObject({
+      games: [
+        {
+          beatmapId: 5616113,
+          scores: [
+            {
+              userId: 16536516,
+              score: 966909,
+              mods: ['NF', 'HD', 'HR'],
+              maxCombo: 1457,
+              accuracy: 0.9872,
+              rank: 'A',
+              great: 1463,
+              ok: 16,
+              miss: 11,
+            },
+            { userId: 4050738, score: 920079, mods: ['NF'] },
+          ],
+        },
+      ],
+    });
   });
 });

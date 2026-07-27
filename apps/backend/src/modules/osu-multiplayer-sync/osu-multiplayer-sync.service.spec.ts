@@ -31,6 +31,7 @@ describe('OsuMultiplayerSyncService', () => {
       osuMatchId: 42,
       leaseToken: 'token',
       status: 'active',
+      force: false,
     };
     const repository = {
       claim: jest.fn().mockResolvedValue(lease),

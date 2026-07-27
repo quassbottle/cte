@@ -83,6 +83,7 @@ export class OsuMultiplayerSyncRepository {
         ...row,
         status: force ? ('active' as const) : row.status,
         leaseToken,
+        force,
       };
     });
   }
@@ -130,7 +131,7 @@ export class OsuMultiplayerSyncRepository {
         ? 'completed'
         : lease.status;
 
-      if (changed) {
+      if (changed || lease.force) {
         const gameValues = games.map((game) => ({
           roomId: lease.roomId,
           osuGameId: game.id,

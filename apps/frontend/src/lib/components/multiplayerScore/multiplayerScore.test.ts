@@ -25,7 +25,7 @@ describe('multiplayer score formatting', () => {
 		expect(formatMultiplayerAccuracy(0.9872)).toBe('98.72%');
 	});
 
-	it.each(['mods', 'maxCombo', 'accuracy', 'rank'] as const)(
+	it.each(['maxCombo', 'accuracy', 'rank'] as const)(
 		'throws when synchronized %s is missing',
 		(field) => {
 			expect(() => requireMultiplayerScoreDetails({ ...score, [field]: null })).toThrow(
@@ -33,6 +33,10 @@ describe('multiplayer score formatting', () => {
 			);
 		}
 	);
+
+	it('treats missing mods as no mods', () => {
+		expect(requireMultiplayerScoreDetails({ ...score, mods: null }).mods).toEqual([]);
+	});
 
 	it('returns complete synchronized score details', () => {
 		expect(requireMultiplayerScoreDetails(score)).toBe(score);

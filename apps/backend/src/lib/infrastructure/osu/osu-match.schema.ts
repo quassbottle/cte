@@ -11,6 +11,7 @@ export const osuMatchDetailsSchema = z.object({
           id: z.number(),
           beatmap_id: z.number(),
           end_time: z.string().nullable(),
+          mods: z.array(z.string()),
           scores: z.array(
             z.object({
               user_id: z.number(),

@@ -21,6 +21,7 @@ const lease = {
   osuMatchId: 42,
   leaseToken: 'token',
   status: 'active' as const,
+  force: false,
 };
 const snapshot = {
   closedAt: null,
@@ -165,6 +166,24 @@ describe('OsuMultiplayerSyncRepository', () => {
     ).toHaveLength(0);
   });
 
+  it('rewrites scores during a forced sync even when the snapshot hash is unchanged', async () => {
+    const first = repository({ roomId: lease.roomId, snapshotHash: null });
+    await first.repository.applySnapshot(lease as never, snapshot);
+    const hash = first.updates.find(
+      ({ table }) => table === osuMultiplayerRooms,
+    )!.values.snapshotHash;
+    const forced = repository({ roomId: lease.roomId, snapshotHash: hash });
+
+    await forced.repository.applySnapshot(
+      { ...lease, force: true } as never,
+      snapshot,
+    );
+
+    expect(forced.writes.map(({ table }) => table)).toEqual(
+      expect.arrayContaining([osuMultiplayerGames, osuMultiplayerScores]),
+    );
+  });
+
   it('upserts changed games and scores atomically', async () => {
     const test = repository({ roomId: lease.roomId, snapshotHash: 'old' });
     await test.repository.applySnapshot(lease as never, snapshot);
@@ -189,7 +208,6 @@ describe('OsuMultiplayerSyncRepository', () => {
     );
     await expect(repository.claim(lease.roomId as never)).resolves.toBeNull();
   });
-
 });
 describe('OsuMultiplayerSyncRepository with PostgreSQL', () => {
   const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -356,8 +374,8 @@ describe('OsuMultiplayerSyncRepository with PostgreSQL', () => {
       .where(eq(osuMultiplayerRooms.id, roomId as never));
 
     await expect(repository.claim(roomId as never)).resolves.toBeNull();
-    await expect(repository.claim(roomId as never, true)).resolves.toMatchObject(
-      { roomId },
-    );
+    await expect(
+      repository.claim(roomId as never, true),
+    ).resolves.toMatchObject({ roomId });
   });
 });

@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Do not add dependencies.
-- `mods`, `maxCombo`, `accuracy`, and `rank` must fail loudly when null.
+- `maxCombo`, `accuracy`, and `rank` must fail loudly when null; missing mods mean no mods.
 - `XH/X` display as `SS`; `SH/S` display as `S`; hidden variants use silver letters.
 
 ---

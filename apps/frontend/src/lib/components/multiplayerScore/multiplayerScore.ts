@@ -24,14 +24,14 @@ export type CompletePlayerMultiplayerScoreData = Omit<
 export const requireMultiplayerScoreDetails = (
 	score: PlayerMultiplayerScoreData
 ): CompletePlayerMultiplayerScoreData => {
-	for (const field of ['mods', 'maxCombo', 'accuracy', 'rank'] as const) {
+	for (const field of ['maxCombo', 'accuracy', 'rank'] as const) {
 		if (score[field] === null) {
 			throw new Error(
 				`Multiplayer score for ${score.userName ?? `osu! ${score.osuUserId}`} is missing ${field}`
 			);
 		}
 	}
-	return score as CompletePlayerMultiplayerScoreData;
+	return (score.mods === null ? { ...score, mods: [] } : score) as CompletePlayerMultiplayerScoreData;
 };
 
 export type MultiplayerScoreData = {

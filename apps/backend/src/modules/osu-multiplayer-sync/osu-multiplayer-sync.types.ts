@@ -7,6 +7,7 @@ export type OsuRoomLease = {
   osuMatchId: number;
   leaseToken: string;
   status: RoomSyncStatus;
+  force: boolean;
 };
 
 export type OsuMatchScore = {
