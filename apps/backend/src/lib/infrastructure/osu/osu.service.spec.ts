@@ -22,7 +22,7 @@ describe('OsuService', () => {
             id: 10,
             beatmap_id: 5616113,
             end_time: '2026-04-18T03:23:19Z',
-            mods: [{ acronym: 'NF', settings: { restart: false } }],
+            mods: ['NF'],
             scores: [
               {
                 user_id: 16536516,

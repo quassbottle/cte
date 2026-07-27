@@ -1,8 +1,12 @@
 import { z } from 'zod';
 
-const modSchema = z
-  .object({ acronym: z.string() })
-  .transform(({ acronym }) => acronym);
+const modSchema = z.preprocess(
+  (mod) =>
+    typeof mod === 'object' && mod !== null && 'acronym' in mod
+      ? mod.acronym
+      : mod,
+  z.string(),
+);
 const statistic = z.number().int().nonnegative().default(0);
 const teamSchema = z
   .enum(['red', 'blue', 'none'])

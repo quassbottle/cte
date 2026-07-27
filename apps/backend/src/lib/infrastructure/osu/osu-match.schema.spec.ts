@@ -12,7 +12,7 @@ describe('osuMatchDetailsSchema', () => {
             id: 2,
             beatmap_id: 3,
             end_time: null,
-            mods: [{ acronym: 'NF', settings: { restart: false } }],
+            mods: ['NF'],
             scores: [
               {
                 user_id: 4,
