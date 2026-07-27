@@ -42,4 +42,28 @@ describe('qualificationLobbyDtoSchema', () => {
 
     expect(lobby.attempts[0]).toEqual(attempt);
   });
+
+  it.each(['mods', 'maxCombo', 'accuracy', 'rank'] as const)(
+    'rejects a synchronized score without %s',
+    (field) => {
+      expect(() =>
+        qualificationLobbyDtoSchema.shape.attempts.element.parse({
+          beatmapId: 1,
+          gameId: 2,
+          osuUserId: 3,
+          userId: null,
+          userName: 'Player',
+          score: 961684,
+          mods: [],
+          maxCombo: 1457,
+          accuracy: 0.9872,
+          rank: 'A',
+          great: null,
+          ok: null,
+          miss: null,
+          [field]: null,
+        }),
+      ).toThrow();
+    },
+  );
 });

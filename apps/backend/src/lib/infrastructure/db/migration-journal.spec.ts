@@ -31,6 +31,10 @@ describe('migration journal', () => {
         idx: 4,
         tag: '0004_multiplayer-score-details',
       }),
+      expect.objectContaining({
+        idx: 5,
+        tag: '0005_mysterious_millenium_guard',
+      }),
     ]);
   });
 

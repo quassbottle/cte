@@ -34,18 +34,14 @@ export type QualificationLobbyDtoOutputAttemptsItem = {
 	 * @maximum 9007199254740991
 	 */
 	score: number;
-	/** @nullable */
-	mods: string[] | null;
+	mods: string[];
 	/**
 	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991
-	 * @nullable
 	 */
-	maxCombo: number | null;
-	/** @nullable */
-	accuracy: number | null;
-	/** @nullable */
-	rank: string | null;
+	maxCombo: number;
+	accuracy: number;
+	rank: string;
 	/**
 	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991

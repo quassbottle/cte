@@ -11,7 +11,7 @@
 ## Global Constraints
 
 - Do not add dependencies.
-- `maxCombo`, `accuracy`, and `rank` must fail loudly when null; missing mods mean no mods.
+- `mods`, `maxCombo`, `accuracy`, and `rank` are non-null throughout the typed data flow.
 - `XH/X` display as `SS`; `SH/S` display as `S`; hidden variants use silver letters.
 
 ---
@@ -28,7 +28,7 @@
 
 **Interfaces:**
 - Produces: `findQualificationLobby(lobbies, id)` returning the current matching lobby or `null`.
-- Produces: `requireMultiplayerScoreDetails(score)` returning the score with non-null required details or throwing a descriptive error.
+- Produces: a non-null score contract from Drizzle schema through generated frontend types.
 
 - [ ] Write failing tests for refreshed lobby lookup and every required score field.
 - [ ] Run the focused Bun tests and confirm expected failures.

@@ -2,7 +2,6 @@ import { describe, expect, it } from 'bun:test';
 import {
 	formatMultiplayerAccuracy,
 	formatMultiplayerScore,
-	requireMultiplayerScoreDetails,
 	type PlayerMultiplayerScoreData
 } from './multiplayerScore';
 
@@ -25,20 +24,7 @@ describe('multiplayer score formatting', () => {
 		expect(formatMultiplayerAccuracy(0.9872)).toBe('98.72%');
 	});
 
-	it.each(['maxCombo', 'accuracy', 'rank'] as const)(
-		'throws when synchronized %s is missing',
-		(field) => {
-			expect(() => requireMultiplayerScoreDetails({ ...score, [field]: null })).toThrow(
-				`Multiplayer score for Player is missing ${field}`
-			);
-		}
-	);
-
-	it('treats missing mods as no mods', () => {
-		expect(requireMultiplayerScoreDetails({ ...score, mods: null }).mods).toEqual([]);
-	});
-
-	it('returns complete synchronized score details', () => {
-		expect(requireMultiplayerScoreDetails(score)).toBe(score);
+	it('accepts complete synchronized score details', () => {
+		expect(score.mods).toEqual([]);
 	});
 });

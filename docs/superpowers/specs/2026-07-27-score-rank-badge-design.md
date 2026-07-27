@@ -13,7 +13,7 @@ Show synchronized osu! mods, maximum combo, accuracy, and rank beside each multi
 - render `accuracy` as a percentage with two decimal places;
 - render `rank` with the new shared `Rank` component.
 
-Combo, accuracy, and rank are required at the score-row boundary. A `null` value throws a descriptive frontend error naming the player and missing field instead of silently rendering an incomplete row. Missing mods normalize to an empty list because playing without mods is valid. Hit statistics remain nullable because they are supplementary and were not part of the requested contract.
+Mods, combo, accuracy, and rank are non-null from the database through the generated frontend API type. Playing without mods is represented by an empty array. A migration removes incomplete legacy score rows before enforcing the database constraint; forced sync repopulates them. Hit statistics remain nullable because they are supplementary and were not part of the requested contract.
 
 The lobby detail dialog stores the selected lobby id, not a stale lobby object. After polling or form invalidation refreshes the `lobbies` prop, the open dialog resolves that id against the fresh array so newly synchronized details appear without closing and reopening it.
 
