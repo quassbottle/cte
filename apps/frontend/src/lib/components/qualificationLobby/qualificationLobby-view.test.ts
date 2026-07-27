@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'bun:test';
-import { canSelectLobby, getLobbySeats, isLobbyFull } from './qualificationLobby-view';
+import {
+	canSelectLobby,
+	findQualificationLobby,
+	getLobbySeats,
+	isLobbyFull
+} from './qualificationLobby-view';
 
 describe('qualification lobby view', () => {
 	it('shows the 16-seat capacity and disables selection when full', () => {
@@ -15,5 +20,13 @@ describe('qualification lobby view', () => {
 	it('disables selection when the qualification stage starts', () => {
 		const startsAt = '2030-01-01T00:00:00Z';
 		expect(canSelectLobby(1, false, startsAt, new Date(startsAt))).toBe(false);
+	});
+
+	it('resolves the selected lobby from the latest array', () => {
+		const stale = { id: 'lobby', attempts: [{ score: 1 }] };
+		const fresh = { id: 'lobby', attempts: [{ score: 2 }] };
+
+		expect(findQualificationLobby([fresh], stale.id)).toBe(fresh);
+		expect(findQualificationLobby([fresh], null)).toBeNull();
 	});
 });

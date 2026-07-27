@@ -4,6 +4,11 @@ export const getLobbySeats = (seatCount: number) => `${seatCount} / ${LOBBY_SIZE
 
 export const isLobbyFull = (seatCount: number) => seatCount >= LOBBY_SIZE;
 
+export const findQualificationLobby = <T extends { id: string }>(
+	lobbies: T[],
+	id: string | null
+) => lobbies.find((lobby) => lobby.id === id) ?? null;
+
 export const canSelectLobby = (
 	seatCount: number,
 	alreadySelected: boolean,

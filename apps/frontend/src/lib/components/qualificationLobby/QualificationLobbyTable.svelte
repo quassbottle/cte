@@ -5,12 +5,14 @@
 	import ScheduleTable from '$lib/components/schedule/ScheduleTable.svelte';
 	import { Button } from '$lib/components/ui/button';
 	import QualificationLobbyDetailDialog from './QualificationLobbyDetailDialog.svelte';
+	import { findQualificationLobby } from './qualificationLobby-view';
 
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let beatmaps: MappoolBeatmapDto[];
 	export let isTeam: boolean;
 
-	let selectedLobby: QualificationLobbyDtoOutput | null = null;
+	let selectedLobbyId: string | null = null;
+	$: selectedLobby = findQualificationLobby(lobbies, selectedLobbyId);
 
 	const registeredNames = (lobby: QualificationLobbyDtoOutput) =>
 		(isTeam ? lobby.teams : lobby.players).map(({ name }) => name).join(', ') || '—';
@@ -57,7 +59,7 @@
 								type="button"
 								size="sm"
 								variant="outline"
-								on:click={() => (selectedLobby = lobby)}
+								on:click={() => (selectedLobbyId = lobby.id)}
 							>
 								Open
 							</Button>
@@ -99,7 +101,7 @@
 							type="button"
 							size="sm"
 							variant="outline"
-							on:click={() => (selectedLobby = lobby)}
+							on:click={() => (selectedLobbyId = lobby.id)}
 						>
 							Open
 						</Button>
@@ -112,5 +114,9 @@
 </ScheduleTable>
 
 {#if selectedLobby}
-	<QualificationLobbyDetailDialog lobby={selectedLobby} {beatmaps} onClose={() => (selectedLobby = null)} />
+	<QualificationLobbyDetailDialog
+		lobby={selectedLobby}
+		{beatmaps}
+		onClose={() => (selectedLobbyId = null)}
+	/>
 {/if}

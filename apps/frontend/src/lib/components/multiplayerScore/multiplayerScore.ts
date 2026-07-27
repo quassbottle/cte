@@ -11,6 +11,29 @@ export type PlayerMultiplayerScoreData = {
 	rank: string | null;
 };
 
+export type CompletePlayerMultiplayerScoreData = Omit<
+	PlayerMultiplayerScoreData,
+	'mods' | 'maxCombo' | 'accuracy' | 'rank'
+> & {
+	mods: string[];
+	maxCombo: number;
+	accuracy: number;
+	rank: string;
+};
+
+export const requireMultiplayerScoreDetails = (
+	score: PlayerMultiplayerScoreData
+): CompletePlayerMultiplayerScoreData => {
+	for (const field of ['mods', 'maxCombo', 'accuracy', 'rank'] as const) {
+		if (score[field] === null) {
+			throw new Error(
+				`Multiplayer score for ${score.userName ?? `osu! ${score.osuUserId}`} is missing ${field}`
+			);
+		}
+	}
+	return score as CompletePlayerMultiplayerScoreData;
+};
+
 export type MultiplayerScoreData = {
 	beatmap: {
 		artist: string;
@@ -29,11 +52,9 @@ export type MultiplayerScoreData = {
 
 export const formatMultiplayerScore = (score: number) => new Intl.NumberFormat().format(score);
 
-export const formatMultiplayerAccuracy = (accuracy: number | null) =>
-	accuracy === null
-		? null
-		: new Intl.NumberFormat(undefined, {
-				style: 'percent',
-				minimumFractionDigits: 2,
-				maximumFractionDigits: 2
-			}).format(accuracy);
+export const formatMultiplayerAccuracy = (accuracy: number) =>
+	new Intl.NumberFormat(undefined, {
+		style: 'percent',
+		minimumFractionDigits: 2,
+		maximumFractionDigits: 2
+	}).format(accuracy);
