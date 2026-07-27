@@ -102,6 +102,9 @@
 			<Item value="staff" href={getTournamentTabHref('staff')}>Staff</Item>
 			<Item value="schedule" href={getTournamentTabHref('schedule')}>Schedule</Item>
 			<Item value="mappools" href={getTournamentTabHref('mappools')}>Mappools</Item>
+			{#if data.stages.some(({ type }) => type === 'qualification')}
+				<Item value="qualification" href={`/events/${data.tournament.id}/qualification`}>Qualification</Item>
+			{/if}
 		</Head>
 
 		{#if data.canEditTournament}

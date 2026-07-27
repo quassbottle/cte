@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { SQL } from 'drizzle-orm';
-import { and, eq, min, sql } from 'drizzle-orm';
+import { and, asc, eq, isNull, min, sql } from 'drizzle-orm';
 import {
   StageException,
   StageExceptionCode,
 } from 'lib/domain/stage/stage.exception';
 import { StageId } from 'lib/domain/stage/stage.id';
 import { TeamId } from 'lib/domain/team/team.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import {
   beatmaps,
@@ -38,12 +39,41 @@ export type SetQualificationSeedParams = {
 export class QualificationResultsRepository {
   constructor(@Inject('DB') private readonly db: Schema) {}
 
+  public async findStageId(tournamentId: TournamentId): Promise<StageId> {
+    const [stage] = await this.db
+      .select({ id: stages.id })
+      .from(stages)
+      .innerJoin(tournaments, eq(tournaments.id, stages.tournamentId))
+      .where(
+        and(
+          eq(stages.tournamentId, tournamentId),
+          eq(stages.type, 'qualification'),
+          isNull(stages.deletedAt),
+          isNull(tournaments.deletedAt),
+        ),
+      )
+      .limit(1);
+    if (!stage)
+      throw new StageException(
+        'Qualification stage not found',
+        StageExceptionCode.STAGE_NOT_FOUND,
+      );
+    return stage.id;
+  }
+
   public async load(stageId: StageId, db: Schema = this.db) {
     const stage = await db
       .select({ tournamentId: stages.tournamentId, isTeam: tournaments.isTeam })
       .from(stages)
       .innerJoin(tournaments, eq(tournaments.id, stages.tournamentId))
-      .where(and(eq(stages.id, stageId), eq(stages.type, 'qualification')))
+      .where(
+        and(
+          eq(stages.id, stageId),
+          eq(stages.type, 'qualification'),
+          isNull(stages.deletedAt),
+          isNull(tournaments.deletedAt),
+        ),
+      )
       .limit(1);
     if (!stage[0])
       throw new StageException(
@@ -56,6 +86,11 @@ export class QualificationResultsRepository {
         .select({
           beatmapId: beatmaps.id,
           osuBeatmapId: beatmaps.osuBeatmapId,
+          artist: beatmaps.artist,
+          title: beatmaps.title,
+          difficultyName: beatmaps.difficultyName,
+          mod: mappoolsBeatmaps.mod,
+          index: mappoolsBeatmaps.index,
         })
         .from(mappools)
         .innerJoin(
@@ -63,7 +98,11 @@ export class QualificationResultsRepository {
           eq(mappoolsBeatmaps.mappoolId, mappools.id),
         )
         .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
-        .where(eq(mappools.stageId, stageId)),
+        .where(eq(mappools.stageId, stageId))
+        .orderBy(
+          asc(mappoolsBeatmaps.position),
+          asc(mappoolsBeatmaps.createdAt),
+        ),
       db
         .select({
           osuGameId: osuMultiplayerScores.osuGameId,
@@ -88,9 +127,21 @@ export class QualificationResultsRepository {
     if (!stage[0].isTeam) {
       const [competitors, assigned] = await Promise.all([
         db
-          .select({ id: users.id, tieBreakId: users.osuId })
+          .select({
+            id: users.id,
+            name: users.osuUsername,
+            tieBreakId: users.osuId,
+            seed: qualificationResults.seed,
+          })
           .from(soloParticipants)
           .innerJoin(users, eq(users.id, soloParticipants.userId))
+          .leftJoin(
+            qualificationResults,
+            and(
+              eq(qualificationResults.stageId, stageId),
+              eq(qualificationResults.userId, soloParticipants.userId),
+            ),
+          )
           .where(
             and(
               eq(soloParticipants.tournamentId, stage[0].tournamentId),
@@ -108,8 +159,10 @@ export class QualificationResultsRepository {
         beatmaps: maps,
         beatmapIds,
         attempts,
-        competitors: competitors.map(({ id, tieBreakId }) => ({
+        competitors: competitors.map(({ id, name, tieBreakId, seed }) => ({
           id,
+          name,
+          seed,
           tieBreakId,
           userIds: [id],
         })),
@@ -119,9 +172,21 @@ export class QualificationResultsRepository {
 
     const [members, assigned] = await Promise.all([
       db
-        .select({ teamId: teams.id, userId: teamParticipants.userId })
+        .select({
+          teamId: teams.id,
+          name: teams.name,
+          userId: teamParticipants.userId,
+          seed: qualificationResults.seed,
+        })
         .from(teams)
         .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
+        .leftJoin(
+          qualificationResults,
+          and(
+            eq(qualificationResults.stageId, stageId),
+            eq(qualificationResults.teamId, teams.id),
+          ),
+        )
         .where(
           and(
             eq(teams.tournamentId, stage[0].tournamentId),
@@ -134,12 +199,18 @@ export class QualificationResultsRepository {
         .from(qualificationLobbyTeams)
         .where(eq(qualificationLobbyTeams.stageId, stageId)),
     ]);
-    const byTeam = new Map<TeamId, UserId[]>();
+    const byTeam = new Map<
+      TeamId,
+      { name: string; seed: number | null; userIds: UserId[] }
+    >();
     for (const member of members) {
-      byTeam.set(member.teamId, [
-        ...(byTeam.get(member.teamId) ?? []),
-        member.userId,
-      ]);
+      const team = byTeam.get(member.teamId) ?? {
+        name: member.name,
+        seed: member.seed,
+        userIds: [],
+      };
+      team.userIds.push(member.userId);
+      byTeam.set(member.teamId, team);
     }
     const assignedIds = new Set(assigned.map(({ id }) => id));
     return {
@@ -147,8 +218,10 @@ export class QualificationResultsRepository {
       beatmaps: maps,
       beatmapIds,
       attempts,
-      competitors: [...byTeam].map(([id, userIds]) => ({
+      competitors: [...byTeam].map(([id, { name, seed, userIds }]) => ({
         id,
+        name,
+        seed,
         tieBreakId: id,
         userIds,
       })),

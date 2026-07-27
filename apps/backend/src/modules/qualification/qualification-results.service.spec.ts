@@ -57,4 +57,67 @@ describe('QualificationResultsService', () => {
       ],
     });
   });
+
+  it('returns qualification statistics with map presentation and missing results', async () => {
+    const repository = {
+      findStageId: jest.fn().mockResolvedValue('stage'),
+      load: jest.fn().mockResolvedValue({
+        beatmaps: [
+          {
+            beatmapId: 'map-1',
+            osuBeatmapId: 11,
+            artist: 'Artist 1',
+            title: 'Title 1',
+            difficultyName: 'Difficulty 1',
+            mod: 'NM',
+            index: 1,
+          },
+          {
+            beatmapId: 'map-2',
+            osuBeatmapId: 22,
+            artist: 'Artist 2',
+            title: 'Title 2',
+            difficultyName: 'Difficulty 2',
+            mod: 'HD',
+            index: 1,
+          },
+        ],
+        beatmapIds: ['map-1', 'map-2'],
+        attempts: [
+          { osuGameId: 101, beatmapId: 'map-1', userId: 'a', score: 1_900_000 },
+        ],
+        competitors: [
+          {
+            id: 'team-a',
+            name: 'Team A',
+            seed: 3,
+            tieBreakId: 'a',
+            userIds: ['a'],
+          },
+        ],
+      }),
+    };
+
+    const result = await new QualificationResultsService(
+      repository as never,
+    ).getStatistics('tournament' as never);
+
+    expect(result).toEqual({
+      maps: [
+        expect.objectContaining({ osuBeatmapId: 11, mod: 'NM', index: 1 }),
+        expect.objectContaining({ osuBeatmapId: 22, mod: 'HD', index: 1 }),
+      ],
+      competitors: [
+        {
+          id: 'team-a',
+          name: 'Team A',
+          seed: 3,
+          maps: [
+            { osuBeatmapId: 11, gameId: 101, score: 1_900_000, place: 1 },
+            { osuBeatmapId: 22, gameId: null, score: 0, place: 1 },
+          ],
+        },
+      ],
+    });
+  });
 });

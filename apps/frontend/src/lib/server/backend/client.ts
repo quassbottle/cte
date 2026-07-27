@@ -35,6 +35,7 @@ import {
 	qualificationLobbyControllerStart,
 	qualificationLobbyControllerStop,
 	qualificationLobbyControllerUpdate,
+	qualificationResultsControllerFind,
 	osuControllerGetBeatmapMetadata,
 	stageControllerCreate,
 	stageControllerFindMany,
@@ -200,6 +201,9 @@ export function createBackendClient(input?: BackendClientInput) {
 				qualificationLobbyControllerSelectSolo(tournamentId, lobbyId, options),
 			selectTeam: (tournamentId: string, lobbyId: string, teamId: string) =>
 				qualificationLobbyControllerSelectTeam(tournamentId, lobbyId, { teamId }, options)
+		},
+		qualificationResults: {
+			find: (tournamentId: string) => qualificationResultsControllerFind(tournamentId, options)
 		},
 		stages: {
 			findByTournament: (tournamentId: string) => stageControllerFindMany(tournamentId, options),

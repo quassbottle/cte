@@ -78,3 +78,34 @@ export const qualificationLobbyDtoSchema = z.object({
 export class QualificationLobbyDto extends createZodDto(
   qualificationLobbyDtoSchema,
 ) {}
+
+export const qualificationStatisticsDtoSchema = z.object({
+  maps: z.array(
+    z.object({
+      osuBeatmapId: z.number().int(),
+      artist: z.string(),
+      title: z.string(),
+      difficultyName: z.string(),
+      mod: z.string(),
+      index: z.number().int(),
+    }),
+  ),
+  competitors: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      seed: z.number().int().positive(),
+      maps: z.array(
+        z.object({
+          osuBeatmapId: z.number().int(),
+          gameId: z.number().int().nullable(),
+          score: z.number().int(),
+          place: z.number().int().positive(),
+        }),
+      ),
+    }),
+  ),
+});
+export class QualificationStatisticsDto extends createZodDto(
+  qualificationStatisticsDtoSchema,
+) {}

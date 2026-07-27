@@ -1540,6 +1540,36 @@
         ]
       }
     },
+    "/api/tournaments/{id}/qualification-results": {
+      "get": {
+        "operationId": "QualificationResultsController_find",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualificationStatisticsDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "QualificationResults"
+        ]
+      }
+    },
     "/api/tournaments/{tournamentId}/stages": {
       "get": {
         "operationId": "StageController_findMany",
@@ -3798,6 +3828,119 @@
         "required": [
           "teamId"
         ]
+      },
+      "QualificationStatisticsDto_Output": {
+        "type": "object",
+        "properties": {
+          "maps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "osuBeatmapId": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "artist": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "difficultyName": {
+                  "type": "string"
+                },
+                "mod": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "osuBeatmapId",
+                "artist",
+                "title",
+                "difficultyName",
+                "mod",
+                "index"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "competitors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "seed": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991,
+                  "minimum": 0
+                },
+                "maps": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "osuBeatmapId": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "gameId": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "nullable": true
+                      },
+                      "score": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "place": {
+                        "type": "integer",
+                        "exclusiveMinimum": true,
+                        "maximum": 9007199254740991,
+                        "minimum": 0
+                      }
+                    },
+                    "required": [
+                      "osuBeatmapId",
+                      "gameId",
+                      "score",
+                      "place"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "seed",
+                "maps"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "maps",
+          "competitors"
+        ],
+        "additionalProperties": false
       },
       "StageDto_Output": {
         "type": "object",

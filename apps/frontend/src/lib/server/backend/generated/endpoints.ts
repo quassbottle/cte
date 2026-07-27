@@ -23,6 +23,7 @@ import type {
 	OsuBeatmapMetadataDtoOutput,
 	QualificationLobbyDtoOutput,
 	QualificationLobbyUpsertDto,
+	QualificationStatisticsDtoOutput,
 	RegisterTournamentDto,
 	ReorderMappoolBeatmapsDto,
 	ScheduleMatchUpsertDto,
@@ -1226,6 +1227,35 @@ export const qualificationLobbyControllerSelectTeam = async (
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', ...options?.headers },
 			body: JSON.stringify(selectQualificationLobbyTeamDto)
+		}
+	);
+};
+
+export type qualificationResultsControllerFindResponse200 = {
+	data: QualificationStatisticsDtoOutput;
+	status: 200;
+};
+
+export type qualificationResultsControllerFindResponseSuccess =
+	qualificationResultsControllerFindResponse200 & {
+		headers: Headers;
+	};
+export type qualificationResultsControllerFindResponse =
+	qualificationResultsControllerFindResponseSuccess;
+
+export const getQualificationResultsControllerFindUrl = (id: string) => {
+	return `/api/tournaments/${id}/qualification-results`;
+};
+
+export const qualificationResultsControllerFind = async (
+	id: string,
+	options?: RequestInit
+): Promise<qualificationResultsControllerFindResponse> => {
+	return backendFetch<qualificationResultsControllerFindResponse>(
+		getQualificationResultsControllerFindUrl(id),
+		{
+			...options,
+			method: 'GET'
 		}
 	);
 };

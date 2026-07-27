@@ -4,7 +4,10 @@ jest.mock('@paralleldrive/cuid2', () => ({
   isCuid: jest.fn(() => true),
 }));
 
-import { qualificationLobbyDtoSchema } from '.';
+import {
+  qualificationLobbyDtoSchema,
+  qualificationStatisticsDtoSchema,
+} from '.';
 
 describe('qualificationLobbyDtoSchema', () => {
   it('returns synchronized player score details', () => {
@@ -83,4 +86,70 @@ describe('qualificationLobbyDtoSchema', () => {
       ).toThrow();
     },
   );
+
+  it('parses qualification statistics', () => {
+    expect(
+      qualificationStatisticsDtoSchema.parse({
+        maps: [
+          {
+            osuBeatmapId: 11,
+            artist: 'Artist 1',
+            title: 'Title 1',
+            difficultyName: 'Difficulty 1',
+            mod: 'NM',
+            index: 1,
+          },
+          {
+            osuBeatmapId: 22,
+            artist: 'Artist 2',
+            title: 'Title 2',
+            difficultyName: 'Difficulty 2',
+            mod: 'HD',
+            index: 1,
+          },
+        ],
+        competitors: [
+          {
+            id: 'team-a',
+            name: 'Team A',
+            seed: 1,
+            maps: [
+              { osuBeatmapId: 11, gameId: 101, score: 1_900_000, place: 1 },
+              { osuBeatmapId: 22, gameId: null, score: 0, place: 2 },
+            ],
+          },
+        ],
+      }),
+    ).toEqual({
+      maps: [
+        {
+          osuBeatmapId: 11,
+          artist: 'Artist 1',
+          title: 'Title 1',
+          difficultyName: 'Difficulty 1',
+          mod: 'NM',
+          index: 1,
+        },
+        {
+          osuBeatmapId: 22,
+          artist: 'Artist 2',
+          title: 'Title 2',
+          difficultyName: 'Difficulty 2',
+          mod: 'HD',
+          index: 1,
+        },
+      ],
+      competitors: [
+        {
+          id: 'team-a',
+          name: 'Team A',
+          seed: 1,
+          maps: [
+            { osuBeatmapId: 11, gameId: 101, score: 1_900_000, place: 1 },
+            { osuBeatmapId: 22, gameId: null, score: 0, place: 2 },
+          ],
+        },
+      ],
+    });
+  });
 });

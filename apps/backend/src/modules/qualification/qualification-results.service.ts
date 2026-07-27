@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { StageId } from 'lib/domain/stage/stage.id';
+import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import {
   QualificationResultsRepository,
   SetQualificationSeedParams,
@@ -28,6 +29,48 @@ export class QualificationResultsService {
 
   public async getBreakdown(stageId: StageId) {
     const input = await this.repository.load(stageId);
+    return this.getBreakdownFromInput(input);
+  }
+
+  public async getStatistics(tournamentId: TournamentId) {
+    const stageId = await this.repository.findStageId(tournamentId);
+    const input = await this.repository.load(stageId);
+    const competitors = new Map(
+      input.competitors.map(
+        (competitor) => [String(competitor.id), competitor] as const,
+      ),
+    );
+    const breakdown = this.getBreakdownFromInput(input);
+    return {
+      maps: input.beatmaps.map(
+        ({ osuBeatmapId, artist, title, difficultyName, mod, index }) => ({
+          osuBeatmapId,
+          artist,
+          title,
+          difficultyName,
+          mod,
+          index,
+        }),
+      ),
+      competitors: breakdown
+        .map(({ competitorId, seed, maps }) => ({
+          id: competitorId,
+          name: competitors.get(competitorId)?.name ?? '',
+          seed: competitors.get(competitorId)?.seed ?? seed,
+          maps: maps.map(({ osuBeatmapId, osuGameId, score, place }) => ({
+            osuBeatmapId: osuBeatmapId!,
+            gameId: osuGameId,
+            score,
+            place,
+          })),
+        }))
+        .sort((left, right) => left.seed - right.seed),
+    };
+  }
+
+  private getBreakdownFromInput(
+    input: Awaited<ReturnType<QualificationResultsRepository['load']>>,
+  ) {
     const competitors = new Map<string, readonly string[]>(
       input.competitors.map(
         (competitor) => [String(competitor.id), competitor.userIds] as const,

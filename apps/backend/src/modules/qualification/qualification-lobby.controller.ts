@@ -20,9 +20,22 @@ import { ZodResponse } from 'nestjs-zod';
 import {
   QualificationLobbyDto,
   QualificationLobbyUpsertDto,
+  QualificationStatisticsDto,
   SelectQualificationLobbyTeamDto,
 } from './dto';
 import { QualificationLobbyService } from './qualification-lobby.service';
+import { QualificationResultsService } from './qualification-results.service';
+
+@Controller('tournaments/:id/qualification-results')
+export class QualificationResultsController {
+  constructor(private readonly service: QualificationResultsService) {}
+
+  @Get()
+  @ZodResponse({ status: 200, type: QualificationStatisticsDto })
+  public find(@Param('id', TournamentIdPipe) tournamentId: TournamentId) {
+    return this.service.getStatistics(tournamentId);
+  }
+}
 
 @Controller('tournaments/:id/qualification-lobbies')
 export class QualificationLobbyController {
