@@ -20,9 +20,12 @@ dialog for match history.
 - Rows represent teams for team tournaments and players for solo tournaments.
 - The sticky first column displays the persisted qualification seed and
   competitor name.
-- An `Open` button resolves the competitor's assigned qualification lobby and
-  opens the existing `QualificationLobbyDetailDialog`. The dialog remains the
-  single implementation of qualification match history.
+- A compact icon-only button beside the competitor name resolves the assigned
+  qualification lobby and opens the existing
+  `QualificationLobbyDetailDialog`. It follows the small MP action-button
+  styling but opens the dialog instead of navigating to an external URL. It
+  has an accessible label describing the action.
+- The dialog remains the single implementation of qualification match history.
 - Map columns preserve mappool order when no map sort is active.
 - The matrix container scrolls horizontally when all columns do not fit.
 
