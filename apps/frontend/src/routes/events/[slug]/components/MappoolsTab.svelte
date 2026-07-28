@@ -65,7 +65,7 @@
 							href={getStageTabHref(stage.id)}
 							class="mr-0"
 							buttonClass={buttonVariants({
-								variant: 'default',
+								variant: 'stage',
 								size: 'sm',
 								className: 'w-full justify-center'
 							})}

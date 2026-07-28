@@ -9,6 +9,7 @@
 	import type { MappoolBeatmapDto, StageDto } from '$lib/api/types';
 	import QualificationLobbyDetailDialog from '$lib/components/qualificationLobby/QualificationLobbyDetailDialog.svelte';
 	import MatchHistoryDialog from '$lib/components/schedule/MatchHistoryDialog.svelte';
+	import { buttonVariants } from '$lib/components/ui/button';
 	import { ExternalLink } from 'lucide-svelte';
 	import { statisticsSortHref } from './statistics-sort';
 
@@ -53,9 +54,8 @@
 <nav class="mb-4 flex flex-wrap gap-2" aria-label="Statistics stage">
 	{#each stages as stage (stage.id)}
 		<a
-			class="rounded-md px-4 py-2 text-sm font-semibold {stage.id === statistics.stageId
-				? 'bg-primary text-primary-foreground'
-				: 'bg-secondary'}"
+			class={buttonVariants({ variant: 'stage', size: 'sm' })}
+			aria-current={stage.id === statistics.stageId ? 'page' : undefined}
 			href={stageHref(stage.id)}>{stage.name}</a
 		>
 	{/each}

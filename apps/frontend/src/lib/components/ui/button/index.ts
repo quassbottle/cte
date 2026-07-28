@@ -11,6 +11,8 @@ const buttonVariants = tv({
 			destructive: 'bg-destructive text-destructive-foreground hover:bg-destructive/90',
 			outline: 'border-input bg-background hover:bg-accent hover:text-accent-foreground border',
 			secondary: 'bg-secondary text-secondary-foreground hover:bg-secondary/80',
+			stage:
+				'!opacity-100 bg-secondary text-secondary-foreground hover:bg-secondary/80 aria-selected:bg-primary aria-selected:text-primary-foreground aria-selected:hover:bg-primary/90 aria-[current=page]:bg-primary aria-[current=page]:text-primary-foreground aria-[current=page]:hover:bg-primary/90',
 			ghost: 'hover:bg-accent hover:text-accent-foreground',
 			link: 'text-primary underline-offset-4 hover:underline'
 		},
