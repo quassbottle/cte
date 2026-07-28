@@ -15,16 +15,26 @@ import type { Actions, PageServerLoad } from './$types';
 export const load: PageServerLoad = async (event) => {
 	const { locals, params } = event;
 	const sortBeatmapId = Number(event.url.searchParams.get('sortBeatmapId'));
-	const qualificationSort = {
-		...(Number.isSafeInteger(sortBeatmapId) && sortBeatmapId > 0 ? { sortBeatmapId } : {}),
-		sortDirection: event.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc'
-	} as const;
+	const statistics:
+		| {
+				stageId?: string;
+				sortBeatmapId?: number;
+				sortDirection: 'asc' | 'desc';
+		  }
+		| undefined =
+		event.url.searchParams.get('tab') === 'statistics'
+			? {
+					stageId: event.url.searchParams.get('stage') ?? undefined,
+					...(Number.isSafeInteger(sortBeatmapId) && sortBeatmapId > 0 ? { sortBeatmapId } : {}),
+					sortDirection: event.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc'
+				}
+			: undefined;
 	try {
 		return await getTournamentPage(
 			createBackendClient(event),
 			params.slug,
 			locals.session?.user,
-			qualificationSort
+			statistics
 		);
 	} catch (cause) {
 		throwBackendError(cause, 404, 'Tournament not found');

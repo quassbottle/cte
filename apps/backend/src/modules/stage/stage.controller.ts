@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth } from '@nestjs/swagger';
@@ -17,13 +18,23 @@ import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import { ZodResponse } from 'nestjs-zod';
-import { CreateStageDto, StageDto, UpdateStageDto } from './dto';
+import {
+  CreateStageDto,
+  StageDto,
+  StageStatisticsDto,
+  StageStatisticsQueryDto,
+  UpdateStageDto,
+} from './dto';
+import { StageStatisticsService } from './stage-statistics.service';
 import { StageService } from './stage.service';
 
 @ApiBearerAuth('bearer')
 @Controller('tournaments/:tournamentId/stages')
 export class StageController {
-  constructor(private readonly stageService: StageService) {}
+  constructor(
+    private readonly stageService: StageService,
+    private readonly stageStatistics: StageStatisticsService,
+  ) {}
 
   @Get()
   @ZodResponse({
@@ -48,6 +59,16 @@ export class StageController {
     @Param('id', StageIdPipe) id: StageId,
   ) {
     return this.stageService.getById({ id, tournamentId });
+  }
+
+  @Get(':id/statistics')
+  @ZodResponse({ status: 200, type: StageStatisticsDto })
+  public async getStatistics(
+    @Param('tournamentId', TournamentIdPipe) tournamentId: TournamentId,
+    @Param('id', StageIdPipe) id: StageId,
+    @Query() query: StageStatisticsQueryDto,
+  ) {
+    return this.stageStatistics.get(tournamentId, id, query);
   }
 
   @Post()

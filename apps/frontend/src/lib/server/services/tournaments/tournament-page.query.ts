@@ -5,10 +5,11 @@ export async function getTournamentPage(
 	backend: BackendClient,
 	tournamentId: string,
 	viewer?: Pick<Viewer, 'id' | 'role'>,
-	qualificationSort: {
+	statistics?: {
+		stageId?: string;
 		sortBeatmapId?: number;
 		sortDirection: 'asc' | 'desc';
-	} = { sortDirection: 'asc' }
+	}
 ) {
 	const [
 		tournamentResponse,
@@ -34,10 +35,21 @@ export async function getTournamentPage(
 		!!viewer && (tournament.creatorId === viewer.id || viewer.role === 'admin');
 	const host = (await backend.users.getById(tournament.creatorId)).data;
 	const visibleMappools = mappoolsResponse.data;
-	const qualificationStatistics = stagesResponse.data.some(
-		({ type }) => type === 'qualification'
-	)
-		? (await backend.qualificationResults.find(tournamentId, qualificationSort)).data
+	const statisticsStage = statistics
+		? (stagesResponse.data.find(({ id }) => id === statistics.stageId) ??
+			stagesResponse.data.find(({ type }) => type === 'qualification') ??
+			stagesResponse.data[0])
+		: undefined;
+	const statisticsQuery = statistics;
+	const stageStatistics = statisticsStage
+		? (
+				await backend.stages.getStatistics(tournamentId, statisticsStage.id, {
+					...(statisticsQuery?.sortBeatmapId
+						? { sortBeatmapId: statisticsQuery.sortBeatmapId }
+						: {}),
+					sortDirection: statisticsQuery?.sortDirection ?? 'asc'
+				})
+			).data
 		: null;
 
 	return {
@@ -49,7 +61,7 @@ export async function getTournamentPage(
 		stages: stagesResponse.data,
 		schedule: scheduleResponse.data,
 		qualificationLobbies: qualificationLobbiesResponse.data,
-		qualificationStatistics,
+		stageStatistics,
 		mappools: visibleMappools.map(({ beatmaps, ...mappool }) => mappool),
 		mappoolBeatmaps: visibleMappools.map((mappool) => ({
 			mappoolId: mappool.id,

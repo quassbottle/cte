@@ -109,6 +109,7 @@ describe('qualificationLobbyDtoSchema', () => {
   it('parses qualification statistics', () => {
     expect(
       qualificationStatisticsDtoSchema.parse({
+        stageId: 'stage',
         maps: [
           {
             osuBeatmapId: 11,
@@ -135,13 +136,24 @@ describe('qualificationLobbyDtoSchema', () => {
             name: 'Team A',
             seed: 1,
             maps: [
-              { osuBeatmapId: 11, gameId: 101, score: 1_900_000, place: 1 },
-              { osuBeatmapId: 22, gameId: null, score: 0, place: 2 },
+              {
+                osuBeatmapId: 11,
+                attempts: [
+                  {
+                    gameId: 101,
+                    matchId: null,
+                    score: 1_900_000,
+                    place: 1,
+                  },
+                ],
+              },
+              { osuBeatmapId: 22, attempts: [] },
             ],
           },
         ],
       }),
     ).toEqual({
+      stageId: 'stage',
       maps: [
         {
           osuBeatmapId: 11,
@@ -168,8 +180,18 @@ describe('qualificationLobbyDtoSchema', () => {
           name: 'Team A',
           seed: 1,
           maps: [
-            { osuBeatmapId: 11, gameId: 101, score: 1_900_000, place: 1 },
-            { osuBeatmapId: 22, gameId: null, score: 0, place: 2 },
+            {
+              osuBeatmapId: 11,
+              attempts: [
+                {
+                  gameId: 101,
+                  matchId: null,
+                  score: 1_900_000,
+                  place: 1,
+                },
+              ],
+            },
+            { osuBeatmapId: 22, attempts: [] },
           ],
         },
       ],

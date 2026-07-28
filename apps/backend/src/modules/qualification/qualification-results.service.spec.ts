@@ -105,6 +105,7 @@ describe('QualificationResultsService', () => {
     ).getStatistics('tournament' as never);
 
     expect(result).toEqual({
+      stageId: 'stage',
       maps: [
         expect.objectContaining({ osuBeatmapId: 11, mod: 'NM', index: 1 }),
         expect.objectContaining({ osuBeatmapId: 22, mod: 'HD', index: 1 }),
@@ -115,8 +116,18 @@ describe('QualificationResultsService', () => {
           name: 'Team A',
           seed: 3,
           maps: [
-            { osuBeatmapId: 11, gameId: 101, score: 1_900_000, place: 1 },
-            { osuBeatmapId: 22, gameId: null, score: 0, place: 1 },
+            {
+              osuBeatmapId: 11,
+              attempts: [
+                {
+                  gameId: 101,
+                  matchId: null,
+                  score: 1_900_000,
+                  place: 1,
+                },
+              ],
+            },
+            { osuBeatmapId: 22, attempts: [] },
           ],
         },
       ],

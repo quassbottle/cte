@@ -1,4 +1,4 @@
-export const qualificationSortHref = (url: URL, beatmapId: number | null) => {
+export const statisticsSortHref = (url: URL, beatmapId: number | null) => {
 	const params = new URLSearchParams(url.searchParams);
 	const currentBeatmapId = Number(params.get('sortBeatmapId')) || null;
 	const currentDirection = params.get('sortDirection') === 'desc' ? 'desc' : 'asc';
@@ -11,7 +11,7 @@ export const qualificationSortHref = (url: URL, beatmapId: number | null) => {
 				? 'asc'
 				: 'desc';
 
-	params.set('tab', 'qualification');
+	params.set('tab', 'statistics');
 	if (beatmapId === null) params.delete('sortBeatmapId');
 	else params.set('sortBeatmapId', String(beatmapId));
 	params.set('sortDirection', direction);

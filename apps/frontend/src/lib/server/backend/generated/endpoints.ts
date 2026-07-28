@@ -31,8 +31,10 @@ import type {
 	ReorderMappoolBeatmapsDto,
 	ScheduleMatchUpsertDto,
 	SelectQualificationLobbyTeamDto,
+	StageControllerGetStatisticsParams,
 	StageDtoOutput,
 	StageScheduleDtoOutput,
+	StageStatisticsDtoOutput,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
 	TournamentControllerSearchTeamsParams,
@@ -1473,6 +1475,52 @@ export const stageControllerSoftDelete = async (
 		{
 			...options,
 			method: 'DELETE'
+		}
+	);
+};
+
+export type stageControllerGetStatisticsResponse200 = {
+	data: StageStatisticsDtoOutput;
+	status: 200;
+};
+
+export type stageControllerGetStatisticsResponseSuccess =
+	stageControllerGetStatisticsResponse200 & {
+		headers: Headers;
+	};
+export type stageControllerGetStatisticsResponse = stageControllerGetStatisticsResponseSuccess;
+
+export const getStageControllerGetStatisticsUrl = (
+	tournamentId: string,
+	id: string,
+	params?: StageControllerGetStatisticsParams
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? 'null' : String(value));
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/api/tournaments/${tournamentId}/stages/${id}/statistics?${stringifiedParams}`
+		: `/api/tournaments/${tournamentId}/stages/${id}/statistics`;
+};
+
+export const stageControllerGetStatistics = async (
+	tournamentId: string,
+	id: string,
+	params?: StageControllerGetStatisticsParams,
+	options?: RequestInit
+): Promise<stageControllerGetStatisticsResponse> => {
+	return backendFetch<stageControllerGetStatisticsResponse>(
+		getStageControllerGetStatisticsUrl(tournamentId, id, params),
+		{
+			...options,
+			method: 'GET'
 		}
 	);
 };

@@ -1891,6 +1891,73 @@
         ]
       }
     },
+    "/api/tournaments/{tournamentId}/stages/{id}/statistics": {
+      "get": {
+        "operationId": "StageController_getStatistics",
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "sortBeatmapId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 9007199254740991,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "sortDirection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "asc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StageStatisticsDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "bearer": []
+          }
+        ],
+        "tags": [
+          "Stage"
+        ]
+      }
+    },
     "/api/mappools": {
       "get": {
         "operationId": "MappoolController_findMany",
@@ -4109,6 +4176,11 @@
       "QualificationStatisticsDto_Output": {
         "type": "object",
         "properties": {
+          "stageId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
           "maps": {
             "type": "array",
             "items": {
@@ -4180,29 +4252,45 @@
                         "minimum": -9007199254740991,
                         "maximum": 9007199254740991
                       },
-                      "gameId": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991,
-                        "nullable": true
-                      },
-                      "score": {
-                        "type": "integer",
-                        "minimum": -9007199254740991,
-                        "maximum": 9007199254740991
-                      },
-                      "place": {
-                        "type": "integer",
-                        "exclusiveMinimum": true,
-                        "maximum": 9007199254740991,
-                        "minimum": 0
+                      "attempts": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "gameId": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "matchId": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "score": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "place": {
+                              "type": "integer",
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991,
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "gameId",
+                            "matchId",
+                            "score",
+                            "place"
+                          ],
+                          "additionalProperties": false
+                        }
                       }
                     },
                     "required": [
                       "osuBeatmapId",
-                      "gameId",
-                      "score",
-                      "place"
+                      "attempts"
                     ],
                     "additionalProperties": false
                   }
@@ -4219,6 +4307,7 @@
           }
         },
         "required": [
+          "stageId",
           "maps",
           "competitors"
         ],
@@ -4284,6 +4373,145 @@
           "deletedAt",
           "createdAt",
           "updatedAt"
+        ],
+        "additionalProperties": false
+      },
+      "StageStatisticsDto_Output": {
+        "type": "object",
+        "properties": {
+          "stageId": {
+            "type": "string",
+            "format": "cuid2",
+            "pattern": "^[0-9a-z]+$"
+          },
+          "maps": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "osuBeatmapId": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                },
+                "artist": {
+                  "type": "string"
+                },
+                "title": {
+                  "type": "string"
+                },
+                "difficultyName": {
+                  "type": "string"
+                },
+                "coverUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
+                "mod": {
+                  "type": "string"
+                },
+                "index": {
+                  "type": "integer",
+                  "minimum": -9007199254740991,
+                  "maximum": 9007199254740991
+                }
+              },
+              "required": [
+                "osuBeatmapId",
+                "artist",
+                "title",
+                "difficultyName",
+                "coverUrl",
+                "mod",
+                "index"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "competitors": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "id": {
+                  "type": "string"
+                },
+                "name": {
+                  "type": "string"
+                },
+                "seed": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991,
+                  "minimum": 0
+                },
+                "maps": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "osuBeatmapId": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991
+                      },
+                      "attempts": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "gameId": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "matchId": {
+                              "type": "string",
+                              "nullable": true
+                            },
+                            "score": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            },
+                            "place": {
+                              "type": "integer",
+                              "exclusiveMinimum": true,
+                              "maximum": 9007199254740991,
+                              "minimum": 0
+                            }
+                          },
+                          "required": [
+                            "gameId",
+                            "matchId",
+                            "score",
+                            "place"
+                          ],
+                          "additionalProperties": false
+                        }
+                      }
+                    },
+                    "required": [
+                      "osuBeatmapId",
+                      "attempts"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              },
+              "required": [
+                "id",
+                "name",
+                "maps"
+              ],
+              "additionalProperties": false
+            }
+          }
+        },
+        "required": [
+          "stageId",
+          "maps",
+          "competitors"
         ],
         "additionalProperties": false
       },

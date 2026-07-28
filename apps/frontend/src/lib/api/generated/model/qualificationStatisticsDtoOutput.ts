@@ -9,6 +9,8 @@ import type { QualificationStatisticsDtoOutputCompetitorsItem } from './qualific
 import type { QualificationStatisticsDtoOutputMapsItem } from './qualificationStatisticsDtoOutputMapsItem';
 
 export interface QualificationStatisticsDtoOutput {
+	/** @pattern ^[0-9a-z]+$ */
+	stageId: string;
 	maps: QualificationStatisticsDtoOutputMapsItem[];
 	competitors: QualificationStatisticsDtoOutputCompetitorsItem[];
 }

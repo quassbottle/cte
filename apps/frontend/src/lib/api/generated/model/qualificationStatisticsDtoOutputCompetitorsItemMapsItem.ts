@@ -5,6 +5,7 @@
  * Auth and user management API
  * OpenAPI spec version: 1.0
  */
+import type { QualificationStatisticsDtoOutputCompetitorsItemMapsItemAttemptsItem } from './qualificationStatisticsDtoOutputCompetitorsItemMapsItemAttemptsItem';
 
 export type QualificationStatisticsDtoOutputCompetitorsItemMapsItem = {
 	/**
@@ -12,20 +13,5 @@ export type QualificationStatisticsDtoOutputCompetitorsItemMapsItem = {
 	 * @maximum 9007199254740991
 	 */
 	osuBeatmapId: number;
-	/**
-	 * @minimum -9007199254740991
-	 * @maximum 9007199254740991
-	 * @nullable
-	 */
-	gameId: number | null;
-	/**
-	 * @minimum -9007199254740991
-	 * @maximum 9007199254740991
-	 */
-	score: number;
-	/**
-	 * @maximum 9007199254740991
-	 * @exclusiveMinimum 0
-	 */
-	place: number;
+	attempts: QualificationStatisticsDtoOutputCompetitorsItemMapsItemAttemptsItem[];
 };

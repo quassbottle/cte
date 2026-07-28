@@ -45,3 +45,49 @@ export const updateStageDtoSchema = z
   });
 
 export class UpdateStageDto extends createZodDto(updateStageDtoSchema) {}
+
+export const stageStatisticsQuerySchema = z.object({
+  sortBeatmapId: z.coerce.number().int().positive().optional(),
+  sortDirection: z.enum(['asc', 'desc']).default('asc'),
+});
+export class StageStatisticsQueryDto extends createZodDto(
+  stageStatisticsQuerySchema,
+) {}
+
+const stageStatisticsMapSchema = z.object({
+  osuBeatmapId: z.number().int(),
+  artist: z.string(),
+  title: z.string(),
+  difficultyName: z.string(),
+  coverUrl: z.url(),
+  mod: z.string(),
+  index: z.number().int(),
+});
+
+const stageStatisticsAttemptSchema = z.object({
+  gameId: z.number().int(),
+  matchId: z.string().nullable(),
+  score: z.number().int(),
+  place: z.number().int().positive(),
+});
+
+export const stageStatisticsDtoSchema = z.object({
+  stageId: stageIdSchema,
+  maps: z.array(stageStatisticsMapSchema),
+  competitors: z.array(
+    z.object({
+      id: z.string(),
+      name: z.string(),
+      seed: z.number().int().positive().optional(),
+      maps: z.array(
+        z.object({
+          osuBeatmapId: z.number().int(),
+          attempts: z.array(stageStatisticsAttemptSchema),
+        }),
+      ),
+    }),
+  ),
+});
+export class StageStatisticsDto extends createZodDto(
+  stageStatisticsDtoSchema,
+) {}

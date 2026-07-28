@@ -39,6 +39,15 @@ export class QualificationResultsService {
     },
   ) {
     const stageId = await this.repository.findStageId(tournamentId);
+    return this.getStatisticsByStage(stageId, query);
+  }
+
+  public async getStatisticsByStage(
+    stageId: StageId,
+    query: { sortBeatmapId?: number; sortDirection: 'asc' | 'desc' } = {
+      sortDirection: 'asc',
+    },
+  ) {
     const input = await this.repository.load(stageId);
     const competitors = new Map(
       input.competitors.map(
@@ -47,6 +56,7 @@ export class QualificationResultsService {
     );
     const breakdown = this.getBreakdownFromInput(input);
     return {
+      stageId,
       maps: input.beatmaps.map(
         ({
           osuBeatmapId,
@@ -73,9 +83,10 @@ export class QualificationResultsService {
           seed: competitors.get(competitorId)?.seed ?? seed,
           maps: maps.map(({ osuBeatmapId, osuGameId, score, place }) => ({
             osuBeatmapId: osuBeatmapId!,
-            gameId: osuGameId,
-            score,
-            place,
+            attempts:
+              osuGameId === null
+                ? []
+                : [{ gameId: osuGameId, matchId: null, score, place }],
           })),
         }))
         .sort((left, right) => {
@@ -84,18 +95,13 @@ export class QualificationResultsService {
             return (left.seed - right.seed) * direction;
           const leftScore =
             left.maps.find(
-              ({ osuBeatmapId }) =>
-                osuBeatmapId === query.sortBeatmapId,
-            )?.score ?? 0;
+              ({ osuBeatmapId }) => osuBeatmapId === query.sortBeatmapId,
+            )?.attempts[0]?.score ?? 0;
           const rightScore =
             right.maps.find(
-              ({ osuBeatmapId }) =>
-                osuBeatmapId === query.sortBeatmapId,
-            )?.score ?? 0;
-          return (
-            (leftScore - rightScore) * direction ||
-            left.seed - right.seed
-          );
+              ({ osuBeatmapId }) => osuBeatmapId === query.sortBeatmapId,
+            )?.attempts[0]?.score ?? 0;
+          return (leftScore - rightScore) * direction || left.seed - right.seed;
         }),
     };
   }

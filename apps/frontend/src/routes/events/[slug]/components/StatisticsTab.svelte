@@ -3,21 +3,30 @@
 	import { goto } from '$app/navigation';
 	import type {
 		QualificationLobbyDtoOutput,
-		QualificationStatisticsDtoOutput
+		StageScheduleDtoOutput,
+		StageStatisticsDtoOutput
 	} from '$lib/api/generated/model';
-	import type { MappoolBeatmapDto } from '$lib/api/types';
+	import type { MappoolBeatmapDto, StageDto } from '$lib/api/types';
 	import QualificationLobbyDetailDialog from '$lib/components/qualificationLobby/QualificationLobbyDetailDialog.svelte';
+	import MatchHistoryDialog from '$lib/components/schedule/MatchHistoryDialog.svelte';
 	import { ExternalLink } from 'lucide-svelte';
-	import { qualificationSortHref } from './qualification-statistics-sort';
+	import { statisticsSortHref } from './statistics-sort';
 
-	export let statistics: QualificationStatisticsDtoOutput;
+	export let statistics: StageStatisticsDtoOutput;
+	export let stages: StageDto[];
+	export let schedule: StageScheduleDtoOutput[];
 	export let tournamentId: string;
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let beatmaps: MappoolBeatmapDto[];
 	export let isTeam: boolean;
 
 	let selectedLobbyId: string | null = null;
+	let selectedMatchId: string | null = null;
 	$: selectedLobby = lobbies.find(({ id }) => id === selectedLobbyId);
+	$: selectedMatch = schedule
+		.flatMap(({ matches }) => matches)
+		.find(({ id }) => id === selectedMatchId);
+	$: isQualification = stages.find(({ id }) => id === statistics.stageId)?.type === 'qualification';
 	$: activeSortBeatmapId = Number($page.url.searchParams.get('sortBeatmapId')) || null;
 	$: activeSortDirection = $page.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc';
 
@@ -27,10 +36,30 @@
 		);
 
 	const applySort = (beatmapId: number | null) =>
-		goto(qualificationSortHref(new URL(window.location.href), beatmapId), {
+		goto(statisticsSortHref(new URL(window.location.href), beatmapId), {
 			invalidateAll: true
 		});
+
+	const stageHref = (stageId: string) => {
+		const params = new URLSearchParams($page.url.searchParams);
+		params.set('tab', 'statistics');
+		params.set('stage', stageId);
+		params.delete('sortBeatmapId');
+		params.delete('sortDirection');
+		return `${$page.url.pathname}?${params}`;
+	};
 </script>
+
+<nav class="mb-4 flex flex-wrap gap-2" aria-label="Statistics stage">
+	{#each stages as stage (stage.id)}
+		<a
+			class="rounded-md px-4 py-2 text-sm font-semibold {stage.id === statistics.stageId
+				? 'bg-primary text-primary-foreground'
+				: 'bg-secondary'}"
+			href={stageHref(stage.id)}>{stage.name}</a
+		>
+	{/each}
+</nav>
 
 <div class="w-full max-w-full overflow-x-auto rounded-md border border-border">
 	<table class="min-w-max border-collapse text-sm">
@@ -91,11 +120,12 @@
 		</thead>
 		<tbody>
 			{#each statistics.competitors as competitor (competitor.id)}
-				{@const lobby = lobbyFor(competitor.id)}
+				{@const lobby = isQualification ? lobbyFor(competitor.id) : undefined}
 				<tr class="border-t border-border">
 					<th class="sticky left-0 z-10 min-w-56 bg-background px-4 py-4 text-left font-semibold">
 						<div class="flex items-center gap-2">
-							<span class="text-muted-foreground">#{competitor.seed}</span>
+							{#if competitor.seed}<span class="text-muted-foreground">#{competitor.seed}</span
+								>{/if}
 							<span>{competitor.name}</span>
 							{#if lobby}
 								<button
@@ -112,9 +142,27 @@
 					{#each statistics.maps as map (map.osuBeatmapId)}
 						{@const result = competitor.maps.find((item) => item.osuBeatmapId === map.osuBeatmapId)}
 						<td class="min-w-48 whitespace-nowrap px-4 py-4">
-							{result?.gameId === null || !result
-								? '—'
-								: `${result.score.toLocaleString()} · #${result.place}`}
+							{#if !result?.attempts.length}
+								—
+							{:else}
+								<div class="space-y-1">
+									{#each result.attempts as attempt (attempt.gameId)}
+										<div class="flex items-center gap-2">
+											<span>{attempt.score.toLocaleString()} · #{attempt.place}</span>
+											{#if attempt.matchId}
+												<button
+													type="button"
+													class="text-primary hover:text-primary/80"
+													aria-label="Open match history"
+													on:click={() => (selectedMatchId = attempt.matchId)}
+												>
+													<ExternalLink class="h-4 w-4" />
+												</button>
+											{/if}
+										</div>
+									{/each}
+								</div>
+							{/if}
 						</td>
 					{/each}
 				</tr>
@@ -129,5 +177,14 @@
 		lobby={selectedLobby}
 		{beatmaps}
 		onClose={() => (selectedLobbyId = null)}
+	/>
+{/if}
+
+{#if selectedMatch}
+	<MatchHistoryDialog
+		{tournamentId}
+		match={selectedMatch}
+		{beatmaps}
+		onClose={() => (selectedMatchId = null)}
 	/>
 {/if}

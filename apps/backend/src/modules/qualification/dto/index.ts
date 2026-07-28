@@ -95,6 +95,7 @@ export class QualificationStatisticsQueryDto extends createZodDto(
 ) {}
 
 export const qualificationStatisticsDtoSchema = z.object({
+  stageId: stageIdSchema,
   maps: z.array(
     z.object({
       osuBeatmapId: z.number().int(),
@@ -114,9 +115,14 @@ export const qualificationStatisticsDtoSchema = z.object({
       maps: z.array(
         z.object({
           osuBeatmapId: z.number().int(),
-          gameId: z.number().int().nullable(),
-          score: z.number().int(),
-          place: z.number().int().positive(),
+          attempts: z.array(
+            z.object({
+              gameId: z.number().int(),
+              matchId: z.string().nullable(),
+              score: z.number().int(),
+              place: z.number().int().positive(),
+            }),
+          ),
         }),
       ),
     }),

@@ -10,7 +10,7 @@
 	} from '$lib/api/types';
 	import type {
 		QualificationLobbyDtoOutput,
-		QualificationStatisticsDtoOutput,
+		StageStatisticsDtoOutput,
 		StageScheduleDtoOutput,
 		TournamentStaffRoleDto
 	} from '$lib/api/generated/model';
@@ -23,7 +23,7 @@
 	import ScheduleTab from './components/ScheduleTab.svelte';
 	import MappoolsTab from './components/MappoolsTab.svelte';
 	import StaffTab from './components/StaffTab.svelte';
-	import QualificationStatisticsTab from './components/QualificationStatisticsTab.svelte';
+	import StatisticsTab from './components/StatisticsTab.svelte';
 	import type { TournamentRegistrationForm } from './components/info/types';
 
 	export let data: {
@@ -36,7 +36,7 @@
 		stages: StageDto[];
 		schedule: StageScheduleDtoOutput[];
 		qualificationLobbies: QualificationLobbyDtoOutput[];
-		qualificationStatistics: QualificationStatisticsDtoOutput | null;
+		stageStatistics: StageStatisticsDtoOutput | null;
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		canEditTournament: boolean;
@@ -49,7 +49,7 @@
 		'staff',
 		'schedule',
 		'mappools',
-		'qualification'
+		'statistics'
 	] as const;
 	type TournamentTab = (typeof tournamentTabs)[number];
 	let activeTab: TournamentTab = 'info';
@@ -68,7 +68,7 @@
 
 	function getActiveTournamentTab(value: string | null): TournamentTab {
 		if (!isTournamentTab(value)) return 'info';
-		if (value === 'qualification' && !data.qualificationStatistics) return 'info';
+		if (value === 'statistics' && !data.stageStatistics) return 'info';
 		return value;
 	}
 
@@ -112,10 +112,8 @@
 			<Item value="staff" href={getTournamentTabHref('staff')}>Staff</Item>
 			<Item value="schedule" href={getTournamentTabHref('schedule')}>Schedule</Item>
 			<Item value="mappools" href={getTournamentTabHref('mappools')}>Mappools</Item>
-			{#if data.qualificationStatistics}
-				<Item value="qualification" href={getTournamentTabHref('qualification')}>
-					Qualification
-				</Item>
+			{#if data.stages.length}
+				<Item value="statistics" href={getTournamentTabHref('statistics')}>Statistics</Item>
 			{/if}
 		</Head>
 
@@ -168,11 +166,13 @@
 		/>
 	</ContentItem>
 
-	{#if data.qualificationStatistics}
-		<ContentItem value="qualification">
-			<QualificationStatisticsTab
+	{#if data.stageStatistics}
+		<ContentItem value="statistics">
+			<StatisticsTab
 				tournamentId={data.tournament.id}
-				statistics={data.qualificationStatistics}
+				statistics={data.stageStatistics}
+				stages={data.stages}
+				schedule={data.schedule}
 				lobbies={data.qualificationLobbies}
 				beatmaps={data.mappoolBeatmaps.flatMap(({ beatmaps }) => beatmaps)}
 				isTeam={data.tournament.isTeam}

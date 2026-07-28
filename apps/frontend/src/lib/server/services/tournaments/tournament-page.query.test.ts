@@ -26,7 +26,7 @@ describe('getTournamentPage', () => {
 		expect(result.canEditTournament).toBe(true);
 	});
 
-	test('loads backend-sorted qualification statistics only for qualification tournaments', async () => {
+	test('loads backend-sorted statistics only for the selected stage', async () => {
 		const empty = async () => ({ data: [] });
 		let receivedParams: unknown;
 		const backend = {
@@ -38,27 +38,31 @@ describe('getTournamentPage', () => {
 				staff: { get: empty }
 			},
 			stages: {
-				findByTournament: async () => ({ data: [{ type: 'qualification' }] })
-			},
-			qualificationLobbies: { findByTournament: empty },
-			qualificationResults: {
-				find: async (_id: string, params: unknown) => {
-					receivedParams = params;
-					return { data: { maps: [], competitors: [] } };
+				findByTournament: async () => ({ data: [{ id: 'stage-id', type: 'regular' }] }),
+				getStatistics: async (_tournamentId: string, stageId: string, params: unknown) => {
+					receivedParams = { stageId, params };
+					return { data: { stageId, maps: [], competitors: [] } };
 				}
 			},
+			qualificationLobbies: { findByTournament: empty },
 			mappools: { findByTournament: empty },
 			users: { getById: async () => ({ data: { id: 'owner-id' } }) }
 		};
 
-		const result = await getTournamentPage(
-			backend as never,
-			'tournament-id',
-			undefined,
-			{ sortBeatmapId: 11, sortDirection: 'desc' }
-		);
+		const result = await getTournamentPage(backend as never, 'tournament-id', undefined, {
+			stageId: 'stage-id',
+			sortBeatmapId: 11,
+			sortDirection: 'desc'
+		});
 
-		expect(receivedParams).toEqual({ sortBeatmapId: 11, sortDirection: 'desc' });
-		expect(result.qualificationStatistics).toEqual({ maps: [], competitors: [] });
+		expect(receivedParams).toEqual({
+			stageId: 'stage-id',
+			params: { sortBeatmapId: 11, sortDirection: 'desc' }
+		});
+		expect(result.stageStatistics).toEqual({
+			stageId: 'stage-id',
+			maps: [],
+			competitors: []
+		});
 	});
 });

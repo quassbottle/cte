@@ -1,17 +1,11 @@
 <script lang="ts">
-	import type {
-		MatchHistoryDtoOutput,
-		StageScheduleDtoOutputMatchesItem
-	} from '$lib/api/generated/model';
+	import type { StageScheduleDtoOutputMatchesItem } from '$lib/api/generated/model';
 	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import Match from '$lib/components/match/match.svelte';
 	import MatchCard from '$lib/components/match/MatchCard.svelte';
-	import MultiplayerHistory from '$lib/components/multiplayerHistory/MultiplayerHistory.svelte';
-	import MultiplayerHistoryDialog from '$lib/components/multiplayerHistory/MultiplayerHistoryDialog.svelte';
-	import type { MultiplayerHistoryData } from '$lib/components/multiplayerHistory/multiplayerHistory';
 	import { Button } from '$lib/components/ui/button';
 	import ScheduleTable from './ScheduleTable.svelte';
-	import { toMatchHistory } from './match-history';
+	import MatchHistoryDialog from './MatchHistoryDialog.svelte';
 	import { toMatchView } from './schedule-view';
 
 	export let matches: StageScheduleDtoOutputMatchesItem[];
@@ -22,44 +16,13 @@
 	$: viewMatches = matches.map(toMatchView);
 
 	let selectedMatch: StageScheduleDtoOutputMatchesItem | null = null;
-	let history: MultiplayerHistoryData | null = null;
-	let loading = false;
-	let historyError: string | null = null;
-	let request: AbortController | null = null;
-
-	async function openHistory(match: StageScheduleDtoOutputMatchesItem) {
+	function openHistory(match: StageScheduleDtoOutputMatchesItem) {
 		if (!tournamentId || !match.lastSyncedAt) return;
-
-		request?.abort();
-		const controller = new AbortController();
-		request = controller;
 		selectedMatch = match;
-		history = null;
-		historyError = null;
-		loading = true;
-
-		try {
-			const response = await fetch(`/api/tournaments/${tournamentId}/matches/${match.id}/history`, {
-				signal: controller.signal
-			});
-			if (!response.ok) throw new Error('Unable to load match history');
-			history = toMatchHistory((await response.json()) as MatchHistoryDtoOutput, beatmaps);
-		} catch (error) {
-			if (!(error instanceof DOMException && error.name === 'AbortError')) {
-				historyError = error instanceof Error ? error.message : 'Unable to load match history';
-			}
-		} finally {
-			if (request === controller) loading = false;
-		}
 	}
 
 	function closeHistory() {
-		request?.abort();
-		request = null;
 		selectedMatch = null;
-		history = null;
-		historyError = null;
-		loading = false;
 	}
 </script>
 
@@ -131,26 +94,10 @@
 </ScheduleTable>
 
 {#if selectedMatch}
-	<MultiplayerHistoryDialog onClose={closeHistory}>
-		<article class="space-y-4 p-4">
-			<header class="pr-12">
-				<h3 class="font-semibold">{selectedMatch.name}</h3>
-				{#if selectedMatch.mpUrl}
-					<a class="text-sm underline" href={selectedMatch.mpUrl}>Multiplayer room</a>
-				{/if}
-				{#if selectedMatch.lastSyncedAt}
-					<p class="text-xs text-muted-foreground">
-						Synced {new Date(selectedMatch.lastSyncedAt).toLocaleString()}
-					</p>
-				{/if}
-			</header>
-			{#if loading}
-				<p class="py-8 text-center text-sm text-muted-foreground">Loading history…</p>
-			{:else if historyError}
-				<p class="py-8 text-center text-sm text-destructive">{historyError}</p>
-			{:else if history}
-				<MultiplayerHistory {history} />
-			{/if}
-		</article>
-	</MultiplayerHistoryDialog>
+	<MatchHistoryDialog
+		tournamentId={tournamentId!}
+		match={selectedMatch}
+		{beatmaps}
+		onClose={closeHistory}
+	/>
 {/if}

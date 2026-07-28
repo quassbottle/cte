@@ -5,9 +5,9 @@ import type {
 	CreateMappoolDto,
 	CreateStageDto,
 	QualificationLobbyUpsertDto,
-	QualificationResultsControllerFindParams,
 	ReorderMappoolBeatmapsDto,
 	ScheduleMatchUpsertDto,
+	StageControllerGetStatisticsParams,
 	TournamentControllerFindManyParams,
 	TournamentControllerGetParticipantsParams,
 	TournamentControllerSearchTeamsParams,
@@ -37,10 +37,10 @@ import {
 	qualificationLobbyControllerStart,
 	qualificationLobbyControllerStop,
 	qualificationLobbyControllerUpdate,
-	qualificationResultsControllerFind,
 	osuControllerGetBeatmapMetadata,
 	stageControllerCreate,
 	stageControllerFindMany,
+	stageControllerGetStatistics,
 	stageControllerPatch,
 	stageControllerSoftDelete,
 	tournamentControllerCreate,
@@ -209,12 +209,13 @@ export function createBackendClient(input?: BackendClientInput) {
 			selectTeam: (tournamentId: string, lobbyId: string, teamId: string) =>
 				qualificationLobbyControllerSelectTeam(tournamentId, lobbyId, { teamId }, options)
 		},
-		qualificationResults: {
-			find: (tournamentId: string, params?: QualificationResultsControllerFindParams) =>
-				qualificationResultsControllerFind(tournamentId, params, options)
-		},
 		stages: {
 			findByTournament: (tournamentId: string) => stageControllerFindMany(tournamentId, options),
+			getStatistics: (
+				tournamentId: string,
+				stageId: string,
+				params?: StageControllerGetStatisticsParams
+			) => stageControllerGetStatistics(tournamentId, stageId, params, options),
 			create: (tournamentId: string, input: CreateStageDto) =>
 				stageControllerCreate(tournamentId, input, options),
 			update: (tournamentId: string, stageId: string, input: UpdateStageDto) =>
