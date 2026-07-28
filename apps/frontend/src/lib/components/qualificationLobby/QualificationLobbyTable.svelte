@@ -11,6 +11,7 @@
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let beatmaps: MappoolBeatmapDto[];
 	export let isTeam: boolean;
+	export let canEdit = false;
 
 	let selectedLobbyId: string | null = null;
 	$: selectedLobby = findQualificationLobby(lobbies, selectedLobbyId);
@@ -64,7 +65,7 @@
 							>
 								Open
 							</Button>
-							<slot name="actions" {lobby} />
+							{#if canEdit}<slot name="actions" {lobby} />{/if}
 						</div>
 					</td>
 				</tr>
@@ -103,7 +104,7 @@
 						>
 							Open
 						</Button>
-						<slot name="actions" {lobby} />
+						{#if canEdit}<slot name="actions" {lobby} />{/if}
 					</div>
 				</div>
 			</article>

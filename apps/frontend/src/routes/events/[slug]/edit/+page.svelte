@@ -124,6 +124,7 @@
 				schedule={data.schedule}
 				lobbies={data.qualificationLobbies}
 				staff={data.staff}
+				beatmaps={data.mappoolBeatmaps.flatMap(({ beatmaps }) => beatmaps)}
 				isTeam={data.tournament.isTeam}
 				{form}
 			/>

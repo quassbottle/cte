@@ -15,7 +15,7 @@
 	import { toMatchView } from './schedule-view';
 
 	export let matches: StageScheduleDtoOutputMatchesItem[];
-	export let editable = false;
+	export let canEdit = false;
 	export let tournamentId: string | null = null;
 	export let beatmaps: MappoolBeatmapDto[] = [];
 
@@ -75,7 +75,7 @@
 				<th class="w-56 px-4 py-3 font-semibold">Staff</th>
 				<th class="w-16 px-4 py-3 text-center font-semibold">MP</th>
 				<th class="w-16 px-4 py-3 text-center font-semibold">VOD</th>
-				{#if editable}
+				{#if canEdit}
 					<th class="w-36 px-4 py-3 text-right font-semibold">Actions</th>
 				{:else if tournamentId}
 					<th class="w-24 px-4 py-3 text-right font-semibold">Actions</th>
@@ -86,7 +86,7 @@
 	<svelte:fragment slot="rows">
 		<tbody>
 			{#each viewMatches as match, index}
-				<Match {match} {editable} hasActions={Boolean(tournamentId)}>
+				<Match {match} editable={canEdit} hasActions={Boolean(tournamentId)}>
 					<svelte:fragment slot="actions">
 						{#if tournamentId}
 							<Button
@@ -109,7 +109,7 @@
 		{#each viewMatches as match, index}
 			<div>
 				<MatchCard {match} />
-				{#if editable || tournamentId}
+				{#if canEdit || tournamentId}
 					<div class="flex justify-end gap-2 border-t border-border p-4">
 						{#if tournamentId}
 							<Button

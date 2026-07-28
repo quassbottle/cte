@@ -8,6 +8,7 @@
 		StageScheduleDtoOutputMatchesItem,
 		TournamentStaffRoleDto
 	} from '$lib/api/generated/model';
+	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import Schedule from '$lib/components/schedule/schedule.svelte';
 	import { getNextMatchNumber } from '$lib/components/schedule/schedule-view';
 	import TabGroup from '$lib/components/tabGroup/tabGroup.svelte';
@@ -23,6 +24,7 @@
 	export let schedule: StageScheduleDtoOutput[];
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let staff: TournamentStaffRoleDto[];
+	export let beatmaps: MappoolBeatmapDto[];
 	export let tournamentId: string;
 	export let isTeam = false;
 	export let form: TournamentEditActionResult | undefined;
@@ -164,7 +166,14 @@
 				{#each sortedSchedule as stage}
 					<ContentItem class="flex flex-col gap-3" value={stage.id}>
 						{#if stage.type === 'qualification'}
-							<QualificationLobbiesTab stages={[stage]} {lobbies} {staff} />
+							<QualificationLobbiesTab
+								stageId={stage.id}
+								{lobbies}
+								{staff}
+								{beatmaps}
+								{isTeam}
+								{form}
+							/>
 						{:else}
 							<div class="flex items-center justify-between gap-3">
 								<p class="font-semibold">{stage.name}</p>
@@ -181,7 +190,7 @@
 									No matches added yet.
 								</div>
 							{:else}
-								<Schedule matches={stage.matches} editable>
+								<Schedule matches={stage.matches} {tournamentId} {beatmaps} canEdit>
 									<div slot="actions" let:match class="flex justify-end gap-2">
 										<Button
 											type="button"
