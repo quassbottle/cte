@@ -110,6 +110,39 @@ export type StageScheduleInput = z.input<typeof stageScheduleDtoSchema>;
 
 export class StageScheduleDto extends createZodDto(stageScheduleDtoSchema) {}
 
+const matchHistoryScoreDtoSchema = z.object({
+  osuUserId: z.number().int(),
+  userName: z.string().nullable(),
+  team: z.enum(['red', 'blue']).nullable(),
+  score: z.number().int(),
+  mods: z.array(z.string()),
+  maxCombo: z.number().int(),
+  accuracy: z.number(),
+  rank: z.string(),
+  great: z.number().int().nullable(),
+  ok: z.number().int().nullable(),
+  miss: z.number().int().nullable(),
+  highlighted: z.boolean(),
+});
+
+export const matchHistoryDtoSchema = z.object({
+  title: z.string(),
+  mpUrl: z.url().nullable(),
+  syncStatus: z.enum(['active', 'stopped', 'completed']).nullable(),
+  lastSyncedAt: z.iso.datetime().nullable(),
+  winner: z.enum(['red', 'blue']).nullable(),
+  games: z.array(
+    z.object({
+      gameId: z.number().int(),
+      beatmapId: z.number().int(),
+      scores: z.array(matchHistoryScoreDtoSchema),
+    }),
+  ),
+});
+
+export type MatchHistoryDtoOutput = z.output<typeof matchHistoryDtoSchema>;
+export class MatchHistoryDto extends createZodDto(matchHistoryDtoSchema) {}
+
 const nullableUrl = z
   .string()
   .trim()

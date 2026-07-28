@@ -1,5 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { and, asc, count, eq, inArray, notInArray } from 'drizzle-orm';
+import { and, count, eq, inArray, notInArray } from 'drizzle-orm';
 import {
   QualificationLobbyException,
   QualificationLobbyExceptionCode,
@@ -13,9 +13,6 @@ import { TeamId } from 'lib/domain/team/team.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import {
-  osuMultiplayerGames,
-  osuMultiplayerRooms,
-  osuMultiplayerScores,
   qualificationLobbies,
   qualificationLobbyPlayers,
   qualificationLobbyTeams,
@@ -28,6 +25,7 @@ import {
   tournamentStaffMembers,
   users,
 } from 'lib/infrastructure/db';
+import { OsuMultiplayerHistoryService } from 'modules/osu-multiplayer-sync/osu-multiplayer-history.service';
 import { OsuMultiplayerSyncService } from 'modules/osu-multiplayer-sync/osu-multiplayer-sync.service';
 import { QualificationLobbyRepository } from './qualification-lobby.repository';
 import { QualificationResultsService } from './qualification-results.service';
@@ -38,6 +36,7 @@ export class QualificationLobbyService {
     @Inject('DB') private readonly db: Schema,
     private readonly repository: QualificationLobbyRepository,
     private readonly syncService: OsuMultiplayerSyncService,
+    private readonly roomHistory: OsuMultiplayerHistoryService,
     private readonly results: QualificationResultsService,
   ) {}
 
@@ -96,61 +95,28 @@ export class QualificationLobbyService {
     };
     return Promise.all(
       lobbies.map(async ({ lobby, referee }) => {
-        const [players, selectedTeams, rawAttempts, breakdown] =
-          await Promise.all([
-            this.db
-              .select({ id: users.id, name: users.osuUsername })
-              .from(qualificationLobbyPlayers)
-              .innerJoin(users, eq(users.id, qualificationLobbyPlayers.userId))
-              .where(eq(qualificationLobbyPlayers.lobbyId, lobby.id)),
-            this.db
-              .select({ id: teams.id, name: teams.name })
-              .from(qualificationLobbyTeams)
-              .innerJoin(teams, eq(teams.id, qualificationLobbyTeams.teamId))
-              .where(eq(qualificationLobbyTeams.lobbyId, lobby.id)),
-            lobby.osuRoomId
-              ? this.db
-                  .select({
-                    beatmapId: osuMultiplayerScores.osuBeatmapId,
-                    gameId: osuMultiplayerScores.osuGameId,
-                    osuUserId: osuMultiplayerScores.osuUserId,
-                    userId: users.id,
-                    userName: users.osuUsername,
-                    score: osuMultiplayerScores.score,
-                    mods: osuMultiplayerScores.mods,
-                    maxCombo: osuMultiplayerScores.maxCombo,
-                    accuracy: osuMultiplayerScores.accuracy,
-                    rank: osuMultiplayerScores.rank,
-                    great: osuMultiplayerScores.great,
-                    ok: osuMultiplayerScores.ok,
-                    miss: osuMultiplayerScores.miss,
-                  })
-                  .from(osuMultiplayerScores)
-                  .innerJoin(
-                    osuMultiplayerGames,
-                    and(
-                      eq(
-                        osuMultiplayerGames.roomId,
-                        osuMultiplayerScores.roomId,
-                      ),
-                      eq(
-                        osuMultiplayerGames.osuGameId,
-                        osuMultiplayerScores.osuGameId,
-                      ),
-                    ),
-                  )
-                  .leftJoin(
-                    users,
-                    eq(users.osuId, osuMultiplayerScores.osuUserId),
-                  )
-                  .where(eq(osuMultiplayerScores.roomId, lobby.osuRoomId))
-                  .orderBy(
-                    asc(osuMultiplayerGames.endedAt),
-                    asc(osuMultiplayerScores.osuGameId),
-                  )
-              : [],
-            getBreakdown(lobby.stageId),
-          ]);
+        const [players, selectedTeams, history, breakdown] = await Promise.all([
+          this.db
+            .select({ id: users.id, name: users.osuUsername })
+            .from(qualificationLobbyPlayers)
+            .innerJoin(users, eq(users.id, qualificationLobbyPlayers.userId))
+            .where(eq(qualificationLobbyPlayers.lobbyId, lobby.id)),
+          this.db
+            .select({ id: teams.id, name: teams.name })
+            .from(qualificationLobbyTeams)
+            .innerJoin(teams, eq(teams.id, qualificationLobbyTeams.teamId))
+            .where(eq(qualificationLobbyTeams.lobbyId, lobby.id)),
+          lobby.osuRoomId ? this.roomHistory.get(lobby.osuRoomId) : null,
+          getBreakdown(lobby.stageId),
+        ]);
+        const rawAttempts =
+          history?.games.flatMap((game) =>
+            game.scores.map((score) => ({
+              ...score,
+              beatmapId: game.beatmapId,
+              gameId: game.gameId,
+            })),
+          ) ?? [];
         const competitors = breakdown.filter(({ competitorId }) =>
           (selectedTeams.length ? selectedTeams : players).some(
             ({ id }) => id === competitorId,
@@ -184,11 +150,6 @@ export class QualificationLobbyService {
               ),
           ),
         }));
-        const room = lobby.osuRoomId
-          ? await this.db.query.osuMultiplayerRooms.findFirst({
-              where: eq(osuMultiplayerRooms.id, lobby.osuRoomId),
-            })
-          : null;
         const [teamSeats] = selectedTeams.length
           ? await this.db
               .select({ value: count() })
@@ -215,8 +176,8 @@ export class QualificationLobbyService {
           players,
           teams: selectedTeams,
           seatCount: players.length + (teamSeats?.value ?? 0),
-          syncStatus: room?.status ?? null,
-          lastSyncedAt: room?.lastSyncedAt?.toISOString() ?? null,
+          syncStatus: history?.status ?? null,
+          lastSyncedAt: history?.lastSyncedAt?.toISOString() ?? null,
           attempts,
           standings,
         };

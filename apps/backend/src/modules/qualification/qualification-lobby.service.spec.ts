@@ -13,6 +13,7 @@ describe('QualificationLobbyService', () => {
       {} as never,
       syncService as never,
       {} as never,
+      {} as never,
     );
     (service as unknown as { getScoped: jest.Mock }).getScoped = jest
       .fn()
@@ -36,6 +37,7 @@ describe('QualificationLobbyService', () => {
     };
     const service = new QualificationLobbyService(
       db as never,
+      {} as never,
       {} as never,
       {} as never,
       {} as never,

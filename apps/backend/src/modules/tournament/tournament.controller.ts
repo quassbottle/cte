@@ -28,9 +28,12 @@ import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import {
   MatchDto,
   type MatchDtoOutput,
+  MatchHistoryDto,
+  type MatchHistoryDtoOutput,
   ScheduleMatchUpsertDto,
   StageScheduleDto,
 } from 'modules/match/dto';
+import { MatchHistoryService } from 'modules/match/match-history.service';
 import { MatchService } from 'modules/match/match.service';
 import { ScheduleService } from 'modules/match/schedule.service';
 import { ZodResponse } from 'nestjs-zod';
@@ -60,8 +63,22 @@ export class TournamentController {
   constructor(
     private readonly tournamentService: TournamentService,
     private readonly matchService: MatchService,
+    private readonly matchHistoryService: MatchHistoryService,
     private readonly scheduleService: ScheduleService,
   ) {}
+
+  @Get(':id/matches/:matchId/history')
+  @ZodResponse({
+    status: 200,
+    description: 'Returns synchronized multiplayer history for a match.',
+    type: MatchHistoryDto,
+  })
+  public getMatchHistory(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @Param('matchId', MatchIdPipe) matchId: MatchId,
+  ): Promise<MatchHistoryDtoOutput> {
+    return this.matchHistoryService.get(id, matchId);
+  }
 
   @Get()
   @ZodResponse({
