@@ -11,6 +11,7 @@
 	import { qualificationSortHref } from './qualification-statistics-sort';
 
 	export let statistics: QualificationStatisticsDtoOutput;
+	export let tournamentId: string;
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let beatmaps: MappoolBeatmapDto[];
 	export let isTeam: boolean;
@@ -18,8 +19,7 @@
 	let selectedLobbyId: string | null = null;
 	$: selectedLobby = lobbies.find(({ id }) => id === selectedLobbyId);
 	$: activeSortBeatmapId = Number($page.url.searchParams.get('sortBeatmapId')) || null;
-	$: activeSortDirection =
-		$page.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc';
+	$: activeSortDirection = $page.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc';
 
 	const lobbyFor = (competitorId: string) =>
 		lobbies.find((lobby) =>
@@ -44,11 +44,7 @@
 							: 'ascending'
 						: undefined}
 				>
-					<button
-						type="button"
-						class="hover:text-foreground"
-						on:click={() => applySort(null)}
-					>
+					<button type="button" class="hover:text-foreground" on:click={() => applySort(null)}>
 						{isTeam ? 'Team' : 'Player'}{activeSortBeatmapId === null
 							? activeSortDirection === 'desc'
 								? ' ↓'
@@ -97,9 +93,7 @@
 			{#each statistics.competitors as competitor (competitor.id)}
 				{@const lobby = lobbyFor(competitor.id)}
 				<tr class="border-t border-border">
-					<th
-						class="sticky left-0 z-10 min-w-56 bg-background px-4 py-4 text-left font-semibold"
-					>
+					<th class="sticky left-0 z-10 min-w-56 bg-background px-4 py-4 text-left font-semibold">
 						<div class="flex items-center gap-2">
 							<span class="text-muted-foreground">#{competitor.seed}</span>
 							<span>{competitor.name}</span>
@@ -116,10 +110,8 @@
 						</div>
 					</th>
 					{#each statistics.maps as map (map.osuBeatmapId)}
-						{@const result = competitor.maps.find(
-							(item) => item.osuBeatmapId === map.osuBeatmapId
-						)}
-						<td class="min-w-48 px-4 py-4 whitespace-nowrap">
+						{@const result = competitor.maps.find((item) => item.osuBeatmapId === map.osuBeatmapId)}
+						<td class="min-w-48 whitespace-nowrap px-4 py-4">
 							{result?.gameId === null || !result
 								? '—'
 								: `${result.score.toLocaleString()} · #${result.place}`}
@@ -133,6 +125,7 @@
 
 {#if selectedLobby}
 	<QualificationLobbyDetailDialog
+		{tournamentId}
 		lobby={selectedLobby}
 		{beatmaps}
 		onClose={() => (selectedLobbyId = null)}

@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export type QualificationLobbyDtoOutputAttemptsItem = {
+export type QualificationLobbyHistoryDtoOutputAttemptsItem = {
 	/**
 	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991

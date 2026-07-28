@@ -9,6 +9,7 @@
 	import { findQualificationLobby, toRefereeView } from './qualificationLobby-view';
 
 	export let lobbies: QualificationLobbyDtoOutput[];
+	export let tournamentId: string;
 	export let beatmaps: MappoolBeatmapDto[];
 	export let isTeam: boolean;
 	export let canEdit = false;
@@ -114,6 +115,7 @@
 
 {#if selectedLobby}
 	<QualificationLobbyDetailDialog
+		{tournamentId}
 		lobby={selectedLobby}
 		{beatmaps}
 		onClose={() => (selectedLobbyId = null)}

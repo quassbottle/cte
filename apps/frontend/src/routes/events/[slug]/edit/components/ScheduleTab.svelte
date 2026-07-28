@@ -168,6 +168,7 @@
 						{#if stage.type === 'qualification'}
 							<QualificationLobbiesTab
 								stageId={stage.id}
+								{tournamentId}
 								{lobbies}
 								{staff}
 								{beatmaps}

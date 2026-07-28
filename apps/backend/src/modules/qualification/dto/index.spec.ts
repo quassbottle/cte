@@ -6,12 +6,13 @@ jest.mock('@paralleldrive/cuid2', () => ({
 
 import {
   qualificationLobbyDtoSchema,
+  qualificationLobbyHistoryDtoSchema,
   qualificationStatisticsDtoSchema,
   qualificationStatisticsQuerySchema,
 } from '.';
 
 describe('qualificationLobbyDtoSchema', () => {
-  it('returns synchronized player score details', () => {
+  it('keeps synchronized player score details out of the lobby summary', () => {
     const attempt = {
       beatmapId: 1,
       gameId: 2,
@@ -59,15 +60,32 @@ describe('qualificationLobbyDtoSchema', () => {
       ],
     });
 
-    expect(lobby.attempts[0]).toEqual(attempt);
+    expect(lobby).not.toHaveProperty('attempts');
+    expect(lobby).not.toHaveProperty('standings');
     expect(lobby.referee.avatarUrl).toBe('https://a.ppy.sh/4');
+
+    expect(
+      qualificationLobbyHistoryDtoSchema.parse({
+        lastSyncedAt: null,
+        attempts: [attempt],
+        standings: [
+          {
+            competitorId: 'team',
+            beatmapId: 1,
+            gameId: 2,
+            score: 961684,
+            place: 1,
+          },
+        ],
+      }).attempts[0],
+    ).toEqual(attempt);
   });
 
   it.each(['mods', 'maxCombo', 'accuracy', 'rank'] as const)(
     'rejects a synchronized score without %s',
     (field) => {
       expect(() =>
-        qualificationLobbyDtoSchema.shape.attempts.element.parse({
+        qualificationLobbyHistoryDtoSchema.shape.attempts.element.parse({
           beatmapId: 1,
           gameId: 2,
           osuUserId: 3,

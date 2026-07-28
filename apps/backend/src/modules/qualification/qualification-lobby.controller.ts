@@ -20,6 +20,7 @@ import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import { ZodResponse } from 'nestjs-zod';
 import {
   QualificationLobbyDto,
+  QualificationLobbyHistoryDto,
   QualificationLobbyUpsertDto,
   QualificationStatisticsDto,
   QualificationStatisticsQueryDto,
@@ -52,6 +53,18 @@ export class QualificationLobbyController {
     @Param('id', TournamentIdPipe) tournamentId: TournamentId,
   ) {
     return this.service.findByTournament(tournamentId);
+  }
+
+  @Get(':lobbyId/history')
+  @ZodResponse({ status: 200, type: QualificationLobbyHistoryDto })
+  public getHistory(
+    @Param('id', TournamentIdPipe) tournamentId: TournamentId,
+    @Param('lobbyId') lobbyId: string,
+  ) {
+    return this.service.getHistory(
+      tournamentId,
+      qualificationLobbyIdSchema.parse(lobbyId),
+    );
   }
 
   @Post()

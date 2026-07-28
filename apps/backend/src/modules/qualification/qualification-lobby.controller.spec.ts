@@ -46,4 +46,13 @@ describe('QualificationLobbyController', () => {
       lobbyId,
     });
   });
+
+  it('scopes history to the route tournament', async () => {
+    const service = { getHistory: jest.fn() };
+    const controller = new QualificationLobbyController(service as never);
+
+    await controller.getHistory(tournamentId, lobbyId);
+
+    expect(service.getHistory).toHaveBeenCalledWith(tournamentId, lobbyId);
+  });
 });

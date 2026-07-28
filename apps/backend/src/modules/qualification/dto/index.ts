@@ -28,6 +28,31 @@ export class SelectQualificationLobbyTeamDto extends createZodDto(
   z.object({ teamId: teamIdSchema }),
 ) {}
 
+const qualificationAttemptDtoSchema = z.object({
+  beatmapId: z.number().int(),
+  gameId: z.number().int(),
+  osuUserId: z.number().int(),
+  userId: userIdSchema.nullable(),
+  userName: z.string().nullable(),
+  score: z.number().int(),
+  mods: z.array(z.string()),
+  maxCombo: z.number().int(),
+  accuracy: z.number(),
+  rank: z.string(),
+  great: z.number().int().nullable(),
+  ok: z.number().int().nullable(),
+  miss: z.number().int().nullable(),
+  counted: z.boolean(),
+});
+
+const qualificationStandingDtoSchema = z.object({
+  competitorId: z.string(),
+  beatmapId: z.number().int(),
+  gameId: z.number().int(),
+  score: z.number().int(),
+  place: z.number().int().positive(),
+});
+
 export const qualificationLobbyDtoSchema = z.object({
   id: qualificationLobbyIdSchema,
   stageId: stageIdSchema,
@@ -46,37 +71,19 @@ export const qualificationLobbyDtoSchema = z.object({
   teams: z.array(z.object({ id: teamIdSchema, name: z.string() })),
   seatCount: z.number().int().min(0).max(16),
   syncStatus: z.enum(['active', 'stopped', 'completed']).nullable(),
-  lastSyncedAt: z.string().nullable(),
-  attempts: z.array(
-    z.object({
-      beatmapId: z.number().int(),
-      gameId: z.number().int(),
-      osuUserId: z.number().int(),
-      userId: userIdSchema.nullable(),
-      userName: z.string().nullable(),
-      score: z.number().int(),
-      mods: z.array(z.string()),
-      maxCombo: z.number().int(),
-      accuracy: z.number(),
-      rank: z.string(),
-      great: z.number().int().nullable(),
-      ok: z.number().int().nullable(),
-      miss: z.number().int().nullable(),
-      counted: z.boolean(),
-    }),
-  ),
-  standings: z.array(
-    z.object({
-      competitorId: z.string(),
-      beatmapId: z.number().int(),
-      gameId: z.number().int(),
-      score: z.number().int(),
-      place: z.number().int().positive(),
-    }),
-  ),
+  lastSyncedAt: z.iso.datetime().nullable(),
 });
 export class QualificationLobbyDto extends createZodDto(
   qualificationLobbyDtoSchema,
+) {}
+
+export const qualificationLobbyHistoryDtoSchema = z.object({
+  lastSyncedAt: z.iso.datetime().nullable(),
+  attempts: z.array(qualificationAttemptDtoSchema),
+  standings: z.array(qualificationStandingDtoSchema),
+});
+export class QualificationLobbyHistoryDto extends createZodDto(
+  qualificationLobbyHistoryDtoSchema,
 ) {}
 
 export const qualificationStatisticsQuerySchema = z.object({

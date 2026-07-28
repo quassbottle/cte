@@ -13,6 +13,7 @@
 	import QualificationLobbiesTab from './QualificationLobbiesTab.svelte';
 
 	export let schedule: StageScheduleDtoOutput[];
+	export let tournamentId: string;
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let beatmaps: MappoolBeatmapDto[];
 	export let user: Viewer | null;
@@ -73,6 +74,7 @@
 					<ContentItem class="flex flex-col gap-3" value={stage.id}>
 						{#if stage.type === 'qualification'}
 							<QualificationLobbiesTab
+								{tournamentId}
 								stages={[stage]}
 								{lobbies}
 								{beatmaps}
@@ -83,7 +85,7 @@
 						{:else if stage.matches.length === 0}
 							<p class="py-16 text-center text-sm text-muted-foreground">No matches added yet.</p>
 						{:else}
-							<Schedule matches={stage.matches} tournamentId={$page.params.slug} {beatmaps} />
+							<Schedule matches={stage.matches} {tournamentId} {beatmaps} />
 						{/if}
 					</ContentItem>
 				{/each}

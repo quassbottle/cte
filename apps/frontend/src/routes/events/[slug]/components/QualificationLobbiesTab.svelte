@@ -15,6 +15,7 @@
 	import { onDestroy } from 'svelte';
 
 	export let stages: Pick<StageDtoOutput, 'id' | 'name' | 'type' | 'startsAt'>[];
+	export let tournamentId: string;
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let beatmaps: MappoolBeatmapDto[];
 	export let user: Viewer | null;
@@ -45,6 +46,7 @@
 				<h2 class="font-semibold">{stage.name}</h2>
 				{#if lobbies.some((lobby) => lobby.stageId === stage.id)}
 					<QualificationLobbyTable
+						{tournamentId}
 						lobbies={lobbies.filter((lobby) => lobby.stageId === stage.id)}
 						{beatmaps}
 						{isTeam}

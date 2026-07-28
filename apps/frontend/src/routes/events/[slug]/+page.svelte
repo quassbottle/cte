@@ -149,6 +149,7 @@
 
 	<ContentItem value="schedule">
 		<ScheduleTab
+			tournamentId={data.tournament.id}
 			schedule={data.schedule}
 			lobbies={data.qualificationLobbies}
 			beatmaps={data.mappoolBeatmaps.flatMap(({ beatmaps }) => beatmaps)}
@@ -170,6 +171,7 @@
 	{#if data.qualificationStatistics}
 		<ContentItem value="qualification">
 			<QualificationStatisticsTab
+				tournamentId={data.tournament.id}
 				statistics={data.qualificationStatistics}
 				lobbies={data.qualificationLobbies}
 				beatmaps={data.mappoolBeatmaps.flatMap(({ beatmaps }) => beatmaps)}

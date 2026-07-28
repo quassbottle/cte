@@ -5,14 +5,13 @@ describe('multiplayer history', () => {
 	it('adapts qualification attempts to shared highlighted score sections', () => {
 		const history = toQualificationHistory(
 			{
-				mpUrl: 'https://osu.ppy.sh/community/matches/1',
-				syncStatus: 'completed',
 				lastSyncedAt: '2026-07-28T10:00:00.000Z',
 				attempts: [
 					{
 						beatmapId: 11,
 						gameId: 2,
 						osuUserId: 1,
+						userId: 'player',
 						userName: 'Player',
 						score: 1_000_000,
 						mods: ['NF'],
@@ -28,6 +27,7 @@ describe('multiplayer history', () => {
 						beatmapId: 22,
 						gameId: 1,
 						osuUserId: 2,
+						userId: 'other',
 						userName: 'Other',
 						score: 900_000,
 						mods: [],
@@ -41,10 +41,10 @@ describe('multiplayer history', () => {
 					}
 				],
 				standings: [
-					{ beatmapId: 11, score: 1_900_000, place: 2 },
-					{ beatmapId: 22, score: 1_800_000, place: 3 }
+					{ competitorId: 'team', beatmapId: 11, gameId: 2, score: 1_900_000, place: 2 },
+					{ competitorId: 'team', beatmapId: 22, gameId: 1, score: 1_800_000, place: 3 }
 				]
-			} as never,
+			},
 			[
 				{
 					osuBeatmapId: 11,

@@ -31,6 +31,7 @@ import {
 	qualificationLobbyControllerCreate,
 	qualificationLobbyControllerDelete,
 	qualificationLobbyControllerFindByTournament,
+	qualificationLobbyControllerGetHistory,
 	qualificationLobbyControllerSelectSolo,
 	qualificationLobbyControllerSelectTeam,
 	qualificationLobbyControllerStart,
@@ -191,6 +192,8 @@ export function createBackendClient(input?: BackendClientInput) {
 		qualificationLobbies: {
 			findByTournament: (tournamentId: string) =>
 				qualificationLobbyControllerFindByTournament(tournamentId, options),
+			history: (tournamentId: string, lobbyId: string) =>
+				qualificationLobbyControllerGetHistory(tournamentId, lobbyId, options),
 			create: (tournamentId: string, input: QualificationLobbyUpsertDto) =>
 				qualificationLobbyControllerCreate(tournamentId, input, options),
 			update: (tournamentId: string, lobbyId: string, input: QualificationLobbyUpsertDto) =>

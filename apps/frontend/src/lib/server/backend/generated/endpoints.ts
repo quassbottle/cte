@@ -23,6 +23,7 @@ import type {
 	MatchHistoryDtoOutput,
 	OsuBeatmapMetadataDtoOutput,
 	QualificationLobbyDtoOutput,
+	QualificationLobbyHistoryDtoOutput,
 	QualificationLobbyUpsertDto,
 	QualificationResultsControllerFindParams,
 	QualificationStatisticsDtoOutput,
@@ -1073,6 +1074,36 @@ export const qualificationLobbyControllerCreate = async (
 			method: 'POST',
 			headers: { 'Content-Type': 'application/json', ...options?.headers },
 			body: JSON.stringify(qualificationLobbyUpsertDto)
+		}
+	);
+};
+
+export type qualificationLobbyControllerGetHistoryResponse200 = {
+	data: QualificationLobbyHistoryDtoOutput;
+	status: 200;
+};
+
+export type qualificationLobbyControllerGetHistoryResponseSuccess =
+	qualificationLobbyControllerGetHistoryResponse200 & {
+		headers: Headers;
+	};
+export type qualificationLobbyControllerGetHistoryResponse =
+	qualificationLobbyControllerGetHistoryResponseSuccess;
+
+export const getQualificationLobbyControllerGetHistoryUrl = (id: string, lobbyId: string) => {
+	return `/api/tournaments/${id}/qualification-lobbies/${lobbyId}/history`;
+};
+
+export const qualificationLobbyControllerGetHistory = async (
+	id: string,
+	lobbyId: string,
+	options?: RequestInit
+): Promise<qualificationLobbyControllerGetHistoryResponse> => {
+	return backendFetch<qualificationLobbyControllerGetHistoryResponse>(
+		getQualificationLobbyControllerGetHistoryUrl(id, lobbyId),
+		{
+			...options,
+			method: 'GET'
 		}
 	);
 };

@@ -6,7 +6,7 @@
  * OpenAPI spec version: 1.0
  */
 
-export type QualificationLobbyDtoOutputStandingsItem = {
+export type QualificationLobbyHistoryDtoOutputStandingsItem = {
 	competitorId: string;
 	/**
 	 * @minimum -9007199254740991

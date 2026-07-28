@@ -1381,6 +1381,44 @@
         ]
       }
     },
+    "/api/tournaments/{id}/qualification-lobbies/{lobbyId}/history": {
+      "get": {
+        "operationId": "QualificationLobbyController_getHistory",
+        "parameters": [
+          {
+            "name": "id",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "lobbyId",
+            "required": true,
+            "in": "path",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/QualificationLobbyHistoryDto_Output"
+                }
+              }
+            }
+          }
+        },
+        "tags": [
+          "QualificationLobby"
+        ]
+      }
+    },
     "/api/tournaments/{id}/qualification-lobbies/{lobbyId}": {
       "patch": {
         "operationId": "QualificationLobbyController_update",
@@ -3842,6 +3880,33 @@
           },
           "lastSyncedAt": {
             "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "stageId",
+          "number",
+          "referee",
+          "startsAt",
+          "endsAt",
+          "players",
+          "teams",
+          "seatCount",
+          "syncStatus",
+          "lastSyncedAt"
+        ],
+        "additionalProperties": false
+      },
+      "QualificationLobbyHistoryDto_Output": {
+        "type": "object",
+        "properties": {
+          "lastSyncedAt": {
+            "type": "string",
+            "format": "date-time",
+            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d(?::[0-5]\\d(?:\\.\\d+)?)?(?:Z))$",
             "nullable": true
           },
           "attempts": {
@@ -3979,16 +4044,6 @@
           }
         },
         "required": [
-          "id",
-          "stageId",
-          "number",
-          "referee",
-          "startsAt",
-          "endsAt",
-          "players",
-          "teams",
-          "seatCount",
-          "syncStatus",
           "lastSyncedAt",
           "attempts",
           "standings"

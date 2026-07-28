@@ -13,6 +13,7 @@ import { TeamId } from 'lib/domain/team/team.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import {
+  osuMultiplayerRooms,
   qualificationLobbies,
   qualificationLobbyPlayers,
   qualificationLobbyTeams,
@@ -72,30 +73,27 @@ export class QualificationLobbyService {
           osuId: users.osuId,
           osuUsername: users.osuUsername,
         },
+        room: {
+          status: osuMultiplayerRooms.status,
+          lastSyncedAt: osuMultiplayerRooms.lastSyncedAt,
+        },
       })
       .from(qualificationLobbies)
       .innerJoin(stages, eq(stages.id, qualificationLobbies.stageId))
       .innerJoin(users, eq(users.id, qualificationLobbies.refereeId))
+      .leftJoin(
+        osuMultiplayerRooms,
+        eq(osuMultiplayerRooms.id, qualificationLobbies.osuRoomId),
+      )
       .where(
         and(
           eq(stages.tournamentId, tournamentId),
           eq(stages.type, 'qualification'),
         ),
       );
-    const breakdowns = new Map<
-      StageId,
-      ReturnType<QualificationResultsService['getBreakdown']>
-    >();
-    const getBreakdown = (stageId: StageId) => {
-      const existing = breakdowns.get(stageId);
-      if (existing) return existing;
-      const breakdown = this.results.getBreakdown(stageId);
-      breakdowns.set(stageId, breakdown);
-      return breakdown;
-    };
     return Promise.all(
-      lobbies.map(async ({ lobby, referee }) => {
-        const [players, selectedTeams, history, breakdown] = await Promise.all([
+      lobbies.map(async ({ lobby, referee, room }) => {
+        const [players, selectedTeams] = await Promise.all([
           this.db
             .select({ id: users.id, name: users.osuUsername })
             .from(qualificationLobbyPlayers)
@@ -106,50 +104,7 @@ export class QualificationLobbyService {
             .from(qualificationLobbyTeams)
             .innerJoin(teams, eq(teams.id, qualificationLobbyTeams.teamId))
             .where(eq(qualificationLobbyTeams.lobbyId, lobby.id)),
-          lobby.osuRoomId ? this.roomHistory.get(lobby.osuRoomId) : null,
-          getBreakdown(lobby.stageId),
         ]);
-        const rawAttempts =
-          history?.games.flatMap((game) =>
-            game.scores.map((score) => ({
-              ...score,
-              beatmapId: game.beatmapId,
-              gameId: game.gameId,
-            })),
-          ) ?? [];
-        const competitors = breakdown.filter(({ competitorId }) =>
-          (selectedTeams.length ? selectedTeams : players).some(
-            ({ id }) => id === competitorId,
-          ),
-        );
-        const standings = competitors.flatMap((competitor) =>
-          competitor.maps.flatMap((map) =>
-            map.osuGameId === null || map.osuBeatmapId === undefined
-              ? []
-              : [
-                  {
-                    competitorId: competitor.competitorId,
-                    beatmapId: map.osuBeatmapId,
-                    gameId: map.osuGameId,
-                    score: map.score,
-                    place: map.place,
-                  },
-                ],
-          ),
-        );
-        const attempts = rawAttempts.map((attempt) => ({
-          ...attempt,
-          counted: competitors.some(
-            (competitor) =>
-              attempt.userId !== null &&
-              competitor.userIds.includes(attempt.userId) &&
-              competitor.maps.some(
-                (map) =>
-                  map.osuBeatmapId === attempt.beatmapId &&
-                  map.osuGameId === attempt.gameId,
-              ),
-          ),
-        }));
         const [teamSeats] = selectedTeams.length
           ? await this.db
               .select({ value: count() })
@@ -176,13 +131,79 @@ export class QualificationLobbyService {
           players,
           teams: selectedTeams,
           seatCount: players.length + (teamSeats?.value ?? 0),
-          syncStatus: history?.status ?? null,
-          lastSyncedAt: history?.lastSyncedAt?.toISOString() ?? null,
-          attempts,
-          standings,
+          syncStatus: room?.status ?? null,
+          lastSyncedAt: room?.lastSyncedAt?.toISOString() ?? null,
         };
       }),
     );
+  }
+
+  public async getHistory(
+    tournamentId: TournamentId,
+    lobbyId: QualificationLobbyId,
+  ) {
+    const lobby = await this.getScoped(tournamentId, lobbyId);
+    if (!lobby.osuRoomId)
+      return { lastSyncedAt: null, attempts: [], standings: [] };
+
+    const [selectedTeams, players, history, breakdown] = await Promise.all([
+      this.db
+        .select({ id: teams.id, name: teams.name })
+        .from(qualificationLobbyTeams)
+        .innerJoin(teams, eq(teams.id, qualificationLobbyTeams.teamId))
+        .where(eq(qualificationLobbyTeams.lobbyId, lobby.id)),
+      this.db
+        .select({ id: users.id, name: users.osuUsername })
+        .from(qualificationLobbyPlayers)
+        .innerJoin(users, eq(users.id, qualificationLobbyPlayers.userId))
+        .where(eq(qualificationLobbyPlayers.lobbyId, lobby.id)),
+      this.roomHistory.get(lobby.osuRoomId),
+      this.results.getBreakdown(lobby.stageId),
+    ]);
+    const competitors = breakdown.filter(({ competitorId }) =>
+      (selectedTeams.length ? selectedTeams : players).some(
+        ({ id }) => id === competitorId,
+      ),
+    );
+    const attempts =
+      history?.games.flatMap((game) =>
+        game.scores.map((score) => ({
+          ...score,
+          beatmapId: game.beatmapId,
+          gameId: game.gameId,
+          counted: competitors.some(
+            (competitor) =>
+              score.userId !== null &&
+              competitor.userIds.includes(score.userId) &&
+              competitor.maps.some(
+                (map) =>
+                  map.osuBeatmapId === game.beatmapId &&
+                  map.osuGameId === game.gameId,
+              ),
+          ),
+        })),
+      ) ?? [];
+    const standings = competitors.flatMap((competitor) =>
+      competitor.maps.flatMap((map) =>
+        map.osuGameId === null || map.osuBeatmapId === undefined
+          ? []
+          : [
+              {
+                competitorId: competitor.competitorId,
+                beatmapId: map.osuBeatmapId,
+                gameId: map.osuGameId,
+                score: map.score,
+                place: map.place,
+              },
+            ],
+      ),
+    );
+
+    return {
+      lastSyncedAt: history?.lastSyncedAt?.toISOString() ?? null,
+      attempts,
+      standings,
+    };
   }
 
   public async update(input: {

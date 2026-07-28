@@ -15,6 +15,7 @@
 	import QualificationLobbyEditDialog from './QualificationLobbyEditDialog.svelte';
 
 	export let stageId: string;
+	export let tournamentId: string;
 	export let lobbies: QualificationLobbyDtoOutput[];
 	export let staff: TournamentStaffRoleDto[];
 	export let beatmaps: MappoolBeatmapDto[];
@@ -38,7 +39,7 @@
 	onDestroy(() => timer && clearInterval(timer));
 </script>
 
-<QualificationLobbyTable lobbies={stageLobbies} {beatmaps} {isTeam} canEdit>
+<QualificationLobbyTable {tournamentId} lobbies={stageLobbies} {beatmaps} {isTeam} canEdit>
 	<Button
 		slot="actions"
 		let:lobby

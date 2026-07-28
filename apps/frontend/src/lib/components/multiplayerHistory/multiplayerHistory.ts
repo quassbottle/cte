@@ -1,4 +1,4 @@
-import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
+import type { QualificationLobbyHistoryDtoOutput } from '$lib/api/generated/model';
 import type { MappoolBeatmapDto } from '$lib/api/types';
 import type {
 	MultiplayerScoreData,
@@ -34,15 +34,12 @@ export const toHistoryBeatmap = (
 		: null;
 
 export const toQualificationHistory = (
-	lobby: Pick<
-		QualificationLobbyDtoOutput,
-		'mpUrl' | 'syncStatus' | 'lastSyncedAt' | 'attempts' | 'standings'
-	>,
+	history: QualificationLobbyHistoryDtoOutput,
 	beatmaps: MappoolBeatmapDto[]
 ): MultiplayerHistoryData => ({
 	entries: [
-		...lobby.attempts
-			.reduce<Map<number, typeof lobby.attempts>>((groups, attempt) => {
+		...history.attempts
+			.reduce<Map<number, typeof history.attempts>>((groups, attempt) => {
 				const attempts = groups.get(attempt.beatmapId) ?? [];
 				attempts.push(attempt);
 				groups.set(attempt.beatmapId, attempts);
@@ -54,7 +51,7 @@ export const toQualificationHistory = (
 		beatmapId,
 		beatmap: toHistoryBeatmap(beatmaps.find(({ osuBeatmapId }) => osuBeatmapId === beatmapId)),
 		scores: attempts.map(({ counted, ...score }) => ({ ...score, highlighted: counted })),
-		standings: lobby.standings
+		standings: history.standings
 			.filter((standing) => standing.beatmapId === beatmapId)
 			.map(({ score, place }) => ({ score, place }))
 	}))
