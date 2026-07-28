@@ -9,7 +9,7 @@ export type PlayerMultiplayerScoreData = {
 	ok: number | null;
 	miss: number | null;
 	rank: string;
-	counted?: boolean;
+	highlighted?: boolean;
 };
 
 export type MultiplayerScoreData = {

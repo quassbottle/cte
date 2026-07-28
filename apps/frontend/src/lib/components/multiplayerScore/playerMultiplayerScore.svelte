@@ -13,7 +13,7 @@
 </script>
 
 <article
-	class="grid gap-3 rounded-xl border p-4 sm:grid-cols-[minmax(12rem,1fr)_auto] sm:items-center {score.counted
+	class="grid gap-3 rounded-xl border p-4 sm:grid-cols-[minmax(12rem,1fr)_auto] sm:items-center {score.highlighted
 		? 'border-primary bg-primary/10'
 		: 'border-border bg-muted/40'}"
 >

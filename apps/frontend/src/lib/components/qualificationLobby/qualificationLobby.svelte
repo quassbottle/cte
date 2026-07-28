@@ -2,22 +2,14 @@
 	import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
 	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import StaffList from '$lib/components/match/StaffList.svelte';
-	import MultiplayerScore from '$lib/components/multiplayerScore/multiplayerScore.svelte';
+	import MultiplayerHistory from '$lib/components/multiplayerHistory/MultiplayerHistory.svelte';
+	import { toQualificationHistory } from '$lib/components/multiplayerHistory/multiplayerHistory';
 	import { getLobbySeats, toRefereeView } from './qualificationLobby-view';
 
 	export let lobby: QualificationLobbyDtoOutput;
 	export let beatmaps: MappoolBeatmapDto[] = [];
 
-	$: attemptsByBeatmap = [
-		...lobby.attempts
-			.reduce<Map<number, typeof lobby.attempts>>((groups, attempt) => {
-				const attempts = groups.get(attempt.beatmapId) ?? [];
-				attempts.push(attempt);
-				groups.set(attempt.beatmapId, attempts);
-				return groups;
-			}, new Map())
-			.entries()
-	];
+	$: history = toQualificationHistory(lobby, beatmaps);
 </script>
 
 <article class="flex flex-col gap-3 rounded-md border border-border p-4">
@@ -48,49 +40,7 @@
 		</p>
 	{/if}
 
-	{#if attemptsByBeatmap.length}
-		<div class="space-y-2 text-sm">
-			{#each attemptsByBeatmap as [beatmapId, attempts]}
-				{@const beatmap = beatmaps.find(({ osuBeatmapId }) => osuBeatmapId === beatmapId)}
-				{#if beatmap}
-					<MultiplayerScore
-						result={{
-							beatmap: {
-								artist: beatmap.artist,
-								title: beatmap.title,
-								difficultyName: beatmap.difficultyName,
-								beatmapsetId: beatmap.osuBeatmapsetId,
-								beatmapId: beatmap.osuBeatmapId,
-								mod: beatmap.mod,
-								tournamentMode: beatmap.mode,
-								index: beatmap.index,
-								difficulty: beatmap.difficulty,
-								deleted: beatmap.deleted
-							},
-							scores: attempts,
-							standings: lobby.standings
-								.filter((standing) => standing.beatmapId === beatmapId)
-								.map((standing) => ({
-									score: standing.score,
-									place: standing.place
-								}))
-						}}
-					/>
-				{:else}
-					<div>
-						<a class="font-medium underline" href={`https://osu.ppy.sh/b/${beatmapId}`}>
-							Beatmap {beatmapId}
-						</a>
-						{#each attempts as attempt (`${attempt.gameId}-${attempt.osuUserId}`)}
-							<p class="text-muted-foreground">
-								{attempt.userName ?? `osu! ${attempt.osuUserId}`}: {attempt.score}
-							</p>
-						{/each}
-					</div>
-				{/if}
-			{/each}
-		</div>
-	{/if}
+	<MultiplayerHistory {history} />
 
 	<slot name="actions" />
 </article>
