@@ -7,6 +7,7 @@
 	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import QualificationLobbyDetailDialog from '$lib/components/qualificationLobby/QualificationLobbyDetailDialog.svelte';
 	import { ExternalLink } from 'lucide-svelte';
+	import { qualificationSortHref } from './qualification-statistics-sort';
 
 	export let statistics: QualificationStatisticsDtoOutput;
 	export let lobbies: QualificationLobbyDtoOutput[];
@@ -24,25 +25,6 @@
 			(isTeam ? lobby.teams : lobby.players).some(({ id }) => id === competitorId)
 		);
 
-	const sortHref = (osuBeatmapId: number) => {
-		const params = new URLSearchParams($page.url.searchParams);
-		const direction =
-			activeSortBeatmapId === osuBeatmapId && activeSortDirection === 'desc' ? 'asc' : 'desc';
-		params.set('tab', 'qualification');
-		params.set('sortBeatmapId', String(osuBeatmapId));
-		params.set('sortDirection', direction);
-		return `${$page.url.pathname}?${params}`;
-	};
-
-	const seedSortHref = () => {
-		const params = new URLSearchParams($page.url.searchParams);
-		const direction =
-			activeSortBeatmapId === null && activeSortDirection === 'asc' ? 'desc' : 'asc';
-		params.set('tab', 'qualification');
-		params.delete('sortBeatmapId');
-		params.set('sortDirection', direction);
-		return `${$page.url.pathname}?${params}`;
-	};
 </script>
 
 <div class="w-full max-w-full overflow-x-auto rounded-md border border-border">
@@ -57,7 +39,10 @@
 							: 'ascending'
 						: undefined}
 				>
-					<a class="hover:text-foreground" href={seedSortHref()}>
+					<a
+						class="hover:text-foreground"
+						href={qualificationSortHref($page.url, null)}
+					>
 						{isTeam ? 'Team' : 'Player'}{activeSortBeatmapId === null
 							? activeSortDirection === 'desc'
 								? ' ↓'
@@ -76,7 +61,7 @@
 					>
 						<a
 							class="group relative block h-20 w-48 overflow-hidden rounded-md text-left text-white"
-							href={sortHref(map.osuBeatmapId)}
+							href={qualificationSortHref($page.url, map.osuBeatmapId)}
 						>
 							<img
 								class="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105"
