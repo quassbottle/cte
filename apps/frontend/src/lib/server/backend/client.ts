@@ -50,6 +50,7 @@ import {
 	tournamentControllerAssignStaff,
 	tournamentControllerGetById,
 	tournamentControllerGetParticipants,
+	tournamentControllerGetMatchHistory,
 	tournamentControllerGetQualificationRoster,
 	tournamentControllerGetStaff,
 	tournamentControllerGetTeams,
@@ -178,6 +179,8 @@ export function createBackendClient(input?: BackendClientInput) {
 			}
 		},
 		matches: {
+			history: (tournamentId: string, matchId: string) =>
+				tournamentControllerGetMatchHistory(tournamentId, matchId, options),
 			create: (tournamentId: string, input: ScheduleMatchUpsertDto) =>
 				tournamentControllerCreateMatch(tournamentId, input, options),
 			update: (tournamentId: string, matchId: string, input: ScheduleMatchUpsertDto) =>

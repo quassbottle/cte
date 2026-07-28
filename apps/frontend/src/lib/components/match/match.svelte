@@ -7,6 +7,7 @@
 
 	export let match: MatchView;
 	export let editable = false;
+	export let hasActions = false;
 </script>
 
 <tr class="border-t border-border">
@@ -54,7 +55,7 @@
 	<td class="px-4 py-4 text-center">
 		<MatchLink href={match.vodUrl} type="vod" />
 	</td>
-	{#if editable}
+	{#if editable || hasActions}
 		<td class="px-4 py-4 text-right">
 			<slot name="actions" />
 		</td>

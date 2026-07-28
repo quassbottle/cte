@@ -20,6 +20,7 @@ import type {
 	MappoolDtoOutput,
 	MappoolWithBeatmapsDtoOutput,
 	MatchDto,
+	MatchHistoryDtoOutput,
 	OsuBeatmapMetadataDtoOutput,
 	QualificationLobbyDtoOutput,
 	QualificationLobbyUpsertDto,
@@ -218,6 +219,36 @@ export const osuControllerGetBeatmapMetadata = async (
 ): Promise<osuControllerGetBeatmapMetadataResponse> => {
 	return backendFetch<osuControllerGetBeatmapMetadataResponse>(
 		getOsuControllerGetBeatmapMetadataUrl(beatmapId),
+		{
+			...options,
+			method: 'GET'
+		}
+	);
+};
+
+export type tournamentControllerGetMatchHistoryResponse200 = {
+	data: MatchHistoryDtoOutput;
+	status: 200;
+};
+
+export type tournamentControllerGetMatchHistoryResponseSuccess =
+	tournamentControllerGetMatchHistoryResponse200 & {
+		headers: Headers;
+	};
+export type tournamentControllerGetMatchHistoryResponse =
+	tournamentControllerGetMatchHistoryResponseSuccess;
+
+export const getTournamentControllerGetMatchHistoryUrl = (id: string, matchId: string) => {
+	return `/api/tournaments/${id}/matches/${matchId}/history`;
+};
+
+export const tournamentControllerGetMatchHistory = async (
+	id: string,
+	matchId: string,
+	options?: RequestInit
+): Promise<tournamentControllerGetMatchHistoryResponse> => {
+	return backendFetch<tournamentControllerGetMatchHistoryResponse>(
+		getTournamentControllerGetMatchHistoryUrl(id, matchId),
 		{
 			...options,
 			method: 'GET'
