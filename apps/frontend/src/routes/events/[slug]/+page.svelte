@@ -10,6 +10,7 @@
 	} from '$lib/api/types';
 	import type {
 		QualificationLobbyDtoOutput,
+		QualificationStatisticsDtoOutput,
 		StageScheduleDtoOutput,
 		TournamentStaffRoleDto
 	} from '$lib/api/generated/model';
@@ -22,6 +23,7 @@
 	import ScheduleTab from './components/ScheduleTab.svelte';
 	import MappoolsTab from './components/MappoolsTab.svelte';
 	import StaffTab from './components/StaffTab.svelte';
+	import QualificationStatisticsTab from './components/QualificationStatisticsTab.svelte';
 	import type { TournamentRegistrationForm } from './components/info/types';
 
 	export let data: {
@@ -34,13 +36,21 @@
 		stages: StageDto[];
 		schedule: StageScheduleDtoOutput[];
 		qualificationLobbies: QualificationLobbyDtoOutput[];
+		qualificationStatistics: QualificationStatisticsDtoOutput | null;
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		canEditTournament: boolean;
 	};
 	export let form: TournamentRegistrationForm;
 
-	const tournamentTabs = ['info', 'participants', 'staff', 'schedule', 'mappools'] as const;
+	const tournamentTabs = [
+		'info',
+		'participants',
+		'staff',
+		'schedule',
+		'mappools',
+		'qualification'
+	] as const;
 	type TournamentTab = (typeof tournamentTabs)[number];
 	let activeTab: TournamentTab = 'info';
 	let lastTabParam: string | null = null;
@@ -102,8 +112,10 @@
 			<Item value="staff" href={getTournamentTabHref('staff')}>Staff</Item>
 			<Item value="schedule" href={getTournamentTabHref('schedule')}>Schedule</Item>
 			<Item value="mappools" href={getTournamentTabHref('mappools')}>Mappools</Item>
-			{#if data.stages.some(({ type }) => type === 'qualification')}
-				<Item value="qualification" href={`/events/${data.tournament.id}/qualification`}>Qualification</Item>
+			{#if data.qualificationStatistics}
+				<Item value="qualification" href={getTournamentTabHref('qualification')}>
+					Qualification
+				</Item>
 			{/if}
 		</Head>
 
@@ -154,4 +166,15 @@
 			mappoolBeatmaps={data.mappoolBeatmaps}
 		/>
 	</ContentItem>
+
+	{#if data.qualificationStatistics}
+		<ContentItem value="qualification">
+			<QualificationStatisticsTab
+				statistics={data.qualificationStatistics}
+				lobbies={data.qualificationLobbies}
+				beatmaps={data.mappoolBeatmaps.flatMap(({ beatmaps }) => beatmaps)}
+				isTeam={data.tournament.isTeam}
+			/>
+		</ContentItem>
+	{/if}
 </TabGroup>

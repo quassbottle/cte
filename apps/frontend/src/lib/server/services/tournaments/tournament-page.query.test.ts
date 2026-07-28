@@ -25,4 +25,40 @@ describe('getTournamentPage', () => {
 
 		expect(result.canEditTournament).toBe(true);
 	});
+
+	test('loads backend-sorted qualification statistics only for qualification tournaments', async () => {
+		const empty = async () => ({ data: [] });
+		let receivedParams: unknown;
+		const backend = {
+			tournaments: {
+				getById: async () => ({ data: { creatorId: 'owner-id' } }),
+				getParticipants: empty,
+				getTeams: empty,
+				getSchedule: empty,
+				staff: { get: empty }
+			},
+			stages: {
+				findByTournament: async () => ({ data: [{ type: 'qualification' }] })
+			},
+			qualificationLobbies: { findByTournament: empty },
+			qualificationResults: {
+				find: async (_id: string, params: unknown) => {
+					receivedParams = params;
+					return { data: { maps: [], competitors: [] } };
+				}
+			},
+			mappools: { findByTournament: empty },
+			users: { getById: async () => ({ data: { id: 'owner-id' } }) }
+		};
+
+		const result = await getTournamentPage(
+			backend as never,
+			'tournament-id',
+			undefined,
+			{ sortBeatmapId: 11, sortDirection: 'desc' }
+		);
+
+		expect(receivedParams).toEqual({ sortBeatmapId: 11, sortDirection: 'desc' });
+		expect(result.qualificationStatistics).toEqual({ maps: [], competitors: [] });
+	});
 });

@@ -4,7 +4,11 @@ import type { Viewer } from '$lib/types/viewer';
 export async function getTournamentPage(
 	backend: BackendClient,
 	tournamentId: string,
-	viewer?: Pick<Viewer, 'id' | 'role'>
+	viewer?: Pick<Viewer, 'id' | 'role'>,
+	qualificationSort: {
+		sortBeatmapId?: number;
+		sortDirection: 'asc' | 'desc';
+	} = { sortDirection: 'asc' }
 ) {
 	const [
 		tournamentResponse,
@@ -30,6 +34,11 @@ export async function getTournamentPage(
 		!!viewer && (tournament.creatorId === viewer.id || viewer.role === 'admin');
 	const host = (await backend.users.getById(tournament.creatorId)).data;
 	const visibleMappools = mappoolsResponse.data;
+	const qualificationStatistics = stagesResponse.data.some(
+		({ type }) => type === 'qualification'
+	)
+		? (await backend.qualificationResults.find(tournamentId, qualificationSort)).data
+		: null;
 
 	return {
 		tournament,
@@ -40,6 +49,7 @@ export async function getTournamentPage(
 		stages: stagesResponse.data,
 		schedule: scheduleResponse.data,
 		qualificationLobbies: qualificationLobbiesResponse.data,
+		qualificationStatistics,
 		mappools: visibleMappools.map(({ beatmaps, ...mappool }) => mappool),
 		mappoolBeatmaps: visibleMappools.map((mappool) => ({
 			mappoolId: mappool.id,

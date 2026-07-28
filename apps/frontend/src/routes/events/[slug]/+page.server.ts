@@ -14,8 +14,18 @@ import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async (event) => {
 	const { locals, params } = event;
+	const sortBeatmapId = Number(event.url.searchParams.get('sortBeatmapId'));
+	const qualificationSort = {
+		...(Number.isSafeInteger(sortBeatmapId) && sortBeatmapId > 0 ? { sortBeatmapId } : {}),
+		sortDirection: event.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc'
+	} as const;
 	try {
-		return await getTournamentPage(createBackendClient(event), params.slug, locals.session?.user);
+		return await getTournamentPage(
+			createBackendClient(event),
+			params.slug,
+			locals.session?.user,
+			qualificationSort
+		);
 	} catch (cause) {
 		throwBackendError(cause, 404, 'Tournament not found');
 	}
