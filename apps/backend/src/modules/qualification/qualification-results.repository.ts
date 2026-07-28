@@ -86,6 +86,7 @@ export class QualificationResultsRepository {
         .select({
           beatmapId: beatmaps.id,
           osuBeatmapId: beatmaps.osuBeatmapId,
+          osuBeatmapsetId: beatmaps.osuBeatmapsetId,
           artist: beatmaps.artist,
           title: beatmaps.title,
           difficultyName: beatmaps.difficultyName,

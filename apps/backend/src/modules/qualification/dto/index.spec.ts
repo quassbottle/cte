@@ -7,6 +7,7 @@ jest.mock('@paralleldrive/cuid2', () => ({
 import {
   qualificationLobbyDtoSchema,
   qualificationStatisticsDtoSchema,
+  qualificationStatisticsQuerySchema,
 } from '.';
 
 describe('qualificationLobbyDtoSchema', () => {
@@ -96,6 +97,7 @@ describe('qualificationLobbyDtoSchema', () => {
             artist: 'Artist 1',
             title: 'Title 1',
             difficultyName: 'Difficulty 1',
+            coverUrl: 'https://assets.ppy.sh/beatmaps/1/covers/cover@2x.jpg',
             mod: 'NM',
             index: 1,
           },
@@ -104,6 +106,7 @@ describe('qualificationLobbyDtoSchema', () => {
             artist: 'Artist 2',
             title: 'Title 2',
             difficultyName: 'Difficulty 2',
+            coverUrl: 'https://assets.ppy.sh/beatmaps/2/covers/cover@2x.jpg',
             mod: 'HD',
             index: 1,
           },
@@ -127,6 +130,7 @@ describe('qualificationLobbyDtoSchema', () => {
           artist: 'Artist 1',
           title: 'Title 1',
           difficultyName: 'Difficulty 1',
+          coverUrl: 'https://assets.ppy.sh/beatmaps/1/covers/cover@2x.jpg',
           mod: 'NM',
           index: 1,
         },
@@ -135,6 +139,7 @@ describe('qualificationLobbyDtoSchema', () => {
           artist: 'Artist 2',
           title: 'Title 2',
           difficultyName: 'Difficulty 2',
+          coverUrl: 'https://assets.ppy.sh/beatmaps/2/covers/cover@2x.jpg',
           mod: 'HD',
           index: 1,
         },
@@ -151,5 +156,18 @@ describe('qualificationLobbyDtoSchema', () => {
         },
       ],
     });
+  });
+
+  it('parses qualification statistics sorting', () => {
+    expect(
+      qualificationStatisticsQuerySchema.parse({
+        sortBeatmapId: '11',
+        sortDirection: 'desc',
+      }),
+    ).toEqual({ sortBeatmapId: 11, sortDirection: 'desc' });
+
+    expect(() =>
+      qualificationStatisticsQuerySchema.parse({ sortDirection: 'sideways' }),
+    ).toThrow();
   });
 });

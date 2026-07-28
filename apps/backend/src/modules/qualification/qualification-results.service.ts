@@ -32,7 +32,12 @@ export class QualificationResultsService {
     return this.getBreakdownFromInput(input);
   }
 
-  public async getStatistics(tournamentId: TournamentId) {
+  public async getStatistics(
+    tournamentId: TournamentId,
+    query: { sortBeatmapId?: number; sortDirection: 'asc' | 'desc' } = {
+      sortDirection: 'asc',
+    },
+  ) {
     const stageId = await this.repository.findStageId(tournamentId);
     const input = await this.repository.load(stageId);
     const competitors = new Map(
@@ -43,11 +48,20 @@ export class QualificationResultsService {
     const breakdown = this.getBreakdownFromInput(input);
     return {
       maps: input.beatmaps.map(
-        ({ osuBeatmapId, artist, title, difficultyName, mod, index }) => ({
+        ({
+          osuBeatmapId,
+          osuBeatmapsetId,
+          artist,
+          title,
+          difficultyName,
+          mod,
+          index,
+        }) => ({
           osuBeatmapId,
           artist,
           title,
           difficultyName,
+          coverUrl: `https://assets.ppy.sh/beatmaps/${osuBeatmapsetId}/covers/cover@2x.jpg`,
           mod,
           index,
         }),
@@ -64,7 +78,24 @@ export class QualificationResultsService {
             place,
           })),
         }))
-        .sort((left, right) => left.seed - right.seed),
+        .sort((left, right) => {
+          if (query.sortBeatmapId === undefined) return left.seed - right.seed;
+          const leftScore =
+            left.maps.find(
+              ({ osuBeatmapId }) =>
+                osuBeatmapId === query.sortBeatmapId,
+            )?.score ?? 0;
+          const rightScore =
+            right.maps.find(
+              ({ osuBeatmapId }) =>
+                osuBeatmapId === query.sortBeatmapId,
+            )?.score ?? 0;
+          return (
+            (leftScore - rightScore) *
+              (query.sortDirection === 'desc' ? -1 : 1) ||
+            left.seed - right.seed
+          );
+        }),
     };
   }
 

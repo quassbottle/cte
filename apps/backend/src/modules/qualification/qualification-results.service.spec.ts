@@ -66,6 +66,7 @@ describe('QualificationResultsService', () => {
           {
             beatmapId: 'map-1',
             osuBeatmapId: 11,
+            osuBeatmapsetId: 1,
             artist: 'Artist 1',
             title: 'Title 1',
             difficultyName: 'Difficulty 1',
@@ -75,6 +76,7 @@ describe('QualificationResultsService', () => {
           {
             beatmapId: 'map-2',
             osuBeatmapId: 22,
+            osuBeatmapsetId: 2,
             artist: 'Artist 2',
             title: 'Title 2',
             difficultyName: 'Difficulty 2',
@@ -118,6 +120,65 @@ describe('QualificationResultsService', () => {
           ],
         },
       ],
+    });
+  });
+
+  it('sorts qualification statistics by score in both directions with missing scores as zero', async () => {
+    const repository = {
+      findStageId: jest.fn().mockResolvedValue('stage'),
+      load: jest.fn().mockResolvedValue({
+        beatmaps: [
+          {
+            beatmapId: 'map',
+            osuBeatmapId: 11,
+            osuBeatmapsetId: 1,
+            artist: 'Artist',
+            title: 'Title',
+            difficultyName: 'Difficulty',
+            mod: 'NM',
+            index: 1,
+          },
+        ],
+        beatmapIds: ['map'],
+        attempts: [
+          { osuGameId: 1, beatmapId: 'map', userId: 'a', score: 200 },
+          { osuGameId: 2, beatmapId: 'map', userId: 'b', score: 100 },
+        ],
+        competitors: [
+          { id: 'a', name: 'A', seed: 2, tieBreakId: 'a', userIds: ['a'] },
+          { id: 'b', name: 'B', seed: 1, tieBreakId: 'b', userIds: ['b'] },
+          {
+            id: 'missing',
+            name: 'Missing',
+            seed: 3,
+            tieBreakId: 'missing',
+            userIds: ['missing'],
+          },
+        ],
+      }),
+    };
+    const service = new QualificationResultsService(repository as never);
+
+    await expect(
+      service.getStatistics('tournament' as never),
+    ).resolves.toMatchObject({
+      competitors: [{ id: 'b' }, { id: 'a' }, { id: 'missing' }],
+    });
+    await expect(
+      service.getStatistics('tournament' as never, {
+        sortBeatmapId: 11,
+        sortDirection: 'asc',
+      }),
+    ).resolves.toMatchObject({
+      competitors: [{ id: 'missing' }, { id: 'b' }, { id: 'a' }],
+    });
+    await expect(
+      service.getStatistics('tournament' as never, {
+        sortBeatmapId: 11,
+        sortDirection: 'desc',
+      }),
+    ).resolves.toMatchObject({
+      competitors: [{ id: 'a' }, { id: 'b' }, { id: 'missing' }],
     });
   });
 });

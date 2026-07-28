@@ -79,6 +79,14 @@ export class QualificationLobbyDto extends createZodDto(
   qualificationLobbyDtoSchema,
 ) {}
 
+export const qualificationStatisticsQuerySchema = z.object({
+  sortBeatmapId: z.coerce.number().int().positive().optional(),
+  sortDirection: z.enum(['asc', 'desc']).default('asc'),
+});
+export class QualificationStatisticsQueryDto extends createZodDto(
+  qualificationStatisticsQuerySchema,
+) {}
+
 export const qualificationStatisticsDtoSchema = z.object({
   maps: z.array(
     z.object({
@@ -86,6 +94,7 @@ export const qualificationStatisticsDtoSchema = z.object({
       artist: z.string(),
       title: z.string(),
       difficultyName: z.string(),
+      coverUrl: z.url(),
       mod: z.string(),
       index: z.number().int(),
     }),

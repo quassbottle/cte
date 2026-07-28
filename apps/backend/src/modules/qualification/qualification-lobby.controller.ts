@@ -6,6 +6,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
@@ -21,6 +22,7 @@ import {
   QualificationLobbyDto,
   QualificationLobbyUpsertDto,
   QualificationStatisticsDto,
+  QualificationStatisticsQueryDto,
   SelectQualificationLobbyTeamDto,
 } from './dto';
 import { QualificationLobbyService } from './qualification-lobby.service';
@@ -32,8 +34,11 @@ export class QualificationResultsController {
 
   @Get()
   @ZodResponse({ status: 200, type: QualificationStatisticsDto })
-  public find(@Param('id', TournamentIdPipe) tournamentId: TournamentId) {
-    return this.service.getStatistics(tournamentId);
+  public find(
+    @Param('id', TournamentIdPipe) tournamentId: TournamentId,
+    @Query() query: QualificationStatisticsQueryDto,
+  ) {
+    return this.service.getStatistics(tournamentId, query);
   }
 }
 
