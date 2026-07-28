@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { page } from '$app/stores';
+	import { goto } from '$app/navigation';
 	import type {
 		QualificationLobbyDtoOutput,
 		QualificationStatisticsDtoOutput
@@ -25,6 +26,10 @@
 			(isTeam ? lobby.teams : lobby.players).some(({ id }) => id === competitorId)
 		);
 
+	const applySort = (beatmapId: number | null) =>
+		goto(qualificationSortHref(new URL(window.location.href), beatmapId), {
+			invalidateAll: true
+		});
 </script>
 
 <div class="w-full max-w-full overflow-x-auto rounded-md border border-border">
@@ -39,16 +44,17 @@
 							: 'ascending'
 						: undefined}
 				>
-					<a
+					<button
+						type="button"
 						class="hover:text-foreground"
-						href={qualificationSortHref($page.url, null)}
+						on:click={() => applySort(null)}
 					>
 						{isTeam ? 'Team' : 'Player'}{activeSortBeatmapId === null
 							? activeSortDirection === 'desc'
 								? ' ↓'
 								: ' ↑'
 							: ''}
-					</a>
+					</button>
 				</th>
 				{#each statistics.maps as map (map.osuBeatmapId)}
 					<th
@@ -59,9 +65,10 @@
 								: 'ascending'
 							: undefined}
 					>
-						<a
+						<button
+							type="button"
 							class="group relative block h-20 w-48 overflow-hidden rounded-md text-left text-white"
-							href={qualificationSortHref($page.url, map.osuBeatmapId)}
+							on:click={() => applySort(map.osuBeatmapId)}
 						>
 							<img
 								class="absolute inset-0 h-full w-full object-cover transition-transform group-hover:scale-105"
@@ -81,7 +88,7 @@
 								<span class="truncate font-medium">{map.title}</span>
 								<span class="truncate text-xs opacity-80">{map.difficultyName}</span>
 							</span>
-						</a>
+						</button>
 					</th>
 				{/each}
 			</tr>
