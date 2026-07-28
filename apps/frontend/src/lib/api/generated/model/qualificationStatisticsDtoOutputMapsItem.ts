@@ -15,6 +15,7 @@ export type QualificationStatisticsDtoOutputMapsItem = {
 	artist: string;
 	title: string;
 	difficultyName: string;
+	coverUrl: string;
 	mod: string;
 	/**
 	 * @minimum -9007199254740991

@@ -23,6 +23,7 @@ import type {
 	OsuBeatmapMetadataDtoOutput,
 	QualificationLobbyDtoOutput,
 	QualificationLobbyUpsertDto,
+	QualificationResultsControllerFindParams,
 	QualificationStatisticsDtoOutput,
 	RegisterTournamentDto,
 	ReorderMappoolBeatmapsDto,
@@ -1243,16 +1244,32 @@ export type qualificationResultsControllerFindResponseSuccess =
 export type qualificationResultsControllerFindResponse =
 	qualificationResultsControllerFindResponseSuccess;
 
-export const getQualificationResultsControllerFindUrl = (id: string) => {
-	return `/api/tournaments/${id}/qualification-results`;
+export const getQualificationResultsControllerFindUrl = (
+	id: string,
+	params?: QualificationResultsControllerFindParams
+) => {
+	const normalizedParams = new URLSearchParams();
+
+	Object.entries(params || {}).forEach(([key, value]) => {
+		if (value !== undefined) {
+			normalizedParams.append(key, value === null ? 'null' : String(value));
+		}
+	});
+
+	const stringifiedParams = normalizedParams.toString();
+
+	return stringifiedParams.length > 0
+		? `/api/tournaments/${id}/qualification-results?${stringifiedParams}`
+		: `/api/tournaments/${id}/qualification-results`;
 };
 
 export const qualificationResultsControllerFind = async (
 	id: string,
+	params?: QualificationResultsControllerFindParams,
 	options?: RequestInit
 ): Promise<qualificationResultsControllerFindResponse> => {
 	return backendFetch<qualificationResultsControllerFindResponse>(
-		getQualificationResultsControllerFindUrl(id),
+		getQualificationResultsControllerFindUrl(id, params),
 		{
 			...options,
 			method: 'GET'

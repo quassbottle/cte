@@ -5,6 +5,7 @@ import type {
 	CreateMappoolDto,
 	CreateStageDto,
 	QualificationLobbyUpsertDto,
+	QualificationResultsControllerFindParams,
 	ReorderMappoolBeatmapsDto,
 	ScheduleMatchUpsertDto,
 	TournamentControllerFindManyParams,
@@ -203,7 +204,8 @@ export function createBackendClient(input?: BackendClientInput) {
 				qualificationLobbyControllerSelectTeam(tournamentId, lobbyId, { teamId }, options)
 		},
 		qualificationResults: {
-			find: (tournamentId: string) => qualificationResultsControllerFind(tournamentId, options)
+			find: (tournamentId: string, params?: QualificationResultsControllerFindParams) =>
+				qualificationResultsControllerFind(tournamentId, params, options)
 		},
 		stages: {
 			findByTournament: (tournamentId: string) => stageControllerFindMany(tournamentId, options),

@@ -1551,6 +1551,30 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "sortBeatmapId",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "maximum": 9007199254740991,
+              "exclusiveMinimum": true,
+              "type": "integer",
+              "minimum": 0
+            }
+          },
+          {
+            "name": "sortDirection",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "default": "asc",
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ]
+            }
           }
         ],
         "responses": {
@@ -3851,6 +3875,10 @@
                 "difficultyName": {
                   "type": "string"
                 },
+                "coverUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
                 "mod": {
                   "type": "string"
                 },
@@ -3865,6 +3893,7 @@
                 "artist",
                 "title",
                 "difficultyName",
+                "coverUrl",
                 "mod",
                 "index"
               ],

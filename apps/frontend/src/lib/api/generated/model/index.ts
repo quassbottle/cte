@@ -35,6 +35,8 @@ export * from './qualificationLobbyDtoOutputStandingsItem';
 export * from './qualificationLobbyDtoOutputSyncStatus';
 export * from './qualificationLobbyDtoOutputTeamsItem';
 export * from './qualificationLobbyUpsertDto';
+export * from './qualificationResultsControllerFindParams';
+export * from './qualificationResultsControllerFindSortDirection';
 export * from './qualificationStatisticsDtoOutput';
 export * from './qualificationStatisticsDtoOutputCompetitorsItem';
 export * from './qualificationStatisticsDtoOutputCompetitorsItemMapsItem';
