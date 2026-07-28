@@ -377,8 +377,8 @@ Do not import the full beatmap component. Each `<th>` contains a bounded link:
 </a>
 ```
 
-`sortHref()` preserves `tab=qualification`, toggles `asc` to `desc` only for
-the active map, and resets a newly selected map to `asc`. The arrow and
+`sortHref()` preserves `tab=qualification`, toggles the active map between
+`desc` and `asc`, and resets a newly selected map to `desc`. The arrow and
 `aria-sort` reflect the server-provided query state.
 
 - [ ] **Step 5: Remove frontend sorting and standalone route**

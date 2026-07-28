@@ -159,6 +159,9 @@ describe('qualificationLobbyDtoSchema', () => {
   });
 
   it('parses qualification statistics sorting', () => {
+    expect(qualificationStatisticsQuerySchema.parse({})).toEqual({
+      sortDirection: 'asc',
+    });
     expect(
       qualificationStatisticsQuerySchema.parse({
         sortBeatmapId: '11',

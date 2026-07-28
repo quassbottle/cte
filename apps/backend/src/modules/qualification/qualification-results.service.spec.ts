@@ -166,6 +166,13 @@ describe('QualificationResultsService', () => {
     });
     await expect(
       service.getStatistics('tournament' as never, {
+        sortDirection: 'desc',
+      }),
+    ).resolves.toMatchObject({
+      competitors: [{ id: 'missing' }, { id: 'a' }, { id: 'b' }],
+    });
+    await expect(
+      service.getStatistics('tournament' as never, {
         sortBeatmapId: 11,
         sortDirection: 'asc',
       }),

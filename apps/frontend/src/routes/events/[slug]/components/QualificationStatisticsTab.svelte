@@ -27,9 +27,19 @@
 	const sortHref = (osuBeatmapId: number) => {
 		const params = new URLSearchParams($page.url.searchParams);
 		const direction =
-			activeSortBeatmapId === osuBeatmapId && activeSortDirection === 'asc' ? 'desc' : 'asc';
+			activeSortBeatmapId === osuBeatmapId && activeSortDirection === 'desc' ? 'asc' : 'desc';
 		params.set('tab', 'qualification');
 		params.set('sortBeatmapId', String(osuBeatmapId));
+		params.set('sortDirection', direction);
+		return `${$page.url.pathname}?${params}`;
+	};
+
+	const seedSortHref = () => {
+		const params = new URLSearchParams($page.url.searchParams);
+		const direction =
+			activeSortBeatmapId === null && activeSortDirection === 'asc' ? 'desc' : 'asc';
+		params.set('tab', 'qualification');
+		params.delete('sortBeatmapId');
 		params.set('sortDirection', direction);
 		return `${$page.url.pathname}?${params}`;
 	};
@@ -39,8 +49,21 @@
 	<table class="min-w-max border-collapse text-sm">
 		<thead class="bg-muted/30 text-left text-[11px] uppercase text-muted-foreground">
 			<tr>
-				<th class="sticky left-0 z-20 min-w-56 bg-background px-4 py-3 font-semibold">
-					{isTeam ? 'Team' : 'Player'}
+				<th
+					class="sticky left-0 z-20 min-w-56 bg-background px-4 py-3 font-semibold"
+					aria-sort={activeSortBeatmapId === null
+						? activeSortDirection === 'desc'
+							? 'descending'
+							: 'ascending'
+						: undefined}
+				>
+					<a class="hover:text-foreground" href={seedSortHref()}>
+						{isTeam ? 'Team' : 'Player'}{activeSortBeatmapId === null
+							? activeSortDirection === 'desc'
+								? ' ↓'
+								: ' ↑'
+							: ''}
+					</a>
 				</th>
 				{#each statistics.maps as map (map.osuBeatmapId)}
 					<th

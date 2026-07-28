@@ -79,7 +79,9 @@ export class QualificationResultsService {
           })),
         }))
         .sort((left, right) => {
-          if (query.sortBeatmapId === undefined) return left.seed - right.seed;
+          const direction = query.sortDirection === 'desc' ? -1 : 1;
+          if (query.sortBeatmapId === undefined)
+            return (left.seed - right.seed) * direction;
           const leftScore =
             left.maps.find(
               ({ osuBeatmapId }) =>
@@ -91,8 +93,7 @@ export class QualificationResultsService {
                 osuBeatmapId === query.sortBeatmapId,
             )?.score ?? 0;
           return (
-            (leftScore - rightScore) *
-              (query.sortDirection === 'desc' ? -1 : 1) ||
+            (leftScore - rightScore) * direction ||
             left.seed - right.seed
           );
         }),

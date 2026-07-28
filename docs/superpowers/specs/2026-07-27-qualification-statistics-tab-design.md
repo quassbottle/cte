@@ -55,7 +55,11 @@ scrolling.
 The backend remains the sole owner of ordering:
 
 - without `sortBeatmapId`, competitors use their persisted qualification seed;
+  the initial direction is `asc`, and clicking the competitor header toggles
+  `asc ↔ desc`;
 - with a map selected, competitors use the backend-provided map score;
+- a newly selected map starts in `desc`; repeated clicks toggle
+  `desc → asc → desc`;
 - a missing result remains displayed as `—`, but participates in sorting as a
   score of `0`;
 - persisted seed is the deterministic tie-breaker;
