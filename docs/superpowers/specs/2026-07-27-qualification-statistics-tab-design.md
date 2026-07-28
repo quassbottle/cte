@@ -55,12 +55,12 @@ scrolling.
 The backend remains the sole owner of ordering:
 
 - without `sortBeatmapId`, competitors use their persisted qualification seed;
-- with a map selected, competitors use the backend-calculated place for that
-  map;
-- missing results always follow populated results;
+- with a map selected, competitors use the backend-provided map score;
+- a missing result remains displayed as `—`, but participates in sorting as a
+  score of `0`;
 - persisted seed is the deterministic tie-breaker;
-- `sortDirection` reverses populated places without moving missing results
-  ahead of populated ones.
+- `sortDirection` reverses the complete score order, including missing
+  results.
 
 The frontend stores sorting in page query parameters. Clicking a map header
 navigates with `sortBeatmapId`; clicking the active header toggles
@@ -76,8 +76,8 @@ qualification lobbies already loaded for the tournament page.
 
 ## Verification
 
-- Backend tests cover default seed order, ascending map order, descending map
-  order, seed tie-breaking, and missing results last in both directions.
+- Backend tests cover default seed order, ascending map score order, descending
+  map score order, seed tie-breaking, and missing results sorting as zero.
 - Frontend checks cover query-parameter toggling and rendering through
   Svelte/TypeScript checks.
 - Backend and frontend production builds must pass.

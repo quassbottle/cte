@@ -12,7 +12,7 @@
 
 - Qualification statistics are a real tab on `/events/[slug]`; the standalone qualification route is removed.
 - The backend is the sole owner of competitor ordering.
-- Missing map results remain after populated results for both directions.
+- Missing map results display as `—` and sort as score `0`.
 - Persisted seed is the default order and map-sort tie-breaker.
 - Map headers are compact matrix-specific thumbnails, not the full beatmap component.
 - The existing `QualificationLobbyDetailDialog` is reused.
@@ -62,7 +62,8 @@ const competitors = [
 ];
 ```
 
-Provide map `11` scores giving A place 1, B place 2, and Missing a null game. Assert:
+Provide map `11` scores giving A score 200, B score 100, and Missing a null game
+with score 0. Assert:
 
 ```ts
 expect(
@@ -70,14 +71,14 @@ expect(
     sortBeatmapId: 11,
     sortDirection: 'asc',
   })).competitors.map(({ id }) => id),
-).toEqual(['a', 'b', 'missing']);
+).toEqual(['missing', 'b', 'a']);
 
 expect(
   (await service.getStatistics(tournamentId, {
     sortBeatmapId: 11,
     sortDirection: 'desc',
   })).competitors.map(({ id }) => id),
-).toEqual(['b', 'a', 'missing']);
+).toEqual(['a', 'b', 'missing']);
 ```
 
 Also assert no sort returns `['b', 'a', 'missing']` by persisted seed.
@@ -139,12 +140,8 @@ competitors.sort((left, right) => {
   if (query.sortBeatmapId === undefined) return left.seed - right.seed;
   const leftResult = resultFor(left);
   const rightResult = resultFor(right);
-  const leftMissing = !leftResult || leftResult.gameId === null;
-  const rightMissing = !rightResult || rightResult.gameId === null;
-  if (leftMissing !== rightMissing) return leftMissing ? 1 : -1;
-  if (leftMissing) return left.seed - right.seed;
   return (
-    (leftResult.place - rightResult.place) *
+    ((leftResult?.score ?? 0) - (rightResult?.score ?? 0)) *
       (query.sortDirection === 'desc' ? -1 : 1) ||
     left.seed - right.seed
   );
