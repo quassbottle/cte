@@ -15,7 +15,7 @@
 		artist={metadata.artist}
 		title={metadata.title}
 		difficultyName={metadata.difficultyName}
-		beatmapsetId={metadata.osuBeatmapsetId}
+		coverUrl={metadata.coverUrl}
 		beatmapId={metadata.osuBeatmapId}
 		{mod}
 		{tournamentMode}

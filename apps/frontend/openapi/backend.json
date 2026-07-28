@@ -2584,6 +2584,10 @@
             "maximum": 9007199254740991,
             "minimum": 0
           },
+          "coverUrl": {
+            "type": "string",
+            "format": "uri"
+          },
           "osuBeatmapId": {
             "type": "integer",
             "exclusiveMinimum": true,
@@ -2613,6 +2617,7 @@
         },
         "required": [
           "osuBeatmapsetId",
+          "coverUrl",
           "osuBeatmapId",
           "artist",
           "title",
@@ -4649,6 +4654,10 @@
             "maximum": 9007199254740991,
             "minimum": 0
           },
+          "coverUrl": {
+            "type": "string",
+            "format": "uri"
+          },
           "osuBeatmapId": {
             "type": "integer",
             "exclusiveMinimum": true,
@@ -4701,6 +4710,7 @@
           "index",
           "position",
           "osuBeatmapsetId",
+          "coverUrl",
           "osuBeatmapId",
           "artist",
           "title",
@@ -4893,6 +4903,10 @@
                   "maximum": 9007199254740991,
                   "minimum": 0
                 },
+                "coverUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
                 "osuBeatmapId": {
                   "type": "integer",
                   "exclusiveMinimum": true,
@@ -4945,6 +4959,7 @@
                 "index",
                 "position",
                 "osuBeatmapsetId",
+                "coverUrl",
                 "osuBeatmapId",
                 "artist",
                 "title",

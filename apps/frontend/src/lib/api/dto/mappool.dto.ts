@@ -39,6 +39,7 @@ export interface MappoolBeatmapDto {
 	index: number;
 	position: number;
 	osuBeatmapsetId: number;
+	coverUrl: string;
 	osuBeatmapId: number;
 	artist: string;
 	title: string;

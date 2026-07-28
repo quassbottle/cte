@@ -9,6 +9,7 @@ export const mappoolBeatmapViewSchema = z.object({
   index: z.number().int().positive(),
   position: z.number().int().nonnegative(),
   osuBeatmapsetId: z.number().int().positive(),
+  coverUrl: z.url(),
   osuBeatmapId: z.number().int().positive(),
   artist: z.string(),
   title: z.string(),

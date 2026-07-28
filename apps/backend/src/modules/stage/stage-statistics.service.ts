@@ -6,8 +6,8 @@ import {
   beatmaps,
   mappools,
   mappoolsBeatmaps,
-  matchParticipants,
   matches,
+  matchParticipants,
   osuMultiplayerGames,
   osuMultiplayerScores,
   Schema,
@@ -16,6 +16,7 @@ import {
   tournaments,
   users,
 } from 'lib/infrastructure/db';
+import { beatmapCoverUrl } from 'lib/infrastructure/osu/beatmap-cover-url';
 import { QualificationResultsService } from 'modules/qualification/qualification-results.service';
 import { StageService } from './stage.service';
 
@@ -63,10 +64,7 @@ export class StageStatisticsService {
       .innerJoin(mappoolsBeatmaps, eq(mappoolsBeatmaps.mappoolId, mappools.id))
       .innerJoin(beatmaps, eq(beatmaps.id, mappoolsBeatmaps.beatmapId))
       .where(eq(mappools.stageId, stageId))
-      .orderBy(
-        asc(mappoolsBeatmaps.position),
-        asc(mappoolsBeatmaps.createdAt),
-      );
+      .orderBy(asc(mappoolsBeatmaps.position), asc(mappoolsBeatmaps.createdAt));
 
     const direction = query.sortDirection === 'desc' ? sql`desc` : sql`asc`;
     const sortBeatmapId = query.sortBeatmapId ?? null;
@@ -179,7 +177,7 @@ export class StageStatisticsService {
       stageId,
       maps: maps.map(({ osuBeatmapsetId, ...map }) => ({
         ...map,
-        coverUrl: `https://assets.ppy.sh/beatmaps/${osuBeatmapsetId}/covers/cover@2x.jpg`,
+        coverUrl: beatmapCoverUrl(osuBeatmapsetId),
       })),
       competitors: competitors.rows.map((competitor) => ({
         ...competitor,

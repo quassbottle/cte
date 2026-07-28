@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 export const osuBeatmapMetadataSchema = z.object({
 	osuBeatmapsetId: z.number().int().positive(),
+	coverUrl: z.string().url(),
 	osuBeatmapId: z.number().int().positive(),
 	artist: z.string(),
 	title: z.string(),

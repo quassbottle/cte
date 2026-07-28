@@ -18,6 +18,7 @@ export type MultiplayerScoreData = {
 		title: string;
 		difficultyName: string;
 		beatmapsetId: number;
+		coverUrl: string;
 		beatmapId: number;
 		mod: string;
 		tournamentMode?: 'osu' | 'taiko' | 'fruits' | 'mania';

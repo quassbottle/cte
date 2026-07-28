@@ -6,6 +6,7 @@ import {
   MappoolExceptionCode,
 } from 'lib/domain/mappool/mappool.exception';
 import { DbBeatmap, Schema, beatmaps } from 'lib/infrastructure/db';
+import { beatmapCoverUrl } from 'lib/infrastructure/osu/beatmap-cover-url';
 import { OsuService } from 'lib/infrastructure/osu/osu.service';
 import {
   BuildMappoolBeatmapViewParams,
@@ -173,6 +174,7 @@ export class BeatmapService {
       index: mappoolBeatmap.index,
       position: mappoolBeatmap.position,
       osuBeatmapsetId: beatmap.osuBeatmapsetId,
+      coverUrl: beatmapCoverUrl(beatmap.osuBeatmapsetId),
       osuBeatmapId: beatmap.osuBeatmapId,
       artist: beatmap.artist,
       title: beatmap.title,

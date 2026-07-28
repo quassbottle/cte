@@ -9,7 +9,7 @@
 		artist: string;
 		title: string;
 		difficultyName: string;
-		beatmapsetId: number;
+		coverUrl: string;
 		beatmapId: number;
 		mod?: string;
 		tournamentMode?: 'osu' | 'taiko' | 'fruits' | 'mania';
@@ -22,7 +22,7 @@
 		artist,
 		title,
 		difficultyName,
-		beatmapsetId,
+		coverUrl,
 		beatmapId,
 		mod = 'NM',
 		tournamentMode = 'osu',
@@ -77,10 +77,7 @@
 </script>
 
 <div class="flex w-full flex-col overflow-hidden rounded-2xl border border-border">
-	<Banner
-		class="relative h-[120px] w-full"
-		src={`https://assets.ppy.sh/beatmaps/${beatmapsetId}/covers/cover@2x.jpg`}
-	></Banner>
+	<Banner class="relative h-[120px] w-full" src={coverUrl}></Banner>
 
 	<div class="flex flex-col gap-3 p-4">
 		<a class="text-[20px] font-semibold hover:underline" href={`https://osu.ppy.sh/b/${beatmapId}`}>

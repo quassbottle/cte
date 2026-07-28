@@ -24,6 +24,7 @@ export const toHistoryBeatmap = (
 				title: beatmap.title,
 				difficultyName: beatmap.difficultyName,
 				beatmapsetId: beatmap.osuBeatmapsetId,
+				coverUrl: beatmap.coverUrl,
 				beatmapId: beatmap.osuBeatmapId,
 				mod: beatmap.mod,
 				tournamentMode: beatmap.mode,

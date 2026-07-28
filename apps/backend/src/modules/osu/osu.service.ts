@@ -1,11 +1,9 @@
-import {
-  Inject,
-  Injectable,
-} from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { eq } from 'drizzle-orm';
 import { beatmapId } from 'lib/domain/beatmap/beatmap.id';
 import { OsuException, OsuExceptionCode } from 'lib/domain/osu/osu.exception';
 import { Schema, beatmaps } from 'lib/infrastructure/db';
+import { beatmapCoverUrl } from 'lib/infrastructure/osu/beatmap-cover-url';
 import { OsuService as OsuApiService } from 'lib/infrastructure/osu/osu.service';
 
 @Injectable()
@@ -50,6 +48,7 @@ export class OsuBeatmapService {
         if (created) {
           return {
             osuBeatmapsetId: created.osuBeatmapsetId,
+            coverUrl: beatmapCoverUrl(created.osuBeatmapsetId),
             osuBeatmapId: created.osuBeatmapId,
             artist: created.artist,
             title: created.title,
@@ -78,6 +77,7 @@ export class OsuBeatmapService {
         if (updated) {
           return {
             osuBeatmapsetId: updated.osuBeatmapsetId,
+            coverUrl: beatmapCoverUrl(updated.osuBeatmapsetId),
             osuBeatmapId: updated.osuBeatmapId,
             artist: updated.artist,
             title: updated.title,
@@ -103,6 +103,7 @@ export class OsuBeatmapService {
         if (updated) {
           return {
             osuBeatmapsetId: updated.osuBeatmapsetId,
+            coverUrl: beatmapCoverUrl(updated.osuBeatmapsetId),
             osuBeatmapId: updated.osuBeatmapId,
             artist: updated.artist,
             title: updated.title,

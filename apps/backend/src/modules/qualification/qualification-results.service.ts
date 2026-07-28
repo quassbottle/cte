@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { StageId } from 'lib/domain/stage/stage.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
+import { beatmapCoverUrl } from 'lib/infrastructure/osu/beatmap-cover-url';
 import {
   QualificationResultsRepository,
   SetQualificationSeedParams,
@@ -71,7 +72,7 @@ export class QualificationResultsService {
           artist,
           title,
           difficultyName,
-          coverUrl: `https://assets.ppy.sh/beatmaps/${osuBeatmapsetId}/covers/cover@2x.jpg`,
+          coverUrl: beatmapCoverUrl(osuBeatmapsetId),
           mod,
           index,
         }),

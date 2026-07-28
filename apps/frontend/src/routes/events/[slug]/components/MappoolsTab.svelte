@@ -92,7 +92,7 @@
 												difficultyName={beatmap.difficultyName}
 												artist={beatmap.artist}
 												title={beatmap.title}
-												beatmapsetId={beatmap.osuBeatmapsetId}
+												coverUrl={beatmap.coverUrl}
 												beatmapId={beatmap.osuBeatmapId}
 												mod={beatmap.mod}
 												{tournamentMode}

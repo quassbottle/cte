@@ -1,5 +1,6 @@
 export interface OsuBeatmapMetadataDto {
 	osuBeatmapsetId: number;
+	coverUrl: string;
 	osuBeatmapId: number;
 	artist: string;
 	title: string;

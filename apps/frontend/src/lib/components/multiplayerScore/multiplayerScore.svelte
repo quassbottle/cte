@@ -11,7 +11,7 @@
 		artist={result.beatmap.artist}
 		title={result.beatmap.title}
 		difficultyName={result.beatmap.difficultyName}
-		beatmapsetId={result.beatmap.beatmapsetId}
+		coverUrl={result.beatmap.coverUrl}
 		beatmapId={result.beatmap.beatmapId}
 		mod={result.beatmap.mod}
 		tournamentMode={result.beatmap.tournamentMode}

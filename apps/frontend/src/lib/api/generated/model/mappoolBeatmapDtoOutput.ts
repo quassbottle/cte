@@ -26,6 +26,7 @@ export interface MappoolBeatmapDtoOutput {
 	 * @exclusiveMinimum 0
 	 */
 	osuBeatmapsetId: number;
+	coverUrl: string;
 	/**
 	 * @maximum 9007199254740991
 	 * @exclusiveMinimum 0

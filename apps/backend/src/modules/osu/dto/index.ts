@@ -3,6 +3,7 @@ import z from 'zod';
 
 export const osuBeatmapMetadataDtoSchema = z.object({
   osuBeatmapsetId: z.number().int().positive(),
+  coverUrl: z.url(),
   osuBeatmapId: z.number().int().positive(),
   artist: z.string(),
   title: z.string(),
