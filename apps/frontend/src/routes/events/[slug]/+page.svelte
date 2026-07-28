@@ -67,7 +67,9 @@
 	}
 
 	function getActiveTournamentTab(value: string | null): TournamentTab {
-		return isTournamentTab(value) ? value : 'info';
+		if (!isTournamentTab(value)) return 'info';
+		if (value === 'qualification' && !data.qualificationStatistics) return 'info';
+		return value;
 	}
 
 	function getEditHref(tab: TournamentTab) {
@@ -84,9 +86,7 @@
 	}
 
 	function setActiveTab(value: string) {
-		if (isTournamentTab(value)) {
-			activeTab = value;
-		}
+		activeTab = getActiveTournamentTab(value);
 	}
 
 	$: {
