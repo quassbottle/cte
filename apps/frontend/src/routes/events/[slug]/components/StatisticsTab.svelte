@@ -11,7 +11,7 @@
 	import MatchHistoryDialog from '$lib/components/schedule/MatchHistoryDialog.svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
 	import { ExternalLink } from 'lucide-svelte';
-	import { statisticsSortHref } from './statistics-sort';
+	import { statisticsSortHref, statisticsViewHref } from './statistics-sort';
 
 	export let statistics: StageStatisticsDtoOutput;
 	export let stages: StageDto[];
@@ -28,6 +28,7 @@
 		.flatMap(({ matches }) => matches)
 		.find(({ id }) => id === selectedMatchId);
 	$: isQualification = stages.find(({ id }) => id === statistics.stageId)?.type === 'qualification';
+	$: playerView = isTeam && $page.url.searchParams.get('view') === 'players';
 	$: activeSortBeatmapId = Number($page.url.searchParams.get('sortBeatmapId')) || null;
 	$: activeSortDirection = $page.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc';
 
@@ -41,6 +42,9 @@
 			invalidateAll: true
 		});
 
+	const viewHref = (view: 'teams' | 'players') =>
+		statisticsViewHref(new URL($page.url), view);
+
 	const stageHref = (stageId: string) => {
 		const params = new URLSearchParams($page.url.searchParams);
 		params.set('tab', 'statistics');
@@ -51,15 +55,32 @@
 	};
 </script>
 
-<nav class="mb-4 flex flex-wrap gap-2" aria-label="Statistics stage">
-	{#each stages as stage (stage.id)}
-		<a
-			class={buttonVariants({ variant: 'stage', size: 'sm' })}
-			aria-current={stage.id === statistics.stageId ? 'page' : undefined}
-			href={stageHref(stage.id)}>{stage.name}</a
-		>
-	{/each}
-</nav>
+<div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+	<nav class="flex flex-wrap gap-2" aria-label="Statistics stage">
+		{#each stages as stage (stage.id)}
+			<a
+				class={buttonVariants({ variant: 'stage', size: 'sm' })}
+				aria-current={stage.id === statistics.stageId ? 'page' : undefined}
+				href={stageHref(stage.id)}>{stage.name}</a
+			>
+		{/each}
+	</nav>
+
+	{#if isTeam}
+		<nav class="flex gap-2" aria-label="Statistics view">
+			<a
+				class={buttonVariants({ variant: 'stage', size: 'sm' })}
+				aria-current={!playerView ? 'page' : undefined}
+				href={viewHref('teams')}>Teams</a
+			>
+			<a
+				class={buttonVariants({ variant: 'stage', size: 'sm' })}
+				aria-current={playerView ? 'page' : undefined}
+				href={viewHref('players')}>Players</a
+			>
+		</nav>
+	{/if}
+</div>
 
 <div class="w-full max-w-full overflow-x-auto rounded-md border border-border">
 	<table class="min-w-max border-collapse text-sm">
@@ -74,7 +95,7 @@
 						: undefined}
 				>
 					<button type="button" class="hover:text-foreground" on:click={() => applySort(null)}>
-						{isTeam ? 'Team' : 'Player'}{activeSortBeatmapId === null
+						{playerView || !isTeam ? 'Player' : 'Team'}{activeSortBeatmapId === null
 							? activeSortDirection === 'desc'
 								? ' ↓'
 								: ' ↑'
@@ -120,13 +141,19 @@
 		</thead>
 		<tbody>
 			{#each statistics.competitors as competitor (competitor.id)}
-				{@const lobby = isQualification ? lobbyFor(competitor.id) : undefined}
+				{@const lobby = isQualification && !playerView ? lobbyFor(competitor.id) : undefined}
 				<tr class="border-t border-border">
 					<th class="sticky left-0 z-10 min-w-56 bg-background px-4 py-4 text-left font-semibold">
 						<div class="flex items-center gap-2">
-							{#if competitor.seed}<span class="text-muted-foreground">#{competitor.seed}</span
+							{#if competitor.seed && !playerView}<span class="text-muted-foreground"
+									>#{competitor.seed}</span
 								>{/if}
-							<span>{competitor.name}</span>
+							<div>
+								<div>{competitor.name}</div>
+								{#if playerView && competitor.teamName}
+									<div class="text-xs font-normal text-muted-foreground">{competitor.teamName}</div>
+								{/if}
+							</div>
 							{#if lobby}
 								<button
 									type="button"

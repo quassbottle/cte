@@ -18,3 +18,13 @@ export const statisticsSortHref = (url: URL, beatmapId: number | null) => {
 
 	return `${url.pathname}?${params}`;
 };
+
+export const statisticsViewHref = (url: URL, view: 'teams' | 'players') => {
+	const params = new URLSearchParams(url.searchParams);
+	params.set('tab', 'statistics');
+	if (view === 'players') params.set('view', 'players');
+	else params.delete('view');
+	params.delete('sortBeatmapId');
+	params.delete('sortDirection');
+	return `${url.pathname}?${params}`;
+};

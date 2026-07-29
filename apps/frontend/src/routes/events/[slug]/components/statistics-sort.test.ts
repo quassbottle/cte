@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test';
-import { statisticsSortHref } from './statistics-sort';
+import { statisticsSortHref, statisticsViewHref } from './statistics-sort';
 
 describe('statisticsSortHref', () => {
 	test('toggles a map desc, asc, desc', () => {
@@ -20,5 +20,26 @@ describe('statisticsSortHref', () => {
 
 		expect(new URL(desc, initial).searchParams.get('sortDirection')).toBe('desc');
 		expect(new URL(asc, initial).searchParams.get('sortDirection')).toBe('asc');
+	});
+
+	test('switches to players and resets sorting', () => {
+		const initial = new URL(
+			'https://cte.test/events/twc?tab=statistics&stage=stage&sortBeatmapId=11&sortDirection=desc'
+		);
+		const result = new URL(statisticsViewHref(initial, 'players'), initial);
+
+		expect(result.searchParams.get('view')).toBe('players');
+		expect(result.searchParams.get('stage')).toBe('stage');
+		expect(result.searchParams.has('sortBeatmapId')).toBe(false);
+		expect(result.searchParams.has('sortDirection')).toBe(false);
+	});
+
+	test('switches back to teams without a view parameter', () => {
+		const initial = new URL(
+			'https://cte.test/events/twc?tab=statistics&stage=stage&view=players'
+		);
+		const result = new URL(statisticsViewHref(initial, 'teams'), initial);
+
+		expect(result.searchParams.has('view')).toBe(false);
 	});
 });
