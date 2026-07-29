@@ -47,6 +47,7 @@ export const updateStageDtoSchema = z
 export class UpdateStageDto extends createZodDto(updateStageDtoSchema) {}
 
 export const stageStatisticsQuerySchema = z.object({
+  view: z.enum(['teams', 'players']).optional(),
   sortBeatmapId: z.coerce.number().int().positive().optional(),
   sortDirection: z.enum(['asc', 'desc']).default('asc'),
 });
@@ -78,6 +79,7 @@ export const stageStatisticsDtoSchema = z.object({
     z.object({
       id: z.string(),
       name: z.string(),
+      teamName: z.string().optional(),
       seed: z.number().int().positive().optional(),
       maps: z.array(
         z.object({
