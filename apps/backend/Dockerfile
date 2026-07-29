@@ -42,6 +42,6 @@ WORKDIR /app/apps/backend
 EXPOSE 3000
 
 HEALTHCHECK --interval=10s --timeout=3s --start-period=20s --retries=6 \
-  CMD ["node", "-e", "fetch('http://127.0.0.1:3000/docs-json').then(r => { if (!r.ok) process.exit(1) }).catch(() => process.exit(1))"]
+  CMD ["node", "-e", "require('node:net').connect(3000, '127.0.0.1').on('connect', () => process.exit(0)).on('error', () => process.exit(1))"]
 
 CMD ["node", "dist/src/main.js"]
