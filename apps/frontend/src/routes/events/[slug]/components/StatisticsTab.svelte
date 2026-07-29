@@ -31,6 +31,8 @@
 	$: playerView = isTeam && $page.url.searchParams.get('view') === 'players';
 	$: activeSortBeatmapId = Number($page.url.searchParams.get('sortBeatmapId')) || null;
 	$: activeSortDirection = $page.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc';
+	$: teamsHref = statisticsViewHref(new URL($page.url), 'teams', statistics.stageId);
+	$: playersHref = statisticsViewHref(new URL($page.url), 'players', statistics.stageId);
 
 	const lobbyFor = (competitorId: string) =>
 		lobbies.find((lobby) =>
@@ -41,9 +43,6 @@
 		goto(statisticsSortHref(new URL(window.location.href), beatmapId), {
 			invalidateAll: true
 		});
-
-	const viewHref = (view: 'teams' | 'players') =>
-		statisticsViewHref(new URL($page.url), view, statistics.stageId);
 
 	const stageHref = (stageId: string) => {
 		const params = new URLSearchParams($page.url.searchParams);
@@ -71,12 +70,12 @@
 			<a
 				class={buttonVariants({ variant: 'stage', size: 'sm' })}
 				aria-current={!playerView ? 'page' : undefined}
-				href={viewHref('teams')}>Teams</a
+				href={teamsHref}>Teams</a
 			>
 			<a
 				class={buttonVariants({ variant: 'stage', size: 'sm' })}
 				aria-current={playerView ? 'page' : undefined}
-				href={viewHref('players')}>Players</a
+				href={playersHref}>Players</a
 			>
 		</nav>
 	{/if}
