@@ -11,6 +11,6 @@ export const toMatchHistory = (
 		gameId: game.gameId,
 		beatmapId: game.beatmapId,
 		beatmap: toHistoryBeatmap(beatmaps.find(({ osuBeatmapId }) => osuBeatmapId === game.beatmapId)),
-		scores: game.scores
+		scores: game.scores.map((score) => ({ ...score, gameId: game.gameId }))
 	}))
 });

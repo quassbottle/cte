@@ -33,6 +33,7 @@ const qualificationAttemptDtoSchema = z.object({
   gameId: z.number().int(),
   osuUserId: z.number().int(),
   userId: userIdSchema.nullable(),
+  competitorId: z.string().nullable(),
   userName: z.string().nullable(),
   score: z.number().int(),
   mods: z.array(z.string()),

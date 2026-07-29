@@ -2701,6 +2701,14 @@
                         "minimum": -9007199254740991,
                         "maximum": 9007199254740991
                       },
+                      "userId": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "competitorId": {
+                        "type": "string",
+                        "nullable": true
+                      },
                       "userName": {
                         "type": "string",
                         "nullable": true
@@ -2760,6 +2768,8 @@
                     },
                     "required": [
                       "osuUserId",
+                      "userId",
+                      "competitorId",
                       "userName",
                       "team",
                       "score",
@@ -4019,6 +4029,10 @@
                   "pattern": "^[0-9a-z]+$",
                   "nullable": true
                 },
+                "competitorId": {
+                  "type": "string",
+                  "nullable": true
+                },
                 "userName": {
                   "type": "string",
                   "nullable": true
@@ -4072,6 +4086,7 @@
                 "gameId",
                 "osuUserId",
                 "userId",
+                "competitorId",
                 "userName",
                 "score",
                 "mods",

@@ -15,6 +15,20 @@ export type MultiplayerHistoryData = {
 	}[];
 };
 
+export type MultiplayerHistoryTarget = {
+	gameId: number;
+	competitorId: string;
+};
+
+export const isHistoryTargetScore = (
+	score: Pick<PlayerMultiplayerScoreData, 'gameId' | 'userId' | 'competitorId'>,
+	gameId: number,
+	target: MultiplayerHistoryTarget | null
+) =>
+	target !== null &&
+	(score.gameId ?? gameId) === target.gameId &&
+	(score.competitorId === target.competitorId || score.userId === target.competitorId);
+
 export const toHistoryBeatmap = (
 	beatmap: MappoolBeatmapDto | undefined
 ): MultiplayerScoreData['beatmap'] | null =>

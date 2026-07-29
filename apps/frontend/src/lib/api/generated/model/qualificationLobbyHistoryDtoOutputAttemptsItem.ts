@@ -28,6 +28,8 @@ export type QualificationLobbyHistoryDtoOutputAttemptsItem = {
 	 */
 	userId: string | null;
 	/** @nullable */
+	competitorId: string | null;
+	/** @nullable */
 	userName: string | null;
 	/**
 	 * @minimum -9007199254740991

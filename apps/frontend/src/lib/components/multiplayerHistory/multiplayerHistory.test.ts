@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'bun:test';
-import { toQualificationHistory } from './multiplayerHistory';
+import { isHistoryTargetScore, toQualificationHistory } from './multiplayerHistory';
 
 describe('multiplayer history', () => {
 	it('adapts qualification attempts to shared highlighted score sections', () => {
@@ -12,6 +12,7 @@ describe('multiplayer history', () => {
 						gameId: 2,
 						osuUserId: 1,
 						userId: 'player',
+						competitorId: 'team',
 						userName: 'Player',
 						score: 1_000_000,
 						mods: ['NF'],
@@ -28,6 +29,7 @@ describe('multiplayer history', () => {
 						gameId: 1,
 						osuUserId: 2,
 						userId: 'other',
+						competitorId: 'other-team',
 						userName: 'Other',
 						score: 900_000,
 						mods: [],
@@ -76,8 +78,21 @@ describe('multiplayer history', () => {
 		expect(history.entries.map(({ beatmapId }) => beatmapId)).toEqual([11, 22]);
 		expect(history.entries[0].scores[0]).toMatchObject({
 			osuUserId: 1,
+			competitorId: 'team',
 			highlighted: true
 		});
 		expect(history.entries[0].standings).toEqual([{ score: 1_900_000, place: 2 }]);
+	});
+
+	it('matches a score by either player or team competitor', () => {
+		const score = {
+			gameId: 2,
+			userId: 'player',
+			competitorId: 'team'
+		};
+
+		expect(isHistoryTargetScore(score, 1, { gameId: 2, competitorId: 'player' })).toBe(true);
+		expect(isHistoryTargetScore(score, 1, { gameId: 2, competitorId: 'team' })).toBe(true);
+		expect(isHistoryTargetScore(score, 1, { gameId: 3, competitorId: 'team' })).toBe(false);
 	});
 });

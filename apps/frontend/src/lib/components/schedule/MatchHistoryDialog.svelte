@@ -6,7 +6,10 @@
 	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import MultiplayerHistory from '$lib/components/multiplayerHistory/MultiplayerHistory.svelte';
 	import MultiplayerHistoryDialog from '$lib/components/multiplayerHistory/MultiplayerHistoryDialog.svelte';
-	import type { MultiplayerHistoryData } from '$lib/components/multiplayerHistory/multiplayerHistory';
+	import type {
+		MultiplayerHistoryData,
+		MultiplayerHistoryTarget
+	} from '$lib/components/multiplayerHistory/multiplayerHistory';
 	import { onMount } from 'svelte';
 	import { toMatchHistory } from './match-history';
 
@@ -14,6 +17,7 @@
 	export let match: StageScheduleDtoOutputMatchesItem;
 	export let beatmaps: MappoolBeatmapDto[];
 	export let onClose: () => void;
+	export let target: MultiplayerHistoryTarget | null = null;
 
 	let history: MultiplayerHistoryData | null = null;
 	let error: string | null = null;
@@ -38,7 +42,7 @@
 		{#if error}
 			<p class="py-8 text-center text-sm text-destructive">{error}</p>
 		{:else if history}
-			<MultiplayerHistory {history} />
+			<MultiplayerHistory {history} {target} />
 		{:else}
 			<p class="py-8 text-center text-sm text-muted-foreground">Loading history…</p>
 		{/if}

@@ -3,6 +3,11 @@
 	import { X } from 'lucide-svelte';
 
 	export let onClose: () => void;
+
+	function clearFocusedScore() {
+		const active = document.activeElement;
+		if (active instanceof HTMLElement) active.blur();
+	}
 </script>
 
 <div
@@ -19,6 +24,8 @@
 >
 	<div
 		class="relative max-h-[90vh] w-full max-w-4xl overflow-y-auto rounded-xl bg-popover shadow-2xl"
+		on:wheel={clearFocusedScore}
+		on:touchmove={clearFocusedScore}
 	>
 		<Button
 			type="button"

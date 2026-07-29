@@ -1,8 +1,13 @@
 <script lang="ts">
 	import MultiplayerScore from '$lib/components/multiplayerScore/multiplayerScore.svelte';
-	import type { MultiplayerHistoryData } from './multiplayerHistory';
+	import {
+		isHistoryTargetScore,
+		type MultiplayerHistoryData,
+		type MultiplayerHistoryTarget
+	} from './multiplayerHistory';
 
 	export let history: MultiplayerHistoryData;
+	export let target: MultiplayerHistoryTarget | null = null;
 </script>
 
 {#if history.entries.length}
@@ -12,7 +17,11 @@
 				<MultiplayerScore
 					result={{
 						beatmap: entry.beatmap,
-						scores: entry.scores,
+						scores: entry.scores.map((score) => ({
+							...score,
+							gameId: score.gameId ?? entry.gameId,
+							focused: isHistoryTargetScore(score, entry.gameId, target)
+						})),
 						standings: entry.standings
 					}}
 				/>

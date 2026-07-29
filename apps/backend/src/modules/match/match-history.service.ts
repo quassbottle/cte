@@ -24,7 +24,12 @@ export class MatchHistoryService {
     matchId: MatchId,
   ): Promise<MatchHistoryDtoOutput> {
     const [match] = await this.db
-      .select({ name: matches.name, osuRoomId: matches.osuRoomId })
+      .select({
+        name: matches.name,
+        osuRoomId: matches.osuRoomId,
+        redTeamId: matches.redTeamId,
+        blueTeamId: matches.blueTeamId,
+      })
       .from(matches)
       .innerJoin(stages, eq(stages.id, matches.stageId))
       .where(
@@ -64,8 +69,15 @@ export class MatchHistoryService {
         history?.games.map((game) => ({
           gameId: game.gameId,
           beatmapId: game.beatmapId,
-          scores: game.scores.map(({ userId: _, ...score }) => ({
+          scores: game.scores.map(({ userId, ...score }) => ({
             ...score,
+            userId,
+            competitorId:
+              score.team === 'red'
+                ? match.redTeamId
+                : score.team === 'blue'
+                  ? match.blueTeamId
+                  : userId,
             highlighted: winner !== null && score.team === winner,
           })),
         })) ?? [],

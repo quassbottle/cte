@@ -7,15 +7,24 @@
 		type PlayerMultiplayerScoreData
 	} from './multiplayerScore';
 
-	const { score }: { score: PlayerMultiplayerScoreData } = $props();
+	const { score, autofocus = false }: { score: PlayerMultiplayerScoreData; autofocus?: boolean } =
+		$props();
 	const displayName = $derived(score.userName ?? `osu! ${score.osuUserId}`);
 	const formattedAccuracy = $derived(formatMultiplayerAccuracy(score.accuracy));
+
+	function focusScore(node: HTMLElement, autofocus = false) {
+		if (autofocus) node.focus();
+	}
 </script>
 
 <article
-	class="grid gap-3 rounded-xl border p-4 sm:grid-cols-[minmax(12rem,1fr)_auto] sm:items-center {score.highlighted
-		? 'border-primary bg-primary/10'
-		: 'border-border bg-muted/40'}"
+	use:focusScore={autofocus}
+	tabindex="-1"
+	class="grid gap-3 rounded-xl border p-4 transition-colors focus:outline-none sm:grid-cols-[minmax(12rem,1fr)_auto] sm:items-center {score.focused
+		? 'border-border bg-muted/40 group-focus-within/history:border-primary group-focus-within/history:bg-primary/20 group-focus-within/history:ring-2 group-focus-within/history:ring-primary'
+		: score.highlighted
+			? 'border-primary bg-primary/10'
+			: 'border-border bg-muted/40'}"
 >
 	<div class="flex min-w-0 items-center gap-3">
 		<img

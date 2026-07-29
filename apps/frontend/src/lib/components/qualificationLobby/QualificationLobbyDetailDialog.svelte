@@ -6,7 +6,8 @@
 	import type { MappoolBeatmapDto } from '$lib/api/types';
 	import {
 		toQualificationHistory,
-		type MultiplayerHistoryData
+		type MultiplayerHistoryData,
+		type MultiplayerHistoryTarget
 	} from '$lib/components/multiplayerHistory/multiplayerHistory';
 	import QualificationLobbyCard from './qualificationLobby.svelte';
 	import MultiplayerHistoryDialog from '$lib/components/multiplayerHistory/MultiplayerHistoryDialog.svelte';
@@ -16,6 +17,7 @@
 	export let lobby: QualificationLobbyDtoOutput;
 	export let beatmaps: MappoolBeatmapDto[];
 	export let onClose: () => void;
+	export let target: MultiplayerHistoryTarget | null = null;
 
 	let history: MultiplayerHistoryData | null = null;
 	let loading = true;
@@ -55,5 +57,5 @@
 </script>
 
 <MultiplayerHistoryDialog onClose={close}>
-	<QualificationLobbyCard {lobby} {history} {loading} {historyError} />
+	<QualificationLobbyCard {lobby} {history} {loading} {historyError} {target} />
 </MultiplayerHistoryDialog>

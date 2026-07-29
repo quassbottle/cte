@@ -14,6 +14,10 @@ export type MatchHistoryDtoOutputGamesItemScoresItem = {
 	 */
 	osuUserId: number;
 	/** @nullable */
+	userId: string | null;
+	/** @nullable */
+	competitorId: string | null;
+	/** @nullable */
 	userName: string | null;
 	/** @nullable */
 	team: MatchHistoryDtoOutputGamesItemScoresItemTeam;

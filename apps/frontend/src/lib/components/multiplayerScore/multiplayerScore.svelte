@@ -4,9 +4,10 @@
 	import PlayerMultiplayerScore from './playerMultiplayerScore.svelte';
 
 	const { result }: { result: MultiplayerScoreData } = $props();
+	const focusIndex = $derived(result.scores.findIndex(({ focused }) => focused));
 </script>
 
-<section class="space-y-2">
+<section class="group/history space-y-2">
 	<Beatmap
 		artist={result.beatmap.artist}
 		title={result.beatmap.title}
@@ -19,8 +20,8 @@
 		difficulty={result.beatmap.difficulty}
 		deleted={result.beatmap.deleted}
 	/>
-	{#each result.scores as score}
-		<PlayerMultiplayerScore {score} />
+	{#each result.scores as score, index}
+		<PlayerMultiplayerScore {score} autofocus={index === focusIndex} />
 	{/each}
 	{#if result.standings?.length}
 		<div class="flex flex-wrap justify-end gap-3 text-sm">

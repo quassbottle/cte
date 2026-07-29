@@ -112,6 +112,8 @@ export class StageScheduleDto extends createZodDto(stageScheduleDtoSchema) {}
 
 const matchHistoryScoreDtoSchema = z.object({
   osuUserId: z.number().int(),
+  userId: z.string().nullable(),
+  competitorId: z.string().nullable(),
   userName: z.string().nullable(),
   team: z.enum(['red', 'blue']).nullable(),
   score: z.number().int(),

@@ -167,21 +167,24 @@ export class QualificationLobbyService {
     );
     const attempts =
       history?.games.flatMap((game) =>
-        game.scores.map((score) => ({
-          ...score,
-          beatmapId: game.beatmapId,
-          gameId: game.gameId,
-          counted: competitors.some(
-            (competitor) =>
-              score.userId !== null &&
-              competitor.userIds.includes(score.userId) &&
-              competitor.maps.some(
+        game.scores.map((score) => {
+          const competitor = competitors.find(
+            (candidate) =>
+              score.userId !== null && candidate.userIds.includes(score.userId),
+          );
+          return {
+            ...score,
+            competitorId: competitor?.competitorId ?? null,
+            beatmapId: game.beatmapId,
+            gameId: game.gameId,
+            counted:
+              competitor?.maps.some(
                 (map) =>
                   map.osuBeatmapId === game.beatmapId &&
                   map.osuGameId === game.gameId,
-              ),
-          ),
-        })),
+              ) ?? false,
+          };
+        }),
       ) ?? [];
     const standings = competitors.flatMap((competitor) =>
       competitor.maps.flatMap((map) =>

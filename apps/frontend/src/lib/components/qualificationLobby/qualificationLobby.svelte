@@ -2,13 +2,17 @@
 	import type { QualificationLobbyDtoOutput } from '$lib/api/generated/model';
 	import StaffList from '$lib/components/match/StaffList.svelte';
 	import MultiplayerHistory from '$lib/components/multiplayerHistory/MultiplayerHistory.svelte';
-	import type { MultiplayerHistoryData } from '$lib/components/multiplayerHistory/multiplayerHistory';
+	import type {
+		MultiplayerHistoryData,
+		MultiplayerHistoryTarget
+	} from '$lib/components/multiplayerHistory/multiplayerHistory';
 	import { getLobbySeats, toRefereeView } from './qualificationLobby-view';
 
 	export let lobby: QualificationLobbyDtoOutput;
 	export let history: MultiplayerHistoryData | null = null;
 	export let loading = false;
 	export let historyError: string | null = null;
+	export let target: MultiplayerHistoryTarget | null = null;
 </script>
 
 <article class="flex flex-col gap-3 rounded-md border border-border p-4">
@@ -44,7 +48,7 @@
 	{:else if historyError}
 		<p class="py-8 text-center text-sm text-destructive">{historyError}</p>
 	{:else if history}
-		<MultiplayerHistory {history} />
+		<MultiplayerHistory {history} {target} />
 	{/if}
 
 	<slot name="actions" />

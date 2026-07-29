@@ -7,6 +7,7 @@
 		StageStatisticsDtoOutput
 	} from '$lib/api/generated/model';
 	import type { MappoolBeatmapDto, StageDto } from '$lib/api/types';
+	import type { MultiplayerHistoryTarget } from '$lib/components/multiplayerHistory/multiplayerHistory';
 	import QualificationLobbyDetailDialog from '$lib/components/qualificationLobby/QualificationLobbyDetailDialog.svelte';
 	import MatchHistoryDialog from '$lib/components/schedule/MatchHistoryDialog.svelte';
 	import { buttonVariants } from '$lib/components/ui/button';
@@ -23,6 +24,7 @@
 
 	let selectedLobbyId: string | null = null;
 	let selectedMatchId: string | null = null;
+	let selectedTarget: MultiplayerHistoryTarget | null = null;
 	$: selectedLobby = lobbies.find(({ id }) => id === selectedLobbyId);
 	$: selectedMatch = schedule
 		.flatMap(({ matches }) => matches)
@@ -43,6 +45,16 @@
 		goto(statisticsSortHref(new URL(window.location.href), beatmapId), {
 			invalidateAll: true
 		});
+
+	const openLobby = (lobbyId: string, target: MultiplayerHistoryTarget | null = null) => {
+		selectedTarget = target;
+		selectedLobbyId = lobbyId;
+	};
+
+	const openMatch = (matchId: string, target: MultiplayerHistoryTarget) => {
+		selectedTarget = target;
+		selectedMatchId = matchId;
+	};
 
 	const stageHref = (stageId: string, url: URL, view: 'teams' | 'players') => {
 		const params = new URLSearchParams(url.searchParams);
@@ -159,7 +171,7 @@
 								<button
 									type="button"
 									class="inline-flex text-primary hover:text-primary/80"
-									on:click={() => (selectedLobbyId = lobby.id)}
+									on:click={() => openLobby(lobby.id)}
 									aria-label={`Open ${competitor.name} qualification history`}
 								>
 									<ExternalLink class="h-4 w-4" />
@@ -182,7 +194,11 @@
 													type="button"
 													class="text-primary hover:text-primary/80"
 													aria-label="Open qualification history"
-													on:click={() => (selectedLobbyId = attempt.lobbyId ?? null)}
+													on:click={() =>
+														openLobby(attempt.lobbyId!, {
+															gameId: attempt.gameId,
+															competitorId: competitor.id
+														})}
 												>
 													<ExternalLink class="h-4 w-4" />
 												</button>
@@ -191,7 +207,11 @@
 													type="button"
 													class="text-primary hover:text-primary/80"
 													aria-label="Open match history"
-													on:click={() => (selectedMatchId = attempt.matchId)}
+													on:click={() =>
+														openMatch(attempt.matchId!, {
+															gameId: attempt.gameId,
+															competitorId: competitor.id
+														})}
 												>
 													<ExternalLink class="h-4 w-4" />
 												</button>
@@ -213,7 +233,11 @@
 		{tournamentId}
 		lobby={selectedLobby}
 		{beatmaps}
-		onClose={() => (selectedLobbyId = null)}
+		target={selectedTarget}
+		onClose={() => {
+			selectedLobbyId = null;
+			selectedTarget = null;
+		}}
 	/>
 {/if}
 
@@ -222,6 +246,10 @@
 		{tournamentId}
 		match={selectedMatch}
 		{beatmaps}
-		onClose={() => (selectedMatchId = null)}
+		target={selectedTarget}
+		onClose={() => {
+			selectedMatchId = null;
+			selectedTarget = null;
+		}}
 	/>
 {/if}

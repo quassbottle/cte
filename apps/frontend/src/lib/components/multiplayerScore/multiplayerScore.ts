@@ -1,5 +1,7 @@
 export type PlayerMultiplayerScoreData = {
+	gameId?: number;
 	osuUserId: number;
+	userId?: string | null;
 	userName: string | null;
 	mods: string[];
 	maxCombo: number;
@@ -9,7 +11,9 @@ export type PlayerMultiplayerScoreData = {
 	ok: number | null;
 	miss: number | null;
 	rank: string;
+	competitorId: string | null;
 	highlighted?: boolean;
+	focused?: boolean;
 };
 
 export type MultiplayerScoreData = {

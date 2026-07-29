@@ -109,7 +109,12 @@ describe('QualificationLobbyService', () => {
     );
 
     expect(history.attempts).toEqual([
-      expect.objectContaining({ beatmapId: 1, gameId: 2, counted: true }),
+      expect.objectContaining({
+        beatmapId: 1,
+        gameId: 2,
+        competitorId: 'team',
+        counted: true,
+      }),
     ]);
     expect(history.standings).toEqual([
       expect.objectContaining({ competitorId: 'team', place: 3 }),

@@ -15,7 +15,8 @@ const score = {
 	great: null,
 	ok: null,
 	miss: null,
-	rank: 'S'
+	rank: 'S',
+	competitorId: 'player'
 } satisfies PlayerMultiplayerScoreData;
 
 describe('multiplayer score formatting', () => {

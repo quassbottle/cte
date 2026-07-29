@@ -27,6 +27,8 @@ describe('MatchHistoryService', () => {
       {
         name: 'Final 1',
         osuRoomId: 'room',
+        redTeamId: 'red-team',
+        blueTeamId: 'blue-team',
       },
     ]);
     const roomHistory = {
@@ -101,6 +103,8 @@ describe('MatchHistoryService', () => {
           scores: [
             expect.objectContaining({
               osuUserId: 30,
+              userId: 'user',
+              competitorId: 'red-team',
               userName: 'Player',
               team: 'red',
               highlighted: true,
@@ -113,6 +117,8 @@ describe('MatchHistoryService', () => {
           scores: [
             expect.objectContaining({
               osuUserId: 31,
+              userId: 'opponent',
+              competitorId: 'blue-team',
               team: 'blue',
               highlighted: false,
             }),
@@ -127,6 +133,8 @@ describe('MatchHistoryService', () => {
       {
         name: 'Final 1',
         osuRoomId: 'room',
+        redTeamId: 'red-team',
+        blueTeamId: 'blue-team',
       },
     ]);
     const roomHistory = {
