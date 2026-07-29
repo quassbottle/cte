@@ -6,8 +6,10 @@
  * OpenAPI spec version: 1.0
  */
 import type { StageControllerGetStatisticsSortDirection } from './stageControllerGetStatisticsSortDirection';
+import type { StageControllerGetStatisticsView } from './stageControllerGetStatisticsView';
 
 export type StageControllerGetStatisticsParams = {
+	view?: StageControllerGetStatisticsView;
 	/**
 	 * @maximum 9007199254740991
 	 * @exclusiveMinimum 0

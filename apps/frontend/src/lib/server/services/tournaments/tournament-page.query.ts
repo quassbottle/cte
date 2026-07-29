@@ -7,6 +7,7 @@ export async function getTournamentPage(
 	viewer?: Pick<Viewer, 'id' | 'role'>,
 	statistics?: {
 		stageId?: string;
+		view?: 'teams' | 'players';
 		sortBeatmapId?: number;
 		sortDirection: 'asc' | 'desc';
 	}
@@ -44,6 +45,7 @@ export async function getTournamentPage(
 	const stageStatistics = statisticsStage
 		? (
 				await backend.stages.getStatistics(tournamentId, statisticsStage.id, {
+					...(statisticsQuery?.view ? { view: statisticsQuery.view } : {}),
 					...(statisticsQuery?.sortBeatmapId
 						? { sortBeatmapId: statisticsQuery.sortBeatmapId }
 						: {}),

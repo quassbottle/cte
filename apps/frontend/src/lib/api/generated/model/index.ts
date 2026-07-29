@@ -59,6 +59,7 @@ export * from './scheduleMatchUpsertDtoStaffItemRole';
 export * from './selectQualificationLobbyTeamDto';
 export * from './stageControllerGetStatisticsParams';
 export * from './stageControllerGetStatisticsSortDirection';
+export * from './stageControllerGetStatisticsView';
 export * from './stageDtoOutput';
 export * from './stageDtoOutputType';
 export * from './stageScheduleDtoOutput';

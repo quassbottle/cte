@@ -1912,6 +1912,18 @@
             }
           },
           {
+            "name": "view",
+            "required": false,
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "teams",
+                "players"
+              ]
+            }
+          },
+          {
             "name": "sortBeatmapId",
             "required": false,
             "in": "query",
@@ -4442,6 +4454,9 @@
                   "type": "string"
                 },
                 "name": {
+                  "type": "string"
+                },
+                "teamName": {
                   "type": "string"
                 },
                 "seed": {

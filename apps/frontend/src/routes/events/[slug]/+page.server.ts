@@ -18,6 +18,7 @@ export const load: PageServerLoad = async (event) => {
 	const statistics:
 		| {
 				stageId?: string;
+				view?: 'players';
 				sortBeatmapId?: number;
 				sortDirection: 'asc' | 'desc';
 		  }
@@ -25,6 +26,9 @@ export const load: PageServerLoad = async (event) => {
 		event.url.searchParams.get('tab') === 'statistics'
 			? {
 					stageId: event.url.searchParams.get('stage') ?? undefined,
+					...(event.url.searchParams.get('view') === 'players'
+						? { view: 'players' as const }
+						: {}),
 					...(Number.isSafeInteger(sortBeatmapId) && sortBeatmapId > 0 ? { sortBeatmapId } : {}),
 					sortDirection: event.url.searchParams.get('sortDirection') === 'desc' ? 'desc' : 'asc'
 				}

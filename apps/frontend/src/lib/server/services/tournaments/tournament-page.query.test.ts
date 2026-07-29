@@ -51,13 +51,14 @@ describe('getTournamentPage', () => {
 
 		const result = await getTournamentPage(backend as never, 'tournament-id', undefined, {
 			stageId: 'stage-id',
+			view: 'players',
 			sortBeatmapId: 11,
 			sortDirection: 'desc'
 		});
 
 		expect(receivedParams).toEqual({
 			stageId: 'stage-id',
-			params: { sortBeatmapId: 11, sortDirection: 'desc' }
+			params: { view: 'players', sortBeatmapId: 11, sortDirection: 'desc' }
 		});
 		expect(result.stageStatistics).toEqual({
 			stageId: 'stage-id',
