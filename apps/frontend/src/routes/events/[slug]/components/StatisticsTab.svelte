@@ -44,13 +44,15 @@
 			invalidateAll: true
 		});
 
-	const stageHref = (stageId: string) => {
-		const params = new URLSearchParams($page.url.searchParams);
+	const stageHref = (stageId: string, url: URL, view: 'teams' | 'players') => {
+		const params = new URLSearchParams(url.searchParams);
 		params.set('tab', 'statistics');
 		params.set('stage', stageId);
+		if (view === 'players') params.set('view', 'players');
+		else params.delete('view');
 		params.delete('sortBeatmapId');
 		params.delete('sortDirection');
-		return `${$page.url.pathname}?${params}`;
+		return `${url.pathname}?${params}`;
 	};
 </script>
 
@@ -60,7 +62,7 @@
 			<a
 				class={buttonVariants({ variant: 'stage', size: 'sm' })}
 				aria-current={stage.id === statistics.stageId ? 'page' : undefined}
-				href={stageHref(stage.id)}>{stage.name}</a
+				href={stageHref(stage.id, $page.url, playerView ? 'players' : 'teams')}>{stage.name}</a
 			>
 		{/each}
 	</nav>
