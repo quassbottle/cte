@@ -42,8 +42,7 @@
 			invalidateAll: true
 		});
 
-	const viewHref = (view: 'teams' | 'players') =>
-		statisticsViewHref(new URL($page.url), view);
+	const viewHref = (view: 'teams' | 'players') => statisticsViewHref(new URL($page.url), view);
 
 	const stageHref = (stageId: string) => {
 		const params = new URLSearchParams($page.url.searchParams);
@@ -176,7 +175,16 @@
 									{#each result.attempts as attempt (attempt.gameId)}
 										<div class="flex items-center gap-2">
 											<span>{attempt.score.toLocaleString()} · #{attempt.place}</span>
-											{#if attempt.matchId}
+											{#if attempt.lobbyId}
+												<button
+													type="button"
+													class="text-primary hover:text-primary/80"
+													aria-label="Open qualification history"
+													on:click={() => (selectedLobbyId = attempt.lobbyId ?? null)}
+												>
+													<ExternalLink class="h-4 w-4" />
+												</button>
+											{:else if attempt.matchId}
 												<button
 													type="button"
 													class="text-primary hover:text-primary/80"

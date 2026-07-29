@@ -68,6 +68,7 @@ const stageStatisticsMapSchema = z.object({
 const stageStatisticsAttemptSchema = z.object({
   gameId: z.number().int(),
   matchId: z.string().nullable(),
+  lobbyId: z.string().optional(),
   score: z.number().int(),
   place: z.number().int().positive(),
 });

@@ -4489,6 +4489,9 @@
                               "type": "string",
                               "nullable": true
                             },
+                            "lobbyId": {
+                              "type": "string"
+                            },
                             "score": {
                               "type": "integer",
                               "minimum": -9007199254740991,

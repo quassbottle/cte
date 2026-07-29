@@ -11,6 +11,7 @@ import {
   osuMultiplayerScores,
   qualificationLobbies,
   Schema,
+  soloParticipants,
   teamParticipants,
   teams,
   tournaments,
@@ -30,6 +31,7 @@ type AttemptRow = {
   osuBeatmapId: number;
   gameId: string | number;
   matchId: string | null;
+  lobbyId?: string | null;
   score: string | number;
   place: string | number;
 };
@@ -73,16 +75,35 @@ export class StageStatisticsService {
 
     const direction = query.sortDirection === 'desc' ? sql`desc` : sql`asc`;
     const sortBeatmapId = query.sortBeatmapId ?? null;
+    const eligiblePlayer = isTeam
+      ? sql`exists (
+          select 1
+          from ${teamParticipants} participant
+          join ${teams} team on team.id = participant.team_id
+          where participant.user_id = ${users.id}
+            and participant.withdrawn = false
+            and team.tournament_id = ${tournamentId}
+            and team.withdrawn = false
+        )`
+      : sql`exists (
+          select 1
+          from ${soloParticipants} participant
+          where participant.user_id = ${users.id}
+            and participant.tournament_id = ${tournamentId}
+            and participant.withdrawn = false
+        )`;
     const attemptsQuery = playerView
       ? sql`
           with stage_rooms as (
             select ${matches.osuRoomId} as "roomId",
-                   ${matches.id} as "matchId"
+                   ${matches.id} as "matchId",
+                   null::text as "lobbyId"
             from ${matches}
             where ${matches.stageId} = ${stageId}
             union all
             select ${qualificationLobbies.osuRoomId} as "roomId",
-                   null::text as "matchId"
+                   null::text as "matchId",
+                   ${qualificationLobbies.id} as "lobbyId"
             from ${qualificationLobbies}
             where ${qualificationLobbies.stageId} = ${stageId}
               and ${qualificationLobbies.osuRoomId} is not null
@@ -91,11 +112,13 @@ export class StageStatisticsService {
                    ${osuMultiplayerScores.osuBeatmapId} as "osuBeatmapId",
                    ${osuMultiplayerScores.osuGameId} as "gameId",
                    stage_rooms."matchId" as "matchId",
+                   stage_rooms."lobbyId" as "lobbyId",
                    ${osuMultiplayerScores.score}::bigint as score
             from stage_rooms
             join ${osuMultiplayerScores}
               on ${osuMultiplayerScores.roomId} = stage_rooms."roomId"
             join ${users} on ${users.osuId} = ${osuMultiplayerScores.osuUserId}
+            where ${eligiblePlayer}
           )
           select *, rank() over (
             partition by "osuBeatmapId" order by score desc
@@ -204,7 +227,26 @@ export class StageStatisticsService {
                    limit 1
                  ) as "teamName"
           from ${users} competitor
-          where exists (
+          where ${
+            isTeam
+              ? sql`exists (
+                  select 1
+                  from ${teamParticipants} participant
+                  join ${teams} team on team.id = participant.team_id
+                  where participant.user_id = competitor.id
+                    and participant.withdrawn = false
+                    and team.tournament_id = ${tournamentId}
+                    and team.withdrawn = false
+                )`
+              : sql`exists (
+                  select 1
+                  from ${soloParticipants} participant
+                  where participant.user_id = competitor.id
+                    and participant.tournament_id = ${tournamentId}
+                    and participant.withdrawn = false
+                )`
+          }
+            and exists (
             select 1
             from ${osuMultiplayerScores} score
             where score.osu_user_id = competitor.osu_id
@@ -253,6 +295,7 @@ export class StageStatisticsService {
               .map((attempt) => ({
                 gameId: Number(attempt.gameId),
                 matchId: attempt.matchId,
+                ...(attempt.lobbyId ? { lobbyId: attempt.lobbyId } : {}),
                 score: Number(attempt.score),
                 place: Number(attempt.place),
               })),

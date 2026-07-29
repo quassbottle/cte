@@ -14,6 +14,7 @@ export type StageStatisticsDtoOutputCompetitorsItemMapsItemAttemptsItem = {
 	gameId: number;
 	/** @nullable */
 	matchId: string | null;
+	lobbyId?: string;
 	/**
 	 * @minimum -9007199254740991
 	 * @maximum 9007199254740991

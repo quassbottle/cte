@@ -24,6 +24,7 @@ describe('StageStatisticsService', () => {
         osuBeatmapId: 11,
         gameId: 101,
         matchId: null,
+        lobbyId: 'lobby-1',
         score: 900_000,
         place: 2,
       },
@@ -32,6 +33,7 @@ describe('StageStatisticsService', () => {
         osuBeatmapId: 11,
         gameId: 102,
         matchId: null,
+        lobbyId: 'lobby-1',
         score: 950_000,
         place: 1,
       },
@@ -67,14 +69,10 @@ describe('StageStatisticsService', () => {
       qualificationResults as never,
     );
 
-    const result = await service.get(
-      'tournament' as never,
-      'stage' as never,
-      {
-        view: 'players',
-        sortDirection: 'desc',
-      },
-    );
+    const result = await service.get('tournament' as never, 'stage' as never, {
+      view: 'players',
+      sortDirection: 'desc',
+    });
 
     expect(qualificationResults.getStatisticsByStage).not.toHaveBeenCalled();
     expect(result.competitors).toEqual([
@@ -89,12 +87,14 @@ describe('StageStatisticsService', () => {
               {
                 gameId: 101,
                 matchId: null,
+                lobbyId: 'lobby-1',
                 score: 900_000,
                 place: 2,
               },
               {
                 gameId: 102,
                 matchId: null,
+                lobbyId: 'lobby-1',
                 score: 950_000,
                 place: 1,
               },
@@ -108,6 +108,7 @@ describe('StageStatisticsService', () => {
       execute.mock.calls[0][0],
     ).sql;
     expect(attemptsSql).toContain('qualification_lobbies');
+    expect(attemptsSql).toContain('team_participants');
     expect(attemptsSql).toContain('rank() over');
   });
 });
