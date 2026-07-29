@@ -26,7 +26,7 @@ describe('statisticsSortHref', () => {
 		const initial = new URL(
 			'https://cte.test/events/twc?tab=statistics&stage=stage&sortBeatmapId=11&sortDirection=desc'
 		);
-		const result = new URL(statisticsViewHref(initial, 'players'), initial);
+		const result = new URL(statisticsViewHref(initial, 'players', 'stage'), initial);
 
 		expect(result.searchParams.get('view')).toBe('players');
 		expect(result.searchParams.get('stage')).toBe('stage');
@@ -35,11 +35,18 @@ describe('statisticsSortHref', () => {
 	});
 
 	test('switches back to teams without a view parameter', () => {
-		const initial = new URL(
-			'https://cte.test/events/twc?tab=statistics&stage=stage&view=players'
-		);
-		const result = new URL(statisticsViewHref(initial, 'teams'), initial);
+		const initial = new URL('https://cte.test/events/twc?tab=statistics&stage=stage&view=players');
+		const result = new URL(statisticsViewHref(initial, 'teams', 'stage'), initial);
 
 		expect(result.searchParams.has('view')).toBe(false);
+	});
+
+	test('keeps the displayed stage when the URL stage is stale', () => {
+		const initial = new URL(
+			'https://cte.test/events/twc?tab=statistics&stage=qualification&view=players'
+		);
+		const result = new URL(statisticsViewHref(initial, 'teams', 'quarterfinals'), initial);
+
+		expect(result.searchParams.get('stage')).toBe('quarterfinals');
 	});
 });

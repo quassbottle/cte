@@ -42,7 +42,8 @@
 			invalidateAll: true
 		});
 
-	const viewHref = (view: 'teams' | 'players') => statisticsViewHref(new URL($page.url), view);
+	const viewHref = (view: 'teams' | 'players') =>
+		statisticsViewHref(new URL($page.url), view, statistics.stageId);
 
 	const stageHref = (stageId: string) => {
 		const params = new URLSearchParams($page.url.searchParams);
