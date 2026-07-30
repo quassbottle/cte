@@ -10,6 +10,7 @@ import type { StageStatisticsDtoOutputCompetitorsItemMapsItem } from './stageSta
 export type StageStatisticsDtoOutputCompetitorsItem = {
 	id: string;
 	name: string;
+	avatarUrl?: string;
 	teamName?: string;
 	/**
 	 * @maximum 9007199254740991

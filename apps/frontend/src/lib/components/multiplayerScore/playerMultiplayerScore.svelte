@@ -4,6 +4,7 @@
 	import {
 		formatMultiplayerAccuracy,
 		formatMultiplayerScore,
+		playerProfileHref,
 		type PlayerMultiplayerScoreData
 	} from './multiplayerScore';
 
@@ -11,6 +12,7 @@
 		$props();
 	const displayName = $derived(score.userName ?? `osu! ${score.osuUserId}`);
 	const formattedAccuracy = $derived(formatMultiplayerAccuracy(score.accuracy));
+	const profileHref = $derived(playerProfileHref(score.userId));
 
 	function focusScore(node: HTMLElement, autofocus = false) {
 		if (autofocus) node.focus();
@@ -27,12 +29,19 @@
 			: 'border-border bg-muted/40'}"
 >
 	<div class="flex min-w-0 items-center gap-3">
-		<img
-			class="h-11 w-11 shrink-0 rounded-full bg-muted object-cover"
-			src={`https://a.ppy.sh/${score.osuUserId}`}
-			alt={`${displayName} avatar`}
-		/>
-		<p class="min-w-0 truncate font-semibold">{displayName}</p>
+		<a
+			class="flex min-w-0 items-center gap-3 {profileHref
+				? 'hover:text-primary hover:underline focus-visible:text-primary focus-visible:underline'
+				: 'pointer-events-none'}"
+			href={profileHref}
+		>
+			<img
+				class="h-11 w-11 shrink-0 rounded-full bg-muted object-cover"
+				src={`https://a.ppy.sh/${score.osuUserId}`}
+				alt={`${displayName} avatar`}
+			/>
+			<span class="min-w-0 truncate font-semibold">{displayName}</span>
+		</a>
 		{#each score.mods as mod}
 			<Mod {mod} class="w-auto shrink-0 px-2 text-xs" />
 		{/each}

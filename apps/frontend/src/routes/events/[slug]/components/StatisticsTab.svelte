@@ -10,6 +10,7 @@
 	import type { MultiplayerHistoryTarget } from '$lib/components/multiplayerHistory/multiplayerHistory';
 	import QualificationLobbyDetailDialog from '$lib/components/qualificationLobby/QualificationLobbyDetailDialog.svelte';
 	import MatchHistoryDialog from '$lib/components/schedule/MatchHistoryDialog.svelte';
+	import { Avatar, AvatarFallback, AvatarImage } from '$lib/components/ui/avatar';
 	import { buttonVariants } from '$lib/components/ui/button';
 	import { ExternalLink } from 'lucide-svelte';
 	import { statisticsSortHref, statisticsViewHref } from './statistics-sort';
@@ -162,7 +163,20 @@
 									>#{competitor.seed}</span
 								>{/if}
 							<div>
-								<div>{competitor.name}</div>
+								{#if 'avatarUrl' in competitor && typeof competitor.avatarUrl === 'string'}
+									<a
+										class="flex items-center gap-2 hover:text-primary hover:underline focus-visible:text-primary focus-visible:underline"
+										href="/users/{competitor.id}"
+									>
+										<Avatar class="h-8 w-8 shrink-0">
+											<AvatarImage src={competitor.avatarUrl} alt={`${competitor.name} avatar`} />
+											<AvatarFallback>{competitor.name.slice(0, 2).toUpperCase()}</AvatarFallback>
+										</Avatar>
+										<span>{competitor.name}</span>
+									</a>
+								{:else}
+									<div>{competitor.name}</div>
+								{/if}
 								{#if playerView && competitor.teamName}
 									<div class="text-xs font-normal text-muted-foreground">{competitor.teamName}</div>
 								{/if}

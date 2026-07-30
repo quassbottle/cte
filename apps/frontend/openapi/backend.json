@@ -4471,6 +4471,10 @@
                 "name": {
                   "type": "string"
                 },
+                "avatarUrl": {
+                  "type": "string",
+                  "format": "uri"
+                },
                 "teamName": {
                   "type": "string"
                 },

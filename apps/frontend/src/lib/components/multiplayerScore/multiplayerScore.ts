@@ -42,3 +42,6 @@ export const formatMultiplayerAccuracy = (accuracy: number) =>
 		minimumFractionDigits: 2,
 		maximumFractionDigits: 2
 	}).format(accuracy);
+
+export const playerProfileHref = (userId?: string | null) =>
+	userId ? `/users/${userId}` : undefined;

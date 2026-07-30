@@ -212,10 +212,12 @@ export class StageStatisticsService {
       : await this.db.execute<{
           id: string;
           name: string;
+          osuId: number;
           teamName: string | null;
         }>(sql`
           select competitor.id,
                  competitor.osu_username as name,
+                 competitor.osu_id as "osuId",
                  (
                    select team.name
                    from ${teamParticipants} participant
@@ -283,6 +285,9 @@ export class StageStatisticsService {
         return {
           id: competitor.id,
           name: competitor.name,
+          ...('osuId' in competitor
+            ? { avatarUrl: `https://a.ppy.sh/${competitor.osuId}` }
+            : {}),
           ...(teamName ? { teamName } : {}),
           maps: maps.map(({ osuBeatmapId }) => ({
             osuBeatmapId,

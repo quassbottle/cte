@@ -27,6 +27,7 @@ describe('stage statistics schemas', () => {
         {
           id: 'user',
           name: 'Player',
+          avatarUrl: 'https://a.ppy.sh/42',
           teamName: 'Japan',
           maps: [],
         },
@@ -34,5 +35,6 @@ describe('stage statistics schemas', () => {
     });
 
     expect(result.competitors[0].teamName).toBe('Japan');
+    expect(result.competitors[0].avatarUrl).toBe('https://a.ppy.sh/42');
   });
 });

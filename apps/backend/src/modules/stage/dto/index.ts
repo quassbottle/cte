@@ -80,6 +80,7 @@ export const stageStatisticsDtoSchema = z.object({
     z.object({
       id: z.string(),
       name: z.string(),
+      avatarUrl: z.url().optional(),
       teamName: z.string().optional(),
       seed: z.number().int().positive().optional(),
       maps: z.array(

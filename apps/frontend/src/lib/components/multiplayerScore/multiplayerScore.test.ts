@@ -2,6 +2,7 @@ import { describe, expect, it } from 'bun:test';
 import {
 	formatMultiplayerAccuracy,
 	formatMultiplayerScore,
+	playerProfileHref,
 	type PlayerMultiplayerScoreData
 } from './multiplayerScore';
 
@@ -27,5 +28,10 @@ describe('multiplayer score formatting', () => {
 
 	it('accepts complete synchronized score details', () => {
 		expect(score.mods).toEqual([]);
+	});
+
+	it('links only synchronized users to an internal profile', () => {
+		expect(playerProfileHref('user-1')).toBe('/users/user-1');
+		expect(playerProfileHref(null)).toBeUndefined();
 	});
 });

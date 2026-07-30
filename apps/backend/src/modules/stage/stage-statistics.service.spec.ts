@@ -42,7 +42,9 @@ describe('StageStatisticsService', () => {
       .fn()
       .mockResolvedValueOnce({ rows: attempts })
       .mockResolvedValueOnce({
-        rows: [{ id: 'user-1', name: 'Player', teamName: 'Japan' }],
+        rows: [
+          { id: 'user-1', name: 'Player', osuId: 42, teamName: 'Japan' },
+        ],
       });
     const select = jest
       .fn()
@@ -79,6 +81,7 @@ describe('StageStatisticsService', () => {
       {
         id: 'user-1',
         name: 'Player',
+        avatarUrl: 'https://a.ppy.sh/42',
         teamName: 'Japan',
         maps: [
           {
