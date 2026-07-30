@@ -2919,6 +2919,13 @@
             "type": "string",
             "format": "uri"
           },
+          "globalRank": {
+            "type": "integer",
+            "exclusiveMinimum": true,
+            "maximum": 9007199254740991,
+            "nullable": true,
+            "minimum": 0
+          },
           "seed": {
             "type": "integer",
             "exclusiveMinimum": true,
@@ -2932,6 +2939,7 @@
           "osuId",
           "osuUsername",
           "avatarUrl",
+          "globalRank",
           "seed"
         ]
       },
@@ -3192,6 +3200,13 @@
                   "type": "string",
                   "format": "uri"
                 },
+                "globalRank": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991,
+                  "nullable": true,
+                  "minimum": 0
+                },
                 "seed": {
                   "type": "integer",
                   "exclusiveMinimum": true,
@@ -3205,6 +3220,7 @@
                 "osuId",
                 "osuUsername",
                 "avatarUrl",
+                "globalRank",
                 "seed"
               ]
             }
@@ -3252,6 +3268,13 @@
                   "type": "string",
                   "format": "uri"
                 },
+                "globalRank": {
+                  "type": "integer",
+                  "exclusiveMinimum": true,
+                  "maximum": 9007199254740991,
+                  "nullable": true,
+                  "minimum": 0
+                },
                 "seed": {
                   "type": "integer",
                   "exclusiveMinimum": true,
@@ -3265,6 +3288,7 @@
                 "osuId",
                 "osuUsername",
                 "avatarUrl",
+                "globalRank",
                 "seed"
               ]
             }

@@ -92,14 +92,15 @@ export class OsuService {
 
   public async getUserDetails(params: {
     osuUserId: number;
+    mode?: OsuApiMode;
   }): Promise<OsuUserDetails> {
-    const { osuUserId } = params;
+    const { osuUserId, mode = OsuApiMode.Osu } = params;
 
     await this.ensureGuestAuthorized();
 
     const result = await v2.users.details({
       user: osuUserId,
-      mode: OsuApiMode.Osu,
+      mode,
       key: 'id',
     });
 
@@ -111,6 +112,8 @@ export class OsuService {
       id: result.id,
       username: result.username,
       countryCode: result.country_code ?? null,
+      performancePoints: result.statistics?.pp ?? null,
+      globalRank: result.statistics?.global_rank ?? null,
     };
   }
 

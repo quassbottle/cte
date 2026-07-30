@@ -1,15 +1,58 @@
 const mockLogin = jest.fn();
 const mockMatchesDetails = jest.fn();
+const mockUsersDetails = jest.fn();
 
 jest.mock('osu-api-extended', () => ({
   auth: { login: mockLogin },
-  v2: { matches: { details: mockMatchesDetails } },
+  v2: {
+    matches: { details: mockMatchesDetails },
+    users: { details: mockUsersDetails },
+  },
 }));
 
 import { EnvService } from 'lib/common/env/env.service';
 import { OsuService } from './osu.service';
+import { OsuApiMode } from './osu.types';
 
 describe('OsuService', () => {
+  it('loads global rank for the requested mode', async () => {
+    mockLogin.mockResolvedValue({});
+    mockUsersDetails.mockResolvedValue({
+      id: 42,
+      username: 'player',
+      country_code: 'JP',
+      statistics: { pp: 12345.67, global_rank: 321 },
+    });
+    const env = {
+      get: jest.fn(
+        (key: string) =>
+          ({
+            OSU_CLIENT_ID: 1,
+            OSU_CLIENT_SECRET: 'secret',
+            OSU_REDIRECT_URL: 'http://localhost',
+          })[key],
+      ),
+    } as unknown as EnvService;
+
+    await expect(
+      new OsuService(env).getUserDetails({
+        osuUserId: 42,
+        mode: OsuApiMode.Taiko,
+      }),
+    ).resolves.toEqual({
+      id: 42,
+      username: 'player',
+      countryCode: 'JP',
+      performancePoints: 12345.67,
+      globalRank: 321,
+    });
+    expect(mockUsersDetails).toHaveBeenCalledWith({
+      user: 42,
+      mode: OsuApiMode.Taiko,
+      key: 'id',
+    });
+  });
+
   it('keeps Score V2 games and ignores invalid Score games', async () => {
     mockLogin.mockResolvedValue({});
     mockMatchesDetails.mockResolvedValue({

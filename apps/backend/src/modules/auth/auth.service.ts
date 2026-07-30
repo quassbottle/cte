@@ -9,15 +9,6 @@ import { OsuStatsService } from 'modules/user/osu-stats.service';
 import { UserService } from 'modules/user/user.service';
 import { JwtService } from './jwt.service';
 
-type OsuStatsMode = 'std' | 'taiko' | 'fruits' | 'mania';
-
-const MODE_MAP: Record<OsuApiMode, OsuStatsMode> = {
-  [OsuApiMode.Osu]: 'std',
-  [OsuApiMode.Taiko]: 'taiko',
-  [OsuApiMode.Fruits]: 'fruits',
-  [OsuApiMode.Mania]: 'mania',
-};
-
 const AUTH_STATS_MODES: OsuApiMode[] = [
   OsuApiMode.Osu,
   OsuApiMode.Taiko,
@@ -116,7 +107,7 @@ export class AuthService {
       usersByMode.map(({ mode, user }) => ({
         userId,
         osuId: user.id,
-        mode: MODE_MAP[mode],
+        mode,
         performancePoints: user.statistics?.pp ?? null,
         rank: user.statistics?.global_rank ?? null,
       })),

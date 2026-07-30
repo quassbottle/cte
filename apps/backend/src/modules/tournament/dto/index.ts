@@ -123,6 +123,7 @@ const tournamentParticipantResponseSchema = z.object({
   osuId: z.number(),
   osuUsername: z.string(),
   avatarUrl: z.url(),
+  globalRank: z.number().int().positive().nullable(),
   seed: z.number().int().positive().nullable(),
 });
 
@@ -131,6 +132,7 @@ const tournamentParticipantDbSchema = z
     id: userIdSchema,
     osuId: z.number(),
     osuUsername: z.string(),
+    globalRank: z.number().int().positive().nullable().optional(),
     seed: z.number().int().positive().nullable().optional(),
   })
   .passthrough();
@@ -143,6 +145,7 @@ export const tournamentParticipantDtoSchema = z.codec(
       id: userIdSchema.parse(participant.id),
       osuId: participant.osuId,
       osuUsername: participant.osuUsername,
+      globalRank: participant.globalRank,
       seed: participant.seed,
     }),
     encode: (participant) => ({
@@ -150,6 +153,7 @@ export const tournamentParticipantDtoSchema = z.codec(
       osuId: participant.osuId,
       osuUsername: participant.osuUsername,
       avatarUrl: `https://a.ppy.sh/${participant.osuId}`,
+      globalRank: participant.globalRank ?? null,
       seed: participant.seed ?? null,
     }),
   },

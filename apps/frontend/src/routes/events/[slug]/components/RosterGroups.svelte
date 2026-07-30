@@ -22,7 +22,11 @@
 		<Content class="flex flex-wrap gap-3">
 			{#each group.members as member (member.id)}
 				<a href="/users/{member.id}">
-					<PlayerCard avatarUrl={member.avatarUrl} username={member.osuUsername} />
+					<PlayerCard
+						avatarUrl={member.avatarUrl}
+						username={member.osuUsername}
+						globalRank={member.globalRank}
+					/>
 				</a>
 			{/each}
 		</Content>

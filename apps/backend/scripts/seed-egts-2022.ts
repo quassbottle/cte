@@ -19,6 +19,7 @@ import {
   matches,
   matchParticipants,
   osuMultiplayerRooms,
+  osuStats,
   qualificationLobbies,
   Schema,
   soloParticipants,
@@ -28,7 +29,11 @@ import {
   tournamentStaffMembers,
   users,
 } from '../src/lib/infrastructure/db';
-import { OsuService } from '../src/lib/infrastructure/osu/osu.service';
+import {
+  OsuApiMode,
+  OsuService,
+} from '../src/lib/infrastructure/osu/osu.service';
+import { OsuUserDetails } from '../src/lib/infrastructure/osu/osu.types';
 import { OsuMultiplayerSyncService } from '../src/modules/osu-multiplayer-sync/osu-multiplayer-sync.service';
 import {
   assertCompleteEgts2022,
@@ -107,18 +112,32 @@ const main = async () => {
       }
     }
 
-    const seededRoomIds = await db.transaction(async (tx) => {
-      const allUsers = new Map(
-        data.participants.map((participant) => [
-          participant.osuId,
-          toEgtsUser(participant),
-        ]),
-      );
-      for (const member of data.staff) {
-        if (!allUsers.has(member.osuId))
-          allUsers.set(member.osuId, toEgtsUser(member));
+    const allUsers = new Map(
+      data.participants.map((participant) => [
+        participant.osuId,
+        toEgtsUser(participant),
+      ]),
+    );
+    for (const member of data.staff) {
+      if (!allUsers.has(member.osuId))
+        allUsers.set(member.osuId, toEgtsUser(member));
+    }
+    const participantStats: OsuUserDetails[] = [];
+    for (const participant of data.participants) {
+      try {
+        const user = await osuService.getUserDetails({
+          osuUserId: participant.osuId,
+          mode: OsuApiMode.Taiko,
+        });
+        participantStats.push(user);
+      } catch (error) {
+        console.warn(
+          `[seed:egts-2022] could not load taiko stats for ${participant.osuId}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
+    }
 
+    const seededRoomIds = await db.transaction(async (tx) => {
       await tx
         .insert(users)
         .values(
@@ -142,6 +161,27 @@ const main = async () => {
       const usersByOsuId = new Map(
         userRows.map((user) => [user.osuId, user.id]),
       );
+      if (participantStats.length) {
+        await tx
+          .insert(osuStats)
+          .values(
+            participantStats.map((stats) => ({
+              userId: usersByOsuId.get(stats.id)!,
+              osuId: stats.id,
+              mode: 'taiko' as const,
+              performancePoints: stats.performancePoints,
+              rank: stats.globalRank,
+            })),
+          )
+          .onConflictDoUpdate({
+            target: [osuStats.userId, osuStats.mode],
+            set: {
+              performancePoints: sql`excluded.performance_points`,
+              rank: sql`excluded.rank`,
+              updatedAt: sql`now()`,
+            },
+          });
+      }
       const participantIdsByName = new Map(
         data.participants.map((participant) => [
           participant.osuUsername,

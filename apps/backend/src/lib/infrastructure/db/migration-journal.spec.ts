@@ -35,7 +35,20 @@ describe('migration journal', () => {
         idx: 5,
         tag: '0005_mysterious_millenium_guard',
       }),
+      expect.objectContaining({
+        idx: 6,
+        tag: '0006_normalize-osu-stats-mode',
+      }),
     ]);
+  });
+
+  it('normalizes legacy standard-mode stats', () => {
+    const sql = readFileSync(
+      resolve(process.cwd(), 'drizzle/0006_normalize-osu-stats-mode.sql'),
+      'utf8',
+    );
+
+    expect(sql).toContain(`SET "mode" = 'osu' WHERE "mode" = 'std'`);
   });
 
   it('seeds the global staff roles in the baseline migration', () => {

@@ -20,6 +20,7 @@ import {
   mappoolsBeatmaps,
   matches,
   osuMultiplayerRooms,
+  osuStats,
   qualificationLobbies,
   qualificationLobbyTeams,
   qualificationResults,
@@ -32,7 +33,11 @@ import {
   tournamentStaffMembers,
   users,
 } from '../src/lib/infrastructure/db';
-import { OsuService } from '../src/lib/infrastructure/osu/osu.service';
+import {
+  OsuApiMode,
+  OsuService,
+} from '../src/lib/infrastructure/osu/osu.service';
+import { OsuUserDetails } from '../src/lib/infrastructure/osu/osu.types';
 import { OsuMultiplayerSyncService } from '../src/modules/osu-multiplayer-sync/osu-multiplayer-sync.service';
 import {
   parseTwc2026Wiki,
@@ -117,20 +122,36 @@ const main = async () => {
       }
     }
 
-    const seededRoomIds = await db.transaction(async (tx) => {
-      const allUsers = new Map<
-        number,
-        { osuId: number; osuUsername: string; countryCode: string }
-      >();
-      for (const team of data.teams) {
-        for (const member of team.members)
-          allUsers.set(member.osuId, toTwcUser(member));
+    const allUsers = new Map<
+      number,
+      { osuId: number; osuUsername: string; countryCode: string }
+    >();
+    for (const team of data.teams) {
+      for (const member of team.members)
+        allUsers.set(member.osuId, toTwcUser(member));
+    }
+    for (const member of data.staff) {
+      if (!allUsers.has(member.osuId))
+        allUsers.set(member.osuId, toTwcUser(member));
+    }
+    const participantStats: OsuUserDetails[] = [];
+    for (const osuId of new Set(
+      data.teams.flatMap((team) => team.members.map((member) => member.osuId)),
+    )) {
+      try {
+        const user = await osuService.getUserDetails({
+          osuUserId: osuId,
+          mode: OsuApiMode.Taiko,
+        });
+        participantStats.push(user);
+      } catch (error) {
+        console.warn(
+          `[seed:twc-2026] could not load taiko stats for ${osuId}: ${error instanceof Error ? error.message : String(error)}`,
+        );
       }
-      for (const member of data.staff) {
-        if (!allUsers.has(member.osuId))
-          allUsers.set(member.osuId, toTwcUser(member));
-      }
+    }
 
+    const seededRoomIds = await db.transaction(async (tx) => {
       await tx
         .insert(users)
         .values(
@@ -154,6 +175,27 @@ const main = async () => {
       const usersByOsuId = new Map(
         userRows.map((user) => [user.osuId, user.id]),
       );
+      if (participantStats.length) {
+        await tx
+          .insert(osuStats)
+          .values(
+            participantStats.map((stats) => ({
+              userId: usersByOsuId.get(stats.id)!,
+              osuId: stats.id,
+              mode: 'taiko' as const,
+              performancePoints: stats.performancePoints,
+              rank: stats.globalRank,
+            })),
+          )
+          .onConflictDoUpdate({
+            target: [osuStats.userId, osuStats.mode],
+            set: {
+              performancePoints: sql`excluded.performance_points`,
+              rank: sql`excluded.rank`,
+              updatedAt: sql`now()`,
+            },
+          });
+      }
       const host = data.staff.find(({ role }) => role === 'Host');
       const hostId = host ? usersByOsuId.get(host.osuId) : undefined;
       if (!hostId) throw new Error('TWC 2026 host not found');

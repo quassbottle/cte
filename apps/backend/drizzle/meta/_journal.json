@@ -43,6 +43,13 @@
       "when": 1785129420538,
       "tag": "0005_mysterious_millenium_guard",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1785400189733,
+      "tag": "0006_normalize-osu-stats-mode",
+      "breakpoints": true
     }
   ]
 }

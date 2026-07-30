@@ -67,4 +67,6 @@ export type OsuUserDetails = {
   id: number;
   username: string;
   countryCode: string | null;
+  performancePoints: number | null;
+  globalRank: number | null;
 };

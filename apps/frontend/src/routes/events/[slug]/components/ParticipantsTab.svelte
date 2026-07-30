@@ -29,6 +29,7 @@
 					<PlayerCard
 						avatarUrl={participant.avatarUrl}
 						username={participant.osuUsername}
+						globalRank={participant.globalRank}
 						seed={participant.seed}
 					/>
 				</a>

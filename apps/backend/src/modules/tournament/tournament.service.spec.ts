@@ -59,6 +59,7 @@ describe('TournamentService', () => {
         teamSeed: 2,
         captainId: 'captain-1',
         user: { id: 'user-1' },
+        globalRank: 30,
       },
       {
         teamId: 'japan',
@@ -66,6 +67,7 @@ describe('TournamentService', () => {
         teamSeed: 1,
         captainId: 'captain-2',
         user: { id: 'user-2' },
+        globalRank: 10,
       },
       {
         teamId: 'unseeded',
@@ -73,10 +75,13 @@ describe('TournamentService', () => {
         teamSeed: null,
         captainId: 'captain-3',
         user: { id: 'user-3' },
+        globalRank: null,
       },
     ];
     const service = tournamentService(selectRows(rows) as never);
-    jest.spyOn(service, 'getById').mockResolvedValue({ isTeam: true } as never);
+    jest
+      .spyOn(service, 'getById')
+      .mockResolvedValue({ isTeam: true, mode: 'taiko' } as never);
 
     const teams = await service.getTeams({ id: 'tournament' as never });
 
@@ -86,6 +91,9 @@ describe('TournamentService', () => {
       'Unseeded',
     ]);
     expect(teams.map(({ seed }) => seed)).toEqual([1, 2, null]);
+    expect(teams.map(({ participants }) => participants[0].globalRank)).toEqual(
+      [10, 30, null],
+    );
   });
 
   describe('qualification roster updates', () => {
@@ -380,6 +388,7 @@ describe('TournamentService', () => {
     const offset = jest.fn().mockResolvedValue([
       {
         user: { id: 'player', osuUsername: 'player' },
+        globalRank: 1234,
         seed: 4,
       },
     ]);
@@ -398,7 +407,7 @@ describe('TournamentService', () => {
     } as never);
     jest
       .spyOn(service, 'getById')
-      .mockResolvedValue({ isTeam: false } as never);
+      .mockResolvedValue({ isTeam: false, mode: 'osu' } as never);
 
     await expect(
       service.getParticipants({
@@ -407,9 +416,17 @@ describe('TournamentService', () => {
         offset: 0,
         query: 'player',
       } as never),
-    ).resolves.toEqual([{ id: 'player', osuUsername: 'player', seed: 4 }]);
+    ).resolves.toEqual([
+      {
+        id: 'player',
+        osuUsername: 'player',
+        globalRank: 1234,
+        seed: 4,
+      },
+    ]);
 
     expect(containsValue(condition, '%player%')).toBe(true);
+    expect(containsValue(query.leftJoin.mock.calls, 'osu')).toBe(true);
   });
 
   it('searches tournament teams by name', async () => {

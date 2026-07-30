@@ -25,6 +25,7 @@ export interface TournamentParticipantDto {
 	osuId: number;
 	osuUsername: string;
 	avatarUrl: string;
+	globalRank: number | null;
 	seed: number | null;
 }
 

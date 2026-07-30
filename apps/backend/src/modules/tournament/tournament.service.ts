@@ -30,6 +30,7 @@ import { UserId } from 'lib/domain/user/user.id';
 import {
   DbTournament,
   DbUser,
+  osuStats,
   qualificationResults,
   Schema,
   soloParticipants,
@@ -157,7 +158,7 @@ export class TournamentService {
 
   public async getParticipants(
     params: { id: TournamentId; query?: string } & PaginationParams,
-  ): Promise<(DbUser & { seed: number | null })[]> {
+  ): Promise<(DbUser & { globalRank: number | null; seed: number | null })[]> {
     const { id, limit, offset, query } = params;
 
     const tournament = await this.getById({ id });
@@ -173,21 +174,43 @@ export class TournamentService {
 
     if (tournament.isTeam) {
       const found = await this.drizzle
-        .select({ user: users })
+        .select({ user: users, globalRank: osuStats.rank })
         .from(teamParticipants)
         .innerJoin(teams, eq(teams.id, teamParticipants.teamId))
         .innerJoin(users, eq(users.id, teamParticipants.userId))
+        .leftJoin(
+          osuStats,
+          and(
+            eq(osuStats.userId, teamParticipants.userId),
+            eq(osuStats.mode, tournament.mode),
+          ),
+        )
         .where(and(eq(teams.tournamentId, id), search))
         .limit(limit)
         .offset(offset);
 
-      return found.map(({ user }) => ({ ...user, seed: null }));
+      return found.map(({ user, globalRank }) => ({
+        ...user,
+        globalRank,
+        seed: null,
+      }));
     }
 
     const found = await this.drizzle
-      .select({ user: users, seed: qualificationResults.seed })
+      .select({
+        user: users,
+        globalRank: osuStats.rank,
+        seed: qualificationResults.seed,
+      })
       .from(soloParticipants)
       .innerJoin(users, eq(users.id, soloParticipants.userId))
+      .leftJoin(
+        osuStats,
+        and(
+          eq(osuStats.userId, soloParticipants.userId),
+          eq(osuStats.mode, tournament.mode),
+        ),
+      )
       .leftJoin(
         stages,
         and(
@@ -207,7 +230,11 @@ export class TournamentService {
       .limit(limit)
       .offset(offset);
 
-    return found.map(({ user, seed }) => ({ ...user, seed }));
+    return found.map(({ user, globalRank, seed }) => ({
+      ...user,
+      globalRank,
+      seed,
+    }));
   }
 
   public async getStaff(params: {
@@ -610,7 +637,7 @@ export class TournamentService {
       name: string;
       seed: number | null;
       captainId: UserId;
-      participants: DbUser[];
+      participants: (DbUser & { globalRank: number | null })[];
     }[]
   > {
     const { id } = params;
@@ -625,10 +652,18 @@ export class TournamentService {
         teamSeed: qualificationResults.seed,
         captainId: teams.captainId,
         user: users,
+        globalRank: osuStats.rank,
       })
       .from(teams)
       .innerJoin(teamParticipants, eq(teamParticipants.teamId, teams.id))
       .innerJoin(users, eq(users.id, teamParticipants.userId))
+      .leftJoin(
+        osuStats,
+        and(
+          eq(osuStats.userId, teamParticipants.userId),
+          eq(osuStats.mode, tournament.mode),
+        ),
+      )
       .leftJoin(
         stages,
         and(
@@ -653,14 +688,15 @@ export class TournamentService {
         name: string;
         seed: number | null;
         captainId: UserId;
-        participants: DbUser[];
+        participants: (DbUser & { globalRank: number | null })[];
       }
     >();
 
     for (const row of rows) {
       const current = byTeam.get(row.teamId);
+      const participant = { ...row.user, globalRank: row.globalRank };
       if (current) {
-        current.participants.push(row.user);
+        current.participants.push(participant);
         continue;
       }
 
@@ -669,7 +705,7 @@ export class TournamentService {
         name: row.teamName,
         seed: row.teamSeed,
         captainId: row.captainId,
-        participants: [row.user],
+        participants: [participant],
       });
     }
 

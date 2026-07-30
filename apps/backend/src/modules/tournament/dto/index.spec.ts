@@ -81,6 +81,7 @@ describe('tournament response codecs', () => {
     id: userIdSchema.parse('ckm123456789012345678901'),
     osuId: 42,
     osuUsername: 'player',
+    globalRank: 1234,
     seed: 3,
   };
 

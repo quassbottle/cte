@@ -6,6 +6,7 @@
 	export let avatarUrl: string;
 	export let isCaptain = false;
 	export let seed: number | null = null;
+	export let globalRank: number | null | undefined = undefined;
 </script>
 
 <div class="flex flex-col items-center gap-2 rounded-lg border border-border bg-card p-6">
@@ -23,4 +24,9 @@
 			<Crown size={14} class="text-amber-500 dark:text-amber-400" />
 		{/if}
 	</p>
+	{#if globalRank !== undefined}
+		<p class="text-sm text-muted-foreground">
+			{globalRank === null ? 'Unranked' : `Global #${globalRank.toLocaleString('en-US')}`}
+		</p>
+	{/if}
 </div>

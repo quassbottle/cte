@@ -1,12 +1,13 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { and, eq } from 'drizzle-orm';
+import { TournamentMode } from 'lib/domain/tournament/tournament.mode';
 import { UserId } from 'lib/domain/user/user.id';
-import { OsuStatsMode, Schema, osuStats } from 'lib/infrastructure/db';
+import { Schema, osuStats } from 'lib/infrastructure/db';
 
 export type UpsertOsuStatsParams = {
   userId: UserId;
   osuId: number;
-  mode: OsuStatsMode;
+  mode: TournamentMode;
   performancePoints: number | null;
   rank: number | null;
 };

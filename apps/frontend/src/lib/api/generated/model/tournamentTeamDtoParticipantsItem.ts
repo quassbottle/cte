@@ -17,5 +17,11 @@ export type TournamentTeamDtoParticipantsItem = {
 	 * @exclusiveMinimum 0
 	 * @nullable
 	 */
+	globalRank: number | null;
+	/**
+	 * @maximum 9007199254740991
+	 * @exclusiveMinimum 0
+	 * @nullable
+	 */
 	seed: number | null;
 };
