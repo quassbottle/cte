@@ -393,7 +393,7 @@ describe('TournamentService', () => {
       },
     ]);
     const limit = jest.fn(() => ({ offset }));
-    const orderBy = jest.fn(() => ({ limit }));
+    const orderBy = jest.fn((..._values: unknown[]) => ({ limit }));
     const where = jest.fn((value: unknown) => {
       condition = value;
       return { orderBy };
@@ -427,6 +427,8 @@ describe('TournamentService', () => {
 
     expect(containsValue(condition, '%player%')).toBe(true);
     expect(containsValue(query.leftJoin.mock.calls, 'osu')).toBe(true);
+    expect(orderBy.mock.calls[0]).toHaveLength(3);
+    expect(containsValue(orderBy.mock.calls[0][1], 'rank')).toBe(true);
   });
 
   it('searches tournament teams by name', async () => {

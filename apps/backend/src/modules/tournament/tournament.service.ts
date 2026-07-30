@@ -226,7 +226,11 @@ export class TournamentService {
         ),
       )
       .where(and(eq(soloParticipants.tournamentId, id), search))
-      .orderBy(asc(qualificationResults.seed), asc(users.osuUsername))
+      .orderBy(
+        asc(qualificationResults.seed),
+        asc(osuStats.rank),
+        asc(users.osuUsername),
+      )
       .limit(limit)
       .offset(offset);
 
