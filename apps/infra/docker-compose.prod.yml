@@ -78,6 +78,7 @@ services:
       BACKEND_OPENAPI_URL: http://backend:3000/docs-json
       HTTP_HOST: 0.0.0.0
       HTTP_PORT: 3000
+      HTTP_OVERRIDE_ORIGIN: https://cte.quas.su
     depends_on:
       backend:
         condition: service_healthy
