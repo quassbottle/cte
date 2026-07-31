@@ -141,4 +141,30 @@ describe('TournamentPolicyContextResolver', () => {
       },
     });
   });
+
+  it('keeps archived nested DELETE mutations locked', async () => {
+    const resolver = new TournamentPolicyContextResolver({
+      query: {
+        tournaments: {
+          findFirst: jest.fn().mockResolvedValue({
+            creatorId: 'ckm123456789012345678902',
+            archivedAt: new Date(),
+          }),
+        },
+      },
+    } as never);
+
+    await expect(
+      resolver.resolve({
+        method: 'DELETE',
+        originalUrl: `/api/tournaments/${id}/participants/ckm123456789012345678902/manage`,
+        params: { id },
+      } as unknown as PolicyRequest),
+    ).rejects.toEqual(
+      new TournamentException(
+        'Archived tournaments cannot be changed',
+        TournamentExceptionCode.TOURNAMENT_ACCESS_DENIED,
+      ),
+    );
+  });
 });
