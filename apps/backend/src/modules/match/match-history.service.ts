@@ -10,6 +10,7 @@ import { matches, Schema, stages } from 'lib/infrastructure/db';
 import { OsuMultiplayerHistoryService } from 'modules/osu-multiplayer-sync/osu-multiplayer-history.service';
 import { MatchHistoryDtoOutput } from './dto';
 import { MatchResultService } from './match-result.service';
+import { orderMatchHistoryScores } from './score';
 
 @Injectable()
 export class MatchHistoryService {
@@ -56,6 +57,10 @@ export class MatchHistoryService {
         : result.redScore > result.blueScore
           ? 'red'
           : 'blue';
+    const teamIds =
+      match.redTeamId && match.blueTeamId
+        ? { red: match.redTeamId, blue: match.blueTeamId }
+        : null;
 
     return {
       title: match.name,
@@ -69,17 +74,7 @@ export class MatchHistoryService {
         history?.games.map((game) => ({
           gameId: game.gameId,
           beatmapId: game.beatmapId,
-          scores: game.scores.map(({ userId, ...score }) => ({
-            ...score,
-            userId,
-            competitorId:
-              score.team === 'red'
-                ? match.redTeamId
-                : score.team === 'blue'
-                  ? match.blueTeamId
-                  : userId,
-            highlighted: winner !== null && score.team === winner,
-          })),
+          scores: orderMatchHistoryScores(game.scores, teamIds),
         })) ?? [],
     };
   }

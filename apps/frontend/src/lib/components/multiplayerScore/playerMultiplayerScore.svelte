@@ -24,9 +24,13 @@
 	tabindex="-1"
 	class="grid gap-3 rounded-xl border p-4 transition-colors focus:outline-none sm:grid-cols-[minmax(12rem,1fr)_auto] sm:items-center {score.focused
 		? 'border-border bg-muted/40 group-focus-within/history:border-primary group-focus-within/history:bg-primary/20 group-focus-within/history:ring-2 group-focus-within/history:ring-primary'
-		: score.highlighted
-			? 'border-primary bg-primary/10'
-			: 'border-border bg-muted/40'}"
+		: score.highlighted && score.team === 'red'
+			? 'border-red-500 bg-red-500/10'
+			: score.highlighted && score.team === 'blue'
+				? 'border-blue-500 bg-blue-500/10'
+				: score.highlighted
+					? 'border-primary bg-primary/10'
+					: 'border-border bg-muted/40'}"
 >
 	<div class="flex min-w-0 items-center gap-3">
 		<a

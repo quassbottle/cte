@@ -12,6 +12,7 @@ export type PlayerMultiplayerScoreData = {
 	miss: number | null;
 	rank: string;
 	competitorId: string | null;
+	team?: 'red' | 'blue' | null;
 	highlighted?: boolean;
 	focused?: boolean;
 };
