@@ -79,6 +79,23 @@ const resolveSelectedUsers = async (
 };
 
 export const actions: Actions = {
+	deleteTournament: async (event) => {
+		if (event.locals.session?.user.role !== 'admin') {
+			return fail(403, {
+				deleteError: 'Only site administrators can delete tournaments.'
+			});
+		}
+
+		try {
+			await commands.deleteTournament(createBackendClient(event), event.params.slug);
+		} catch (cause) {
+			return fail(backendErrorStatus(cause), {
+				deleteError: backendErrorMessage(cause, 'Failed to delete tournament.')
+			});
+		}
+
+		redirect(303, '/events?status=deleted&mode=all');
+	},
 	register: async (event) => {
 		const { locals, params, request } = event;
 		if (!locals.session) {

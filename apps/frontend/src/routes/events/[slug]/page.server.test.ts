@@ -26,4 +26,47 @@ describe('qualification lobby actions', () => {
 
 		expect(requestInit?.body).toBeUndefined();
 	});
+
+	it('rejects tournament deletion by a non-admin', async () => {
+		const result = await actions.deleteTournament({
+			locals: {
+				session: {
+					token: 'token',
+					user: { id: 'owner-id', role: 'default' }
+				}
+			},
+			params: { slug: 'tournament-1' }
+		} as never);
+
+		expect(result).toMatchObject({
+			status: 403,
+			data: { deleteError: 'Only site administrators can delete tournaments.' }
+		});
+	});
+
+	it('soft-deletes a tournament as admin', async () => {
+		process.env.BACKEND_API_URL = 'http://backend.test';
+		let request: Request | undefined;
+
+		await expect(
+			actions.deleteTournament({
+				locals: {
+					session: {
+						token: 'token',
+						user: { id: 'admin-id', role: 'admin' }
+					}
+				},
+				params: { slug: 'tournament-1' },
+				fetch: async (input: RequestInfo | URL, init?: RequestInit) => {
+					request = new Request(input, init);
+					return Response.json({ id: 'tournament-1' });
+				}
+			} as never)
+		).rejects.toMatchObject({
+			status: 303,
+			location: '/events?status=deleted&mode=all'
+		});
+
+		expect(request?.method).toBe('DELETE');
+	});
 });

@@ -12,3 +12,7 @@ export function registerTournament(
 export function unregisterTournament(backend: BackendClient, tournamentId: string) {
 	return backend.tournaments.unregister(tournamentId);
 }
+
+export function deleteTournament(backend: BackendClient, tournamentId: string) {
+	return backend.tournaments.softDelete(tournamentId);
+}

@@ -25,6 +25,7 @@
 	import StaffTab from './components/StaffTab.svelte';
 	import StatisticsTab from './components/StatisticsTab.svelte';
 	import type { TournamentRegistrationForm } from './components/info/types';
+	import { X } from 'lucide-svelte';
 
 	export let data: {
 		tournament: TournamentDto;
@@ -55,6 +56,7 @@
 	type TournamentTab = (typeof tournamentTabs)[number];
 	let activeTab: TournamentTab = 'info';
 	let lastTabParam: string | null = null;
+	let isDeleteDialogOpen = Boolean(form?.deleteError);
 
 	function isTournamentTab(value: string | null): value is TournamentTab {
 		return tournamentTabs.some((tab) => tab === value);
@@ -118,11 +120,22 @@
 			{/if}
 		</Head>
 
-		{#if data.canEditTournament}
-			<a href={editHref}>
-				<Button class="w-[120px] text-[12px]">Edit</Button>
-			</a>
-		{/if}
+		<div class="flex gap-2">
+			{#if data.canEditTournament}
+				<a href={editHref}>
+					<Button class="w-[120px] text-[12px]">Edit</Button>
+				</a>
+			{/if}
+			{#if data.canDeleteTournament}
+				<Button
+					class="text-[12px]"
+					variant="destructive"
+					on:click={() => (isDeleteDialogOpen = true)}
+				>
+					Delete tournament
+				</Button>
+			{/if}
+		</div>
 	</div>
 
 	<ContentItem value="info">
@@ -181,3 +194,50 @@
 		</ContentItem>
 	{/if}
 </TabGroup>
+
+{#if isDeleteDialogOpen}
+	<div
+		class="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+		role="dialog"
+		aria-modal="true"
+		tabindex="-1"
+		on:click={(event) => {
+			if (event.target === event.currentTarget) isDeleteDialogOpen = false;
+		}}
+		on:keydown={(event) => {
+			if (event.key === 'Escape') isDeleteDialogOpen = false;
+		}}
+	>
+		<div
+			class="w-full max-w-md rounded-xl border border-border bg-popover p-6 text-popover-foreground shadow-2xl"
+		>
+			<div class="mb-4 flex items-start justify-between gap-4">
+				<div>
+					<p class="text-xl font-semibold">Delete tournament</p>
+					<p class="text-sm text-muted-foreground">This action cannot be undone.</p>
+				</div>
+				<Button variant="ghost" size="icon" on:click={() => (isDeleteDialogOpen = false)}>
+					<X class="h-4 w-4" />
+				</Button>
+			</div>
+
+			{#if form?.deleteError}
+				<p class="mb-3 text-sm text-destructive">{form.deleteError}</p>
+			{/if}
+
+			<div class="flex items-center gap-2">
+				<Button
+					type="button"
+					variant="outline"
+					class="text-[12px]"
+					on:click={() => (isDeleteDialogOpen = false)}>Cancel</Button
+				>
+				<form method="post" action="?/deleteTournament">
+					<Button type="submit" variant="destructive" class="text-[12px]">
+						Delete tournament
+					</Button>
+				</form>
+			</div>
+		</div>
+	</div>
+{/if}

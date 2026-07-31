@@ -61,6 +61,7 @@ import {
 	tournamentControllerRemoveStaff,
 	tournamentControllerRemoveTeam,
 	tournamentControllerSearchTeams,
+	tournamentControllerSoftDelete,
 	tournamentControllerUnregister,
 	tournamentControllerUpdateQualificationTeam,
 	tournamentControllerUpdateQualificationTeamParticipant,
@@ -131,6 +132,7 @@ export function createBackendClient(input?: BackendClientInput) {
 			findMany: (input: TournamentControllerFindManyParams) =>
 				tournamentControllerFindMany(input, options),
 			archive: (id: string) => tournamentControllerArchive(id, options),
+			softDelete: (id: string) => tournamentControllerSoftDelete(id, options),
 			getById: (id: string) => tournamentControllerGetById(id, options),
 			getParticipants: (id: string, params?: TournamentControllerGetParticipantsParams) =>
 				tournamentControllerGetParticipants(id, params, options),
