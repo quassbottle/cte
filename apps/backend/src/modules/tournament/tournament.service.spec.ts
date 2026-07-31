@@ -3,6 +3,7 @@ jest.mock('@paralleldrive/cuid2', () => ({
   init: jest.fn(() => jest.fn(() => 'test-id')),
 }));
 
+import { tournaments } from 'lib/infrastructure/db';
 import { TournamentService } from './tournament.service';
 
 const tournamentService = (
@@ -36,6 +37,22 @@ const containsValue = (
   );
 };
 
+const containsSqlValue = (
+  value: unknown,
+  expected: unknown,
+  seen = new Set<object>(),
+): boolean => {
+  if (value === expected) return true;
+  if (!value || typeof value !== 'object' || seen.has(value)) return false;
+  seen.add(value);
+  if (!('queryChunks' in value) || !Array.isArray(value.queryChunks)) {
+    return false;
+  }
+  return value.queryChunks.some((chunk) =>
+    containsSqlValue(chunk, expected, seen),
+  );
+};
+
 const selectRows = <T>(rows: T[]) => {
   const orderBy = () => Promise.resolve(rows);
   type Query = {
@@ -51,6 +68,44 @@ const selectRows = <T>(rows: T[]) => {
 };
 
 describe('TournamentService', () => {
+  it('includes deleted rows only when explicitly requested', async () => {
+    let condition: unknown;
+    const findFirst = jest.fn(({ where }: { where: unknown }) => {
+      condition = where;
+      return Promise.resolve({ id: 'tournament-1', deletedAt: new Date() });
+    });
+    const service = tournamentService({
+      query: { tournaments: { findFirst } },
+    } as never);
+
+    await service.getById({
+      id: 'tournament-1' as never,
+      includeDeleted: true,
+    });
+
+    expect(containsSqlValue(condition, tournaments.deletedAt)).toBe(false);
+  });
+
+  it('soft-deletes archived tournaments', async () => {
+    let condition: unknown;
+    const returning = jest
+      .fn()
+      .mockResolvedValue([{ id: 'tournament-1', archivedAt: new Date() }]);
+    const where = jest.fn((value: unknown) => {
+      condition = value;
+      return { returning };
+    });
+    const set = jest.fn(() => ({ where }));
+    const service = tournamentService({
+      update: jest.fn(() => ({ set })),
+    } as never);
+
+    await service.softDelete({ id: 'tournament-1' as never });
+
+    expect(containsSqlValue(condition, tournaments.archivedAt)).toBe(false);
+    expect(set).toHaveBeenCalledWith({ deletedAt: expect.any(Date) });
+  });
+
   it('orders teams by qualification seed and puts unseeded teams last', async () => {
     const rows = [
       {

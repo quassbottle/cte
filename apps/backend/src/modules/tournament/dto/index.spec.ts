@@ -8,6 +8,7 @@ import { teamIdSchema } from 'lib/domain/team/team.id';
 import { userIdSchema } from 'lib/domain/user/user.id';
 import z from 'zod';
 import {
+  findTournamentsDtoSchema,
   qualificationRosterDtoSchema,
   tournamentParticipantDtoSchema,
   tournamentStaffRoleDtoSchema,
@@ -15,6 +16,14 @@ import {
   updateQualificationCompetitorDtoSchema,
   updateQualificationTeamParticipantDtoSchema,
 } from './index';
+
+describe('find tournaments schema', () => {
+  it('accepts the deleted tournament status', () => {
+    expect(findTournamentsDtoSchema.parse({ status: 'deleted' }).status).toBe(
+      'deleted',
+    );
+  });
+});
 
 describe('qualification management schemas', () => {
   it('requires at least one editable field', () => {

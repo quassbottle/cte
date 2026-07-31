@@ -114,4 +114,31 @@ describe('TournamentPolicyContextResolver', () => {
       ),
     );
   });
+
+  it('resolves archived tournaments for deletion', async () => {
+    const resolver = new TournamentPolicyContextResolver({
+      query: {
+        tournaments: {
+          findFirst: jest.fn().mockResolvedValue({
+            creatorId: 'ckm123456789012345678902',
+            archivedAt: new Date(),
+          }),
+        },
+      },
+    } as never);
+
+    await expect(
+      resolver.resolve({
+        method: 'DELETE',
+        originalUrl: `/api/tournaments/${id}`,
+        params: { id },
+      } as unknown as PolicyRequest),
+    ).resolves.toEqual({
+      subject: 'Tournament',
+      subjectData: {
+        __type: 'Tournament',
+        creatorId: 'ckm123456789012345678902',
+      },
+    });
+  });
 });

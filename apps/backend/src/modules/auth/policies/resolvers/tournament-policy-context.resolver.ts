@@ -61,7 +61,7 @@ export class TournamentPolicyContextResolver implements PolicyContextResolver {
       );
     }
 
-    if (tournament.archivedAt) {
+    if (tournament.archivedAt && request.method !== 'DELETE') {
       throw new TournamentException(
         'Archived tournaments cannot be changed',
         TournamentExceptionCode.TOURNAMENT_ACCESS_DENIED,

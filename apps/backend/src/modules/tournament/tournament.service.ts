@@ -83,11 +83,17 @@ export class TournamentService {
     });
   }
 
-  public async getById(params: { id: TournamentId }): Promise<DbTournament> {
-    const { id } = params;
+  public async getById(params: {
+    id: TournamentId;
+    includeDeleted?: boolean;
+  }): Promise<DbTournament> {
+    const { id, includeDeleted = false } = params;
 
     const tournament = await this.drizzle.query.tournaments.findFirst({
-      where: and(eq(tournaments.id, id), isNull(tournaments.deletedAt)),
+      where: and(
+        eq(tournaments.id, id),
+        includeDeleted ? undefined : isNull(tournaments.deletedAt),
+      ),
     });
 
     if (!tournament) {
@@ -103,23 +109,22 @@ export class TournamentService {
   public async findMany(
     params: PaginationParams & {
       mode?: TournamentMode;
-      status?: 'active' | 'archived';
+      status?: 'active' | 'archived' | 'deleted';
     },
   ): Promise<DbTournament[]> {
     const { limit, offset, mode, status = 'active' } = params;
-    const archiveFilter =
-      status === 'archived'
-        ? isNotNull(tournaments.archivedAt)
-        : isNull(tournaments.archivedAt);
+    const statusFilter =
+      status === 'deleted'
+        ? isNotNull(tournaments.deletedAt)
+        : and(
+            isNull(tournaments.deletedAt),
+            status === 'archived'
+              ? isNotNull(tournaments.archivedAt)
+              : isNull(tournaments.archivedAt),
+          );
 
     const found = await this.drizzle.query.tournaments.findMany({
-      where: mode
-        ? and(
-            isNull(tournaments.deletedAt),
-            archiveFilter,
-            eq(tournaments.mode, mode),
-          )
-        : and(isNull(tournaments.deletedAt), archiveFilter),
+      where: and(statusFilter, mode ? eq(tournaments.mode, mode) : undefined),
       orderBy: asc(tournaments.startsAt),
       limit,
       offset,
@@ -157,11 +162,15 @@ export class TournamentService {
   }
 
   public async getParticipants(
-    params: { id: TournamentId; query?: string } & PaginationParams,
+    params: {
+      id: TournamentId;
+      query?: string;
+      includeDeleted?: boolean;
+    } & PaginationParams,
   ): Promise<(DbUser & { globalRank: number | null; seed: number | null })[]> {
-    const { id, limit, offset, query } = params;
+    const { id, limit, offset, query, includeDeleted } = params;
 
-    const tournament = await this.getById({ id });
+    const tournament = await this.getById({ id, includeDeleted });
     const parsedOsuId = Number(query);
     const search = query
       ? Number.isInteger(parsedOsuId)
@@ -243,8 +252,12 @@ export class TournamentService {
 
   public async getStaff(params: {
     id: TournamentId;
+    includeDeleted?: boolean;
   }): Promise<InstanceType<typeof TournamentStaffRoleDto>[]> {
-    await this.getById({ id: params.id });
+    await this.getById({
+      id: params.id,
+      includeDeleted: params.includeDeleted,
+    });
     const rows = await this.drizzle
       .select({
         roleId: staffRoles.id,
@@ -635,7 +648,10 @@ export class TournamentService {
       .offset(offset);
   }
 
-  public async getTeams(params: { id: TournamentId }): Promise<
+  public async getTeams(params: {
+    id: TournamentId;
+    includeDeleted?: boolean;
+  }): Promise<
     {
       id: TeamId;
       name: string;
@@ -646,7 +662,10 @@ export class TournamentService {
   > {
     const { id } = params;
 
-    const tournament = await this.getById({ id });
+    const tournament = await this.getById({
+      id,
+      includeDeleted: params.includeDeleted,
+    });
     if (!tournament.isTeam) return [];
 
     const rows = await this.drizzle
@@ -849,7 +868,6 @@ export class TournamentService {
       .where(
         and(
           eq(tournaments.id, id),
-          isNull(tournaments.archivedAt),
           isNull(tournaments.deletedAt),
         ),
       )
