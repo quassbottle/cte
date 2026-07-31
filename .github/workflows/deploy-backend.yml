@@ -12,7 +12,8 @@ on:
       - 'pnpm-workspace.yaml'
       - 'turbo.json'
       - '.dockerignore'
-      - 'apps/infra/docker-compose.yml'
+      - 'apps/infra/docker-compose.prod.yml'
+      - 'apps/infra/Caddyfile'
       - '.github/workflows/deploy-backend.yml'
   workflow_dispatch:
 
@@ -36,21 +37,30 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Validate production Compose
+        run: >-
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.prod.yml config --quiet
       - name: Start infrastructure
         run: >-
           docker compose --env-file "$CTE_ENV_DIR/infra.env"
-          -f apps/infra/docker-compose.yml up -d --wait postgres nats
+          -f apps/infra/docker-compose.prod.yml up -d --wait postgres nats
       - name: Build backend and migrator
         run: >-
           docker compose --env-file "$CTE_ENV_DIR/infra.env"
-          -f apps/infra/docker-compose.yml build backend migrate
+          -f apps/infra/docker-compose.prod.yml build backend migrate
       - name: Migrate backend database
         run: >-
           docker compose --env-file "$CTE_ENV_DIR/infra.env"
-          -f apps/infra/docker-compose.yml run --rm --no-deps migrate
+          -f apps/infra/docker-compose.prod.yml run --rm --no-deps migrate
       - name: Deploy backend
         run: >-
           docker compose --env-file "$CTE_ENV_DIR/infra.env"
-          -f apps/infra/docker-compose.yml up -d --no-deps --wait --wait-timeout 120 backend
+          -f apps/infra/docker-compose.prod.yml
+          up -d --no-deps --wait --wait-timeout 120 backend
+      - name: Deploy Caddy
+        run: >-
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.prod.yml up -d --no-deps caddy
       - name: Remove old images
         run: docker image prune -f

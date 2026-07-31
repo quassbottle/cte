@@ -1,4 +1,4 @@
-name: cte
+name: cte-dev
 
 services:
   postgres:
@@ -9,7 +9,7 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD:-password}
       POSTGRES_DB: postgres
     ports:
-      - "${DB_PORT:-5765}:5432"
+      - "127.0.0.1:${DB_PORT:-5765}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./initdb:/docker-entrypoint-initdb.d
@@ -19,7 +19,7 @@ services:
       timeout: 3s
       retries: 12
     networks:
-      - cte-network
+      - cte-dev-network
 
   nats:
     image: nats:2.10
@@ -31,71 +31,72 @@ services:
     volumes:
       - nats_data:/data/jetstream
     networks:
-      - cte-network
+      - cte-dev-network
 
   migrate:
-    image: cte-backend-migrate:local
+    image: cte-backend-migrate:dev
     build:
       context: ../..
       dockerfile: apps/backend/Dockerfile
       target: migrate
     env_file:
-      - ${CTE_ENV_DIR:-/opt/cte/env}/backend.env
+      - ../backend/.env
     environment:
       DATABASE_URL: postgresql://cte:${DB_PASSWORD:-password}@postgres:5432/cte_backend
     depends_on:
       postgres:
         condition: service_healthy
     networks:
-      - cte-network
+      - cte-dev-network
 
   backend:
-    image: cte-backend:local
+    image: cte-backend:dev
     build:
       context: ../..
       dockerfile: apps/backend/Dockerfile
     restart: unless-stopped
     env_file:
-      - ${CTE_ENV_DIR:-/opt/cte/env}/backend.env
+      - ../backend/.env
     environment:
       PORT: 3000
       DATABASE_URL: postgresql://cte:${DB_PASSWORD:-password}@postgres:5432/cte_backend
       NATS_HOST: nats
       NATS_PORT: 4222
     ports:
-      - "${BACKEND_PORT:-3000}:3000"
+      - "127.0.0.1:${BACKEND_PORT:-3000}:3000"
     depends_on:
       migrate:
         condition: service_completed_successfully
       nats:
         condition: service_started
     networks:
-      - cte-network
+      - cte-dev-network
 
   frontend:
-    image: cte-frontend:local
+    image: cte-frontend:dev
     build:
       context: ../..
       dockerfile: apps/frontend/Dockerfile
     restart: unless-stopped
     env_file:
-      - ${CTE_ENV_DIR:-/opt/cte/env}/frontend.env
+      - ../frontend/.env
     environment:
       BACKEND_API_URL: http://backend:3000
       BACKEND_OPENAPI_URL: http://backend:3000/docs-json
       HTTP_HOST: 0.0.0.0
       HTTP_PORT: 3000
     ports:
-      - "${FRONTEND_PORT:-5173}:3000"
+      - "127.0.0.1:${FRONTEND_PORT:-5173}:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     networks:
-      - cte-network
+      - cte-dev-network
 
 volumes:
   postgres_data:
   nats_data:
 
 networks:
-  cte-network:
-    name: cte-network
+  cte-dev-network:
+    name: cte-dev-network

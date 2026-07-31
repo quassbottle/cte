@@ -6,7 +6,8 @@ on:
     paths:
       - 'apps/frontend/**'
       - '.dockerignore'
-      - 'apps/infra/docker-compose.yml'
+      - 'apps/infra/docker-compose.prod.yml'
+      - 'apps/infra/Caddyfile'
       - '.github/workflows/deploy-frontend.yml'
   workflow_dispatch:
 
@@ -30,10 +31,18 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Validate production Compose
+        run: >-
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.prod.yml config --quiet
       - name: Build and deploy frontend
         run: >-
           docker compose --env-file "$CTE_ENV_DIR/infra.env"
-          -f apps/infra/docker-compose.yml
+          -f apps/infra/docker-compose.prod.yml
           up -d --build --no-deps --wait --wait-timeout 120 frontend
+      - name: Deploy Caddy
+        run: >-
+          docker compose --env-file "$CTE_ENV_DIR/infra.env"
+          -f apps/infra/docker-compose.prod.yml up -d --no-deps caddy
       - name: Remove old images
         run: docker image prune -f

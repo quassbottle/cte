@@ -1,0 +1,7 @@
+cte.quas.su {
+	reverse_proxy frontend:3000
+}
+
+api.cte.quas.su {
+	reverse_proxy backend:3000
+}
