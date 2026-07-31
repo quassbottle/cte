@@ -4,6 +4,8 @@ import { PassportModule } from '@nestjs/passport';
 import { EnvService } from 'lib/common/env/env.service';
 import { OsuModule } from 'lib/infrastructure/osu/osu.module';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
+import { OptionalJwtUserGuard } from 'modules/auth/guards/optional-jwt.guard';
+import { TournamentVisibilityGuard } from 'modules/auth/guards/tournament-visibility.guard';
 import { UserModule } from 'modules/user/user.module';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
@@ -12,8 +14,20 @@ import { PoliciesModule } from './policies/policies.module';
 import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
-  exports: [JwtUserGuard, PoliciesModule],
-  providers: [AuthService, JwtService, JwtStrategy, JwtUserGuard],
+  exports: [
+    JwtUserGuard,
+    OptionalJwtUserGuard,
+    PoliciesModule,
+    TournamentVisibilityGuard,
+  ],
+  providers: [
+    AuthService,
+    JwtService,
+    JwtStrategy,
+    JwtUserGuard,
+    OptionalJwtUserGuard,
+    TournamentVisibilityGuard,
+  ],
   imports: [
     OsuModule,
     forwardRef(() => UserModule),

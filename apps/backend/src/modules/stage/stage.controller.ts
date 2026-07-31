@@ -15,6 +15,8 @@ import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
 import { StageId } from 'lib/domain/stage/stage.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
+import { OptionalJwtUserGuard } from 'modules/auth/guards/optional-jwt.guard';
+import { TournamentVisibilityGuard } from 'modules/auth/guards/tournament-visibility.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import { ZodResponse } from 'nestjs-zod';
@@ -30,6 +32,7 @@ import { StageService } from './stage.service';
 
 @ApiBearerAuth('bearer')
 @Controller('tournaments/:tournamentId/stages')
+@UseGuards(OptionalJwtUserGuard, TournamentVisibilityGuard)
 export class StageController {
   constructor(
     private readonly stageService: StageService,

@@ -15,6 +15,8 @@ import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { DbUser } from 'lib/infrastructure/db';
 import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
+import { OptionalJwtUserGuard } from 'modules/auth/guards/optional-jwt.guard';
+import { TournamentVisibilityGuard } from 'modules/auth/guards/tournament-visibility.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import { ZodResponse } from 'nestjs-zod';
@@ -30,6 +32,7 @@ import { QualificationLobbyService } from './qualification-lobby.service';
 import { QualificationResultsService } from './qualification-results.service';
 
 @Controller('tournaments/:id/qualification-results')
+@UseGuards(OptionalJwtUserGuard, TournamentVisibilityGuard)
 export class QualificationResultsController {
   constructor(private readonly service: QualificationResultsService) {}
 
@@ -44,6 +47,7 @@ export class QualificationResultsController {
 }
 
 @Controller('tournaments/:id/qualification-lobbies')
+@UseGuards(OptionalJwtUserGuard, TournamentVisibilityGuard)
 export class QualificationLobbyController {
   constructor(private readonly service: QualificationLobbyService) {}
 

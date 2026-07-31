@@ -23,6 +23,8 @@ import { UserId } from 'lib/domain/user/user.id';
 import { DbUser } from 'lib/infrastructure/db';
 import { RequestUser } from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
+import { OptionalJwtUserGuard } from 'modules/auth/guards/optional-jwt.guard';
+import { TournamentVisibilityGuard } from 'modules/auth/guards/tournament-visibility.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import {
@@ -59,6 +61,7 @@ import { TournamentService } from './tournament.service';
 
 @ApiBearerAuth('bearer')
 @Controller('tournaments')
+@UseGuards(OptionalJwtUserGuard, TournamentVisibilityGuard)
 export class TournamentController {
   constructor(
     private readonly tournamentService: TournamentService,

@@ -17,6 +17,8 @@ import { PaginationDto } from 'lib/common/utils/zod/pagination';
 import { MappoolId } from 'lib/domain/mappool/mappool.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
+import { OptionalJwtUserGuard } from 'modules/auth/guards/optional-jwt.guard';
+import { TournamentVisibilityGuard } from 'modules/auth/guards/tournament-visibility.guard';
 import { CheckPolicies } from 'modules/auth/policies/check-policies.decorator';
 import { PoliciesGuard } from 'modules/auth/policies/policies.guard';
 import { ZodResponse } from 'nestjs-zod';
@@ -34,6 +36,7 @@ import { MappoolService } from './mappool.service';
 
 @ApiBearerAuth('bearer')
 @Controller('tournaments/:tournamentId/mappools')
+@UseGuards(OptionalJwtUserGuard, TournamentVisibilityGuard)
 export class TournamentMappoolController {
   constructor(private readonly mappoolService: MappoolService) {}
 

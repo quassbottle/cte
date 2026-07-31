@@ -19,3 +19,8 @@ export const RequestUser = createParamDecorator(
     return request.user;
   },
 );
+
+export const OptionalRequestUser = createParamDecorator(
+  (_data: unknown, ctx: ExecutionContext): UserEntity | undefined =>
+    ctx.switchToHttp().getRequest<RequestWithAuth<UserEntity>>().user,
+);
