@@ -12,16 +12,18 @@
 	import { gamemodes } from '$lib/utils/types';
 
 	const modeTabs = [{ value: 'all' as const, label: 'All' }, ...gamemodes];
-	const statusTabs: { value: TournamentStatusFilter; label: string }[] = [
-		{ value: 'active', label: 'Active Tournaments' },
-		{ value: 'archived', label: 'Archived Tournaments' }
-	];
-
 	export let data: {
 		tournaments: TournamentDto[];
+		isAdmin: boolean;
 		selectedMode: TournamentModeFilter;
 		selectedStatus: TournamentStatusFilter;
 	};
+
+	const statusTabs: { value: TournamentStatusFilter; label: string }[] = [
+		{ value: 'active', label: 'Active Tournaments' },
+		{ value: 'archived', label: 'Archived Tournaments' },
+		...(data.isAdmin ? [{ value: 'deleted' as const, label: 'Deleted Tournaments' }] : [])
+	];
 </script>
 
 <svelte:head>

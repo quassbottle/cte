@@ -1,7 +1,7 @@
 import type { TournamentDto } from '$lib/api/types';
 
 export type TournamentModeFilter = TournamentDto['mode'] | 'all';
-export type TournamentStatusFilter = 'active' | 'archived';
+export type TournamentStatusFilter = 'active' | 'archived' | 'deleted';
 
 export function getEventsModeHref(mode: TournamentModeFilter, status: TournamentStatusFilter) {
 	const params = new URLSearchParams();
