@@ -50,8 +50,9 @@ the soft-delete mechanism, so no database migration is required.
 - The detail page retains its existing tabs and content, adds a visible
   **Deleted** state label, and hides registration, edit, and other mutation
   controls.
-- The tournament editor shows **Delete tournament** only to administrators.
-  The action uses a destructive confirmation dialog distinct from Archive.
+- The normal tournament detail page shows **Delete tournament** only to
+  administrators for both active and archived tournaments. The action uses a
+  destructive confirmation dialog.
 - After a successful delete, the administrator is redirected to
   `/events?status=deleted&mode=all`.
 
