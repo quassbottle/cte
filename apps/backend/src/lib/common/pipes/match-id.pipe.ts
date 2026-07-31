@@ -1,18 +1,6 @@
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
-import { MatchId, matchIdSchema } from 'lib/domain/match/match.id';
+import { Injectable } from '@nestjs/common';
+import { matchIdSchema } from 'lib/domain/match/match.id';
+import { createValidationPipe } from './create-validation-pipe';
 
 @Injectable()
-export class MatchIdPipe implements PipeTransform<string, MatchId> {
-  public transform(value: string): MatchId {
-    const parsed = matchIdSchema.safeParse(value);
-
-    if (!parsed.success) {
-      const message = parsed.error.issues
-        .map((issue) => issue.message)
-        .join('; ');
-      throw new BadRequestException(message || 'Invalid match id');
-    }
-
-    return parsed.data;
-  }
-}
+export class MatchIdPipe extends createValidationPipe(matchIdSchema, 'match') {}

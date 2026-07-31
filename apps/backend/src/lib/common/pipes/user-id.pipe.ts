@@ -1,18 +1,6 @@
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
-import { UserId, userIdSchema } from 'lib/domain/user/user.id';
+import { Injectable } from '@nestjs/common';
+import { userIdSchema } from 'lib/domain/user/user.id';
+import { createValidationPipe } from './create-validation-pipe';
 
 @Injectable()
-export class UserIdPipe implements PipeTransform<string, UserId> {
-  public transform(value: string): UserId {
-    const parsed = userIdSchema.safeParse(value);
-
-    if (!parsed.success) {
-      const message = parsed.error.issues
-        .map((issue) => issue.message)
-        .join('; ');
-      throw new BadRequestException(message || 'Invalid user id');
-    }
-
-    return parsed.data;
-  }
-}
+export class UserIdPipe extends createValidationPipe(userIdSchema, 'user') {}

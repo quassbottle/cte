@@ -1,18 +1,6 @@
-import { BadRequestException, Injectable, PipeTransform } from '@nestjs/common';
-import { StageId, stageIdSchema } from 'lib/domain/stage/stage.id';
+import { Injectable } from '@nestjs/common';
+import { stageIdSchema } from 'lib/domain/stage/stage.id';
+import { createValidationPipe } from './create-validation-pipe';
 
 @Injectable()
-export class StageIdPipe implements PipeTransform<string, StageId> {
-  public transform(value: string): StageId {
-    const parsed = stageIdSchema.safeParse(value);
-
-    if (!parsed.success) {
-      const message = parsed.error.issues
-        .map((issue) => issue.message)
-        .join('; ');
-      throw new BadRequestException(message || 'Invalid stage id');
-    }
-
-    return parsed.data;
-  }
-}
+export class StageIdPipe extends createValidationPipe(stageIdSchema, 'stage') {}
