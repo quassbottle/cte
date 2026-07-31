@@ -40,6 +40,7 @@
 		mappools: MappoolDto[];
 		mappoolBeatmaps: { mappoolId: string; beatmaps: MappoolBeatmapDto[] }[];
 		canEditTournament: boolean;
+		canDeleteTournament: boolean;
 	};
 	export let form: TournamentRegistrationForm;
 

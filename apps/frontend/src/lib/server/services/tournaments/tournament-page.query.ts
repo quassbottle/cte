@@ -32,8 +32,11 @@ export async function getTournamentPage(
 		backend.mappools.findByTournament(tournamentId)
 	]);
 	const tournament = tournamentResponse.data;
+	const isAdmin = viewer?.role === 'admin';
+	const isDeleted = Boolean(tournament.deletedAt);
 	const canEditTournament =
-		!!viewer && (tournament.creatorId === viewer.id || viewer.role === 'admin');
+		!isDeleted && !!viewer && (tournament.creatorId === viewer.id || isAdmin);
+	const canDeleteTournament = isAdmin && !isDeleted;
 	const host = (await backend.users.getById(tournament.creatorId)).data;
 	const visibleMappools = mappoolsResponse.data;
 	const statisticsStage = statistics
@@ -69,6 +72,7 @@ export async function getTournamentPage(
 			mappoolId: mappool.id,
 			beatmaps: mappool.beatmaps
 		})),
-		canEditTournament
+		canEditTournament,
+		canDeleteTournament
 	};
 }

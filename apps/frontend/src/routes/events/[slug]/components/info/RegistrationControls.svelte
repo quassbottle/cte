@@ -24,7 +24,8 @@
 	$: isRegistered = Boolean(
 		user?.id && participants.some((participant) => participant.id === user?.id)
 	);
-	$: canShowRegistrationForm = tournament.registrationOpen && !tournament.archivedAt;
+	$: canShowRegistrationForm =
+		tournament.registrationOpen && !tournament.archivedAt && !tournament.deletedAt;
 	$: registerButtonText = isRegistered
 		? tournament.isTeam
 			? 'Unregister team'
@@ -51,7 +52,9 @@
 	}
 </script>
 
-{#if isLoggedIn}
+{#if tournament.deletedAt}
+	<p class="mt-2 text-sm text-white/90">This tournament has been deleted.</p>
+{:else if isLoggedIn}
 	{#if canShowRegistrationForm}
 		{#if !isRegistered && tournament.isTeam}
 			<div class="mt-2">

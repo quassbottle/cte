@@ -55,6 +55,9 @@
 							{tournament.isTeam ? 'Team tournament' : 'Solo tournament'}
 						</p>
 					</Item>
+					{#if tournament.deletedAt}
+						<Item><p class="select-none text-[12px]">Deleted</p></Item>
+					{/if}
 					<Item>
 						<p class="select-none gap-1 text-[12px]">
 							Hosted by <a href="/users/{host.id}">{host.osuUsername}</a>
@@ -81,6 +84,9 @@
 			{gamemodes.find((item) => item.value === tournament.mode)?.label ?? tournament.mode}
 		</div>
 		<p class="select-none">{tournament.isTeam ? 'Team tournament' : 'Solo tournament'}</p>
+		{#if tournament.deletedAt}
+			<p class="select-none">Deleted</p>
+		{/if}
 		<p class="select-none">
 			Hosted by <a class="text-foreground hover:underline" href="/users/{host.id}"
 				>{host.osuUsername}</a
