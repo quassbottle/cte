@@ -272,7 +272,8 @@
               "type": "string",
               "enum": [
                 "active",
-                "archived"
+                "archived",
+                "deleted"
               ]
             }
           }

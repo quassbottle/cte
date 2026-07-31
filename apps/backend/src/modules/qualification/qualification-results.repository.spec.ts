@@ -1,4 +1,5 @@
 import { QualificationResultsRepository } from './qualification-results.repository';
+import { tournaments } from 'lib/infrastructure/db';
 
 const containsValue = (
   value: unknown,
@@ -14,6 +15,39 @@ const containsValue = (
 };
 
 describe('QualificationResultsRepository', () => {
+  it.each([
+    [undefined, true],
+    [true, false],
+  ])(
+    'filters deleted tournaments when includeDeleted is %s',
+    async (includeDeleted, containsDeletedPredicate) => {
+      let condition: unknown;
+      const db = {
+        select: jest.fn(() => ({
+          from: jest.fn(() => ({
+            innerJoin: jest.fn(() => ({
+              where: jest.fn((value: unknown) => {
+                condition = value;
+                return {
+                  limit: jest.fn().mockResolvedValue([{ id: 'stage' }]),
+                };
+              }),
+            })),
+          })),
+        })),
+      };
+
+      await new QualificationResultsRepository(db as never).findStageId(
+        'tournament' as never,
+        includeDeleted,
+      );
+
+      expect(containsValue(condition, tournaments.deletedAt)).toBe(
+        containsDeletedPredicate,
+      );
+    },
+  );
+
   it('updates only the selected competitor seed', async () => {
     let condition: unknown;
     const set = jest.fn(() => ({

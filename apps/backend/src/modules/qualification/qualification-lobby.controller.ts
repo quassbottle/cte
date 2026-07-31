@@ -13,7 +13,10 @@ import { TournamentIdPipe } from 'lib/common/pipes/tournament-id.pipe';
 import { qualificationLobbyIdSchema } from 'lib/domain/qualification-lobby/qualification-lobby.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { DbUser } from 'lib/infrastructure/db';
-import { RequestUser } from 'modules/auth/decorators/user.decorator';
+import {
+  OptionalRequestUser,
+  RequestUser,
+} from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { OptionalJwtUserGuard } from 'modules/auth/guards/optional-jwt.guard';
 import { TournamentVisibilityGuard } from 'modules/auth/guards/tournament-visibility.guard';
@@ -41,8 +44,13 @@ export class QualificationResultsController {
   public find(
     @Param('id', TournamentIdPipe) tournamentId: TournamentId,
     @Query() query: QualificationStatisticsQueryDto,
+    @OptionalRequestUser() user?: DbUser,
   ) {
-    return this.service.getStatistics(tournamentId, query);
+    return this.service.getStatistics(
+      tournamentId,
+      query,
+      user?.role === 'admin',
+    );
   }
 }
 

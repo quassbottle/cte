@@ -1,6 +1,27 @@
 import { QualificationResultsService } from './qualification-results.service';
 
 describe('QualificationResultsService', () => {
+  it('includes deleted tournament data only when requested', async () => {
+    const repository = {
+      findStageId: jest.fn().mockResolvedValue('stage'),
+      load: jest.fn().mockResolvedValue({
+        beatmaps: [],
+        beatmapIds: [],
+        attempts: [],
+        competitors: [],
+      }),
+    };
+
+    await new QualificationResultsService(repository as never).getStatistics(
+      'tournament' as never,
+      { sortDirection: 'asc' },
+      true,
+    );
+
+    expect(repository.findStageId).toHaveBeenCalledWith('tournament', true);
+    expect(repository.load).toHaveBeenCalledWith('stage', undefined, true);
+  });
+
   it('does not replace results when assignments are incomplete', async () => {
     const repository = {
       recalculate: jest.fn(),

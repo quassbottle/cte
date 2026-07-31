@@ -11,5 +11,6 @@ export type TournamentControllerFindManyStatus =
 
 export const TournamentControllerFindManyStatus = {
 	active: 'active',
-	archived: 'archived'
+	archived: 'archived',
+	deleted: 'deleted'
 } as const;

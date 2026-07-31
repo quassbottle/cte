@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -21,7 +22,10 @@ import { TeamId } from 'lib/domain/team/team.id';
 import { TournamentId } from 'lib/domain/tournament/tournament.id';
 import { UserId } from 'lib/domain/user/user.id';
 import { DbUser } from 'lib/infrastructure/db';
-import { RequestUser } from 'modules/auth/decorators/user.decorator';
+import {
+  OptionalRequestUser,
+  RequestUser,
+} from 'modules/auth/decorators/user.decorator';
 import { JwtUserGuard } from 'modules/auth/guards/jwt.guard';
 import { OptionalJwtUserGuard } from 'modules/auth/guards/optional-jwt.guard';
 import { TournamentVisibilityGuard } from 'modules/auth/guards/tournament-visibility.guard';
@@ -59,6 +63,8 @@ import {
 } from './dto';
 import { TournamentService } from './tournament.service';
 
+const canReadDeleted = (user?: DbUser) => user?.role === 'admin';
+
 @ApiBearerAuth('bearer')
 @Controller('tournaments')
 @UseGuards(OptionalJwtUserGuard, TournamentVisibilityGuard)
@@ -89,7 +95,13 @@ export class TournamentController {
     description: 'Returns tournaments list.',
     type: [TournamentDto],
   })
-  public async findMany(@Query() query: FindTournamentsDto) {
+  public async findMany(
+    @Query() query: FindTournamentsDto,
+    @OptionalRequestUser() user?: DbUser,
+  ) {
+    if (query.status === 'deleted' && !canReadDeleted(user))
+      throw new ForbiddenException();
+
     const tournaments = await this.tournamentService.findMany(query);
     const participantsCountByTournamentId =
       await this.tournamentService.getParticipantsCountMap(
@@ -109,8 +121,14 @@ export class TournamentController {
     description: 'Returns tournament by id.',
     type: TournamentDto,
   })
-  public async getById(@Param('id', TournamentIdPipe) id: TournamentId) {
-    const tournament = await this.tournamentService.getById({ id });
+  public async getById(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @OptionalRequestUser() user?: DbUser,
+  ) {
+    const tournament = await this.tournamentService.getById({
+      id,
+      includeDeleted: canReadDeleted(user),
+    });
     const participantsCount = await this.tournamentService.getParticipantsCount(
       { id, isTeam: tournament.isTeam },
     );
@@ -127,10 +145,12 @@ export class TournamentController {
   public async getParticipants(
     @Param('id', TournamentIdPipe) id: TournamentId,
     @Query() query: FindTournamentParticipantsDto,
+    @OptionalRequestUser() user?: DbUser,
   ) {
     return this.tournamentService.getParticipants({
       id,
       ...query,
+      includeDeleted: canReadDeleted(user),
     });
   }
 
@@ -276,8 +296,14 @@ export class TournamentController {
     description: 'Returns teams of the tournament with participants.',
     type: [TournamentTeamDto],
   })
-  public async getTeams(@Param('id', TournamentIdPipe) id: TournamentId) {
-    const teams = await this.tournamentService.getTeams({ id });
+  public async getTeams(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @OptionalRequestUser() user?: DbUser,
+  ) {
+    const teams = await this.tournamentService.getTeams({
+      id,
+      includeDeleted: canReadDeleted(user),
+    });
 
     return teams;
   }
@@ -288,8 +314,14 @@ export class TournamentController {
     description: 'Returns tournament staff.',
     type: [TournamentStaffRoleDto],
   })
-  public async getStaff(@Param('id', TournamentIdPipe) id: TournamentId) {
-    return this.tournamentService.getStaff({ id });
+  public async getStaff(
+    @Param('id', TournamentIdPipe) id: TournamentId,
+    @OptionalRequestUser() user?: DbUser,
+  ) {
+    return this.tournamentService.getStaff({
+      id,
+      includeDeleted: canReadDeleted(user),
+    });
   }
 
   @Post(':id/staff')

@@ -38,9 +38,13 @@ export class QualificationResultsService {
     query: { sortBeatmapId?: number; sortDirection: 'asc' | 'desc' } = {
       sortDirection: 'asc',
     },
+    includeDeleted = false,
   ) {
-    const stageId = await this.repository.findStageId(tournamentId);
-    return this.getStatisticsByStage(stageId, query);
+    const stageId = await this.repository.findStageId(
+      tournamentId,
+      includeDeleted,
+    );
+    return this.getStatisticsByStage(stageId, query, includeDeleted);
   }
 
   public async getStatisticsByStage(
@@ -48,8 +52,13 @@ export class QualificationResultsService {
     query: { sortBeatmapId?: number; sortDirection: 'asc' | 'desc' } = {
       sortDirection: 'asc',
     },
+    includeDeleted = false,
   ) {
-    const input = await this.repository.load(stageId);
+    const input = await this.repository.load(
+      stageId,
+      undefined,
+      includeDeleted,
+    );
     const competitors = new Map(
       input.competitors.map(
         (competitor) => [String(competitor.id), competitor] as const,

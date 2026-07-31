@@ -39,7 +39,10 @@ export type SetQualificationSeedParams = {
 export class QualificationResultsRepository {
   constructor(@Inject('DB') private readonly db: Schema) {}
 
-  public async findStageId(tournamentId: TournamentId): Promise<StageId> {
+  public async findStageId(
+    tournamentId: TournamentId,
+    includeDeleted = false,
+  ): Promise<StageId> {
     const [stage] = await this.db
       .select({ id: stages.id })
       .from(stages)
@@ -49,7 +52,7 @@ export class QualificationResultsRepository {
           eq(stages.tournamentId, tournamentId),
           eq(stages.type, 'qualification'),
           isNull(stages.deletedAt),
-          isNull(tournaments.deletedAt),
+          includeDeleted ? undefined : isNull(tournaments.deletedAt),
         ),
       )
       .limit(1);
@@ -61,7 +64,11 @@ export class QualificationResultsRepository {
     return stage.id;
   }
 
-  public async load(stageId: StageId, db: Schema = this.db) {
+  public async load(
+    stageId: StageId,
+    db: Schema = this.db,
+    includeDeleted = false,
+  ) {
     const stage = await db
       .select({ tournamentId: stages.tournamentId, isTeam: tournaments.isTeam })
       .from(stages)
@@ -71,7 +78,7 @@ export class QualificationResultsRepository {
           eq(stages.id, stageId),
           eq(stages.type, 'qualification'),
           isNull(stages.deletedAt),
-          isNull(tournaments.deletedAt),
+          includeDeleted ? undefined : isNull(tournaments.deletedAt),
         ),
       )
       .limit(1);
